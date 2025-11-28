@@ -12,10 +12,8 @@ import SkeletonCard from '../components/widget/SkeletonCard.vue'
 import CommunitySection from '../components/widget/CommunitySection.vue'
 import Footer from '../components/widget/Footer.vue'
 import DevFloatingWidget from '../components/widget/DevFloatingWidget.vue'
-import { useAppConfigStore } from '../stores/appConfig'
 
 const { t } = useI18n()
-const appConfig = useAppConfigStore()
 
 const isLoading = ref(false)
 
@@ -81,9 +79,9 @@ const activeTab = ref(t('home.discovery.tabs.all'))
       <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
         <div>
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
-          <Typography variant="body" class="text-text-secondary"
-            >{{ t('home.discovery.subtitle') }}</Typography
-          >
+          <Typography variant="body" class="text-text-secondary">{{
+            t('home.discovery.subtitle')
+          }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="activeTab = $event" />
       </div>
