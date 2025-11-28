@@ -39,7 +39,7 @@
   dependencies:
     vary "^1.1.2"
 
-"@modular-rest/server@^1.13.0":
+"@modular-rest/server@^1.16.0":
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/@modular-rest/server/-/server-1.16.0.tgz#bf114196fb3092213a82510e499bc800c64f6845"
   integrity sha512-FQiHR6PiTtN17N6WtZ6YoFN8LdkKgj5o0ZnkdFirb4dtdkMQPgV/nPUjIr04esKR6vk8/MSA0QvnUP/c8DS4Hw==

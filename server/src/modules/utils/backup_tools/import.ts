@@ -2,7 +2,7 @@ import { exec } from "child_process";
 import { getCollection } from "@modular-rest/server";
 
 // let filesDir = require('path').join(__dirname, 'files');
-let dbConnectionStr = process.env.MONGODB_URL;
+let dbConnectionStr = process.env.MONGODB_URL || "mongodb://localhost:27017";
 
 function ImportFile(
   fileDir: string,
@@ -11,7 +11,14 @@ function ImportFile(
 ): Promise<string> {
   return new Promise((done, reject) => {
     let url = `${dbConnectionStr}/${db}`;
+
+    // Try to find mongoimport in common locations if strictly not found in PATH,
+    // but usually fixing the PATH or just relying on the command is better.
+    // For now, we stick to "mongoimport" but ensure the URL is correct.
     let command = `mongoimport --uri="${url}" --collection="${coll}" --file="${fileDir}"`;
+
+    // Note: If mongoimport is not found, ensure it is installed and in the system PATH.
+    // On macOS with Homebrew, it might be at /opt/homebrew/bin/mongoimport
 
     exec(command, (err, stdout, stderr) => {
       if (err) reject(err);
