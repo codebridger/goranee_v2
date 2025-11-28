@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface-base: var(--surface-base);
+  --color-surface-card: var(--surface-card);
+  --color-surface-glass: var(--surface-glass);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-accent: #FF2E93;
+
+  --color-border-subtle: var(--border-subtle);
+
+  --background-image-grad-primary: linear-gradient(135deg, #FF2E93 0%, #8E2DE2 100%);
+  --background-image-grad-secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+  --font-family-sans: Inter, 'Noto Sans', sans-serif;
+  --font-family-heading: Montserrat, Poppins, sans-serif;
+  --font-family-kurdish: 'Noto Sans Kurdish', sans-serif;
+  --font-family-mono: 'Roboto Mono', monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  --shadow-card: 0 4px 20px rgba(42, 27, 40, 0.05);
+  --shadow-hover: 0 10px 25px rgba(255, 46, 147, 0.25);
+}
+
+:root {
+  /* Light Mode (Default) */
+  --surface-base: #FDF2F0;
+  --surface-card: #FFFFFF;
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --text-primary: #2A1B28;
+  --text-secondary: #6B5A68;
+  --border-subtle: #FBCFE8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --surface-base: #130A12;
+    --surface-card: #1F121D;
+    --surface-glass: rgba(19, 10, 18, 0.7);
+    --text-primary: #EDDEEB;
+    --text-secondary: #9CA3AF;
+    --border-subtle: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Manual Dark Mode Override - Higher specificity */
+:root.dark,
+html.dark {
+  --surface-base: #130A12;
+  --surface-card: #1F121D;
+  --surface-glass: rgba(19, 10, 18, 0.7);
+  --text-primary: #EDDEEB;
+  --text-secondary: #9CA3AF;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+}
+
+/* Force light mode when .light class is present */
+:root.light,
+html.light {
+  --surface-base: #FDF2F0;
+  --surface-card: #FFFFFF;
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --text-primary: #2A1B28;
+  --text-secondary: #6B5A68;
+  --border-subtle: #FBCFE8;
+}
+
+body {
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+
