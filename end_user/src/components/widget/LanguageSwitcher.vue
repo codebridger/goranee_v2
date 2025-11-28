@@ -3,9 +3,10 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Languages } from 'lucide-vue-next'
 import type { MessageLanguages } from '../../i18n'
-import { setDocumentDirection } from '../../i18n'
+import { useAppConfigStore } from '../../stores/appConfig'
 
 const { locale } = useI18n()
+const appConfig = useAppConfigStore()
 
 const languages: { code: MessageLanguages; label: string; nativeLabel: string }[] = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
@@ -13,19 +14,13 @@ const languages: { code: MessageLanguages; label: string; nativeLabel: string }[
 ]
 
 const currentLanguage = computed(() => {
-  return languages.find((lang) => lang.code === locale.value) ?? languages[0]
+  return languages.find((lang) => lang.code === appConfig.currentLanguage) ?? languages[0]
 })
 
 const isOpen = defineModel<boolean>({ default: false })
 
-const switchLanguage = (langCode: MessageLanguages) => {
-  locale.value = langCode
-  // Update document direction based on language
-  setDocumentDirection(langCode)
-}
-
 const handleLanguageSwitch = (langCode: MessageLanguages) => {
-  switchLanguage(langCode)
+  appConfig.switchLanguage(langCode)
   isOpen.value = false
 }
 </script>
@@ -61,7 +56,7 @@ const handleLanguageSwitch = (langCode: MessageLanguages) => {
           @click="handleLanguageSwitch(lang.code)"
           class="w-full text-start px-4 py-2 rounded-xl hover:bg-surface-base transition flex items-center justify-between gap-3 cursor-pointer"
           :class="{
-            'bg-surface-base font-bold': locale === lang.code,
+            'bg-surface-base font-bold': appConfig.currentLanguage === lang.code,
           }"
         >
           <span class="text-sm">{{ lang.nativeLabel }}</span>

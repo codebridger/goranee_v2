@@ -34,3 +34,4 @@ const i18n = createI18n<[typeof en, typeof fa], MessageLanguages>({
 setDocumentDirection(defaultLocale)
 
 export default i18n
+export { i18n }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Play,
@@ -14,7 +14,7 @@ import {
   Music,
 } from 'lucide-vue-next'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 import Typography from '../components/base/Typography.vue'
 import Button from '../components/base/Button.vue'
 import Input from '../components/base/Input.vue'
@@ -28,24 +28,11 @@ import Tag from '../components/base/Tag.vue'
 import IconButton from '../components/base/IconButton.vue'
 import SectionTitle from '../components/widget/SectionTitle.vue'
 import DevFloatingWidget from '../components/widget/DevFloatingWidget.vue'
-import { setDocumentDirection, type MessageLanguages } from '../i18n'
+import { useAppConfigStore } from '../stores/appConfig'
 
-const isDark = ref(false)
+const appConfig = useAppConfigStore()
 const isLoading = ref(false)
 const autoScroll = ref(true)
-
-// Watch locale changes and update document direction
-watch(
-  locale,
-  (newLocale) => {
-    setDocumentDirection(newLocale as MessageLanguages)
-  },
-  { immediate: true },
-)
-
-const toggleTheme = () => {
-  // Theme toggle is handled by DevFloatingWidget
-}
 
 // Chord sheet data
 const chordLines: ChordLine[] = [
@@ -60,11 +47,7 @@ const chordLines: ChordLine[] = [
     class="min-h-screen bg-surface-base text-text-primary transition-colors duration-500 font-sans p-8 pb-32 selection:bg-pink-500 selection:text-white"
   >
     <!-- Dev Mode Floating Widget -->
-    <DevFloatingWidget
-      v-model:is-dark="isDark"
-      v-model:is-loading="isLoading"
-      :on-theme-toggle="toggleTheme"
-    />
+    <DevFloatingWidget v-model:is-loading="isLoading" />
 
     <!-- HEADER -->
     <header class="max-w-7xl mx-auto mb-16 text-center pt-10">
@@ -90,7 +73,7 @@ const chordLines: ChordLine[] = [
           }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1">{{
             t('showcase.sections.colors.subtitle', {
-              mode: isDark
+              mode: appConfig.isDark
                 ? t('showcase.sections.colors.modes.darkMode')
                 : t('showcase.sections.colors.modes.lightMode'),
             })
@@ -106,7 +89,7 @@ const chordLines: ChordLine[] = [
                 {{ t('showcase.sections.colors.labels.canvasBackground') }}
               </p>
               <p class="text-xs font-mono text-text-secondary">
-                {{ isDark ? '#130a12' : '#FDF2F0' }}
+                {{ appConfig.isDark ? '#130a12' : '#FDF2F0' }}
               </p>
             </div>
           </div>
@@ -119,7 +102,7 @@ const chordLines: ChordLine[] = [
                 {{ t('showcase.sections.colors.labels.primaryText') }}
               </p>
               <p class="text-xs font-mono text-text-secondary">
-                {{ isDark ? '#eddeeb' : '#2A1B28' }}
+                {{ appConfig.isDark ? '#eddeeb' : '#2A1B28' }}
               </p>
             </div>
           </div>
@@ -132,7 +115,7 @@ const chordLines: ChordLine[] = [
                 {{ t('showcase.sections.colors.labels.cardSurface') }}
               </p>
               <p class="text-xs font-mono text-text-secondary">
-                {{ isDark ? '#1f121d' : '#FFFFFF' }}
+                {{ appConfig.isDark ? '#1f121d' : '#FFFFFF' }}
               </p>
             </div>
           </div>

@@ -1,27 +1,24 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Moon, Sun, Languages, ToggleLeft, ToggleRight, X, Settings } from 'lucide-vue-next'
 import LanguageSwitcher from './LanguageSwitcher.vue'
-import { isRtlLanguage, type MessageLanguages } from '../../i18n'
+import { useAppConfigStore } from '../../stores/appConfig'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const appConfig = useAppConfigStore()
 
 const props = withDefaults(
   defineProps<{
-    isDark?: boolean
     isLoading?: boolean
-    onThemeToggle?: () => void
     onLoadingToggle?: () => void
   }>(),
   {
-    isDark: false,
     isLoading: false,
   },
 )
 
 const emit = defineEmits<{
-  'update:isDark': [value: boolean]
   'update:isLoading': [value: boolean]
 }>()
 
@@ -29,21 +26,8 @@ const isExpanded = ref(false)
 const isLanguageMenuOpen = ref(false)
 const isDevMode = import.meta.env.DEV
 
-const currentDirection = computed(() => {
-  return isRtlLanguage(locale.value as MessageLanguages) ? 'RTL' : 'LTR'
-})
-
 const toggleTheme = () => {
-  const newValue = !props.isDark
-  emit('update:isDark', newValue)
-  if (newValue) {
-    document.documentElement.classList.add('dark')
-    document.documentElement.classList.remove('light')
-  } else {
-    document.documentElement.classList.remove('dark')
-    document.documentElement.classList.add('light')
-  }
-  props.onThemeToggle?.()
+  appConfig.toggleTheme()
 }
 
 const toggleLoading = () => {
@@ -85,10 +69,12 @@ const toggleLoading = () => {
             class="w-full px-4 py-2 rounded-xl hover:bg-surface-base transition flex items-center justify-between cursor-pointer"
           >
             <div class="flex items-center gap-2">
-              <component :is="isDark ? Sun : Moon" class="w-4 h-4" />
+              <component :is="appConfig.isDark ? Sun : Moon" class="w-4 h-4" />
               <span class="text-sm font-medium">
                 {{
-                  isDark ? t('home.themeToggle.switchToLight') : t('home.themeToggle.switchToDark')
+                  appConfig.isDark
+                    ? t('home.themeToggle.switchToLight')
+                    : t('home.themeToggle.switchToDark')
                 }}
               </span>
             </div>
@@ -117,7 +103,7 @@ const toggleLoading = () => {
               <Languages class="w-4 h-4 text-text-secondary" />
               <span class="text-xs text-text-secondary">Direction:</span>
             </div>
-            <span class="text-xs font-bold">{{ currentDirection }}</span>
+            <span class="text-xs font-bold">{{ appConfig.currentDirection }}</span>
           </div>
         </div>
       </div>

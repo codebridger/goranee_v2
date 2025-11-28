@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Play, ArrowRight } from 'lucide-vue-next'
 import Typography from '../components/base/Typography.vue'
@@ -12,25 +12,12 @@ import SkeletonCard from '../components/widget/SkeletonCard.vue'
 import CommunitySection from '../components/widget/CommunitySection.vue'
 import Footer from '../components/widget/Footer.vue'
 import DevFloatingWidget from '../components/widget/DevFloatingWidget.vue'
-import { setDocumentDirection, type MessageLanguages } from '../i18n'
+import { useAppConfigStore } from '../stores/appConfig'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const appConfig = useAppConfigStore()
 
-const isDark = ref(false)
 const isLoading = ref(false)
-
-// Watch locale changes and update document direction
-watch(
-  locale,
-  (newLocale) => {
-    setDocumentDirection(newLocale as MessageLanguages)
-  },
-  { immediate: true },
-)
-
-const toggleTheme = () => {
-  // Theme toggle is handled by DevFloatingWidget
-}
 
 const featuredSongs = [
   { title: 'Xam', artist: 'Zakaria', key: 'Cm', rhythm: 'Slow 6/8', img: 'purple' },
@@ -63,11 +50,7 @@ const activeTab = ref(t('home.discovery.tabs.all'))
     class="min-h-screen bg-surface-base text-text-primary transition-colors duration-300 font-sans relative"
   >
     <!-- Dev Mode Floating Widget -->
-    <DevFloatingWidget
-      v-model:is-dark="isDark"
-      v-model:is-loading="isLoading"
-      :on-theme-toggle="toggleTheme"
-    />
+    <DevFloatingWidget v-model:is-loading="isLoading" />
 
     <Navbar
       :logo="t('navbar.logo')"
