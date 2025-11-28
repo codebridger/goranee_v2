@@ -9,7 +9,7 @@ import Button from './Button.vue';
 		class="relative px-6 py-12 md:py-20 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 overflow-hidden">
 		<div class="flex-1 space-y-6 z-10">
 			<div
-				class="inline-block px-4 py-1 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 text-xs font-bold tracking-wide uppercase mb-2 animate-fade-in-up">
+				class="inline-block px-4 py-1 rounded-full bg-text-accent/10 dark:bg-text-accent/20 text-text-accent dark:text-text-accent/90 text-xs font-bold tracking-wide uppercase mb-2 animate-fade-in-up">
 				The #1 Kurdish Chords Platform
 			</div>
 			<Typography variant="h1" class="leading-tight">
@@ -35,13 +35,13 @@ import Button from './Button.vue';
 		<div class="flex-1 relative w-full h-80 md:h-[500px] flex items-center justify-center">
 			<!-- Background Glow -->
 			<div
-				class="absolute inset-0 bg-gradient-to-tr from-pink-200 to-purple-200 dark:from-pink-900/20 dark:to-purple-900/20 rounded-full blur-3xl opacity-50 animate-pulse">
+				class="absolute inset-0 bg-gradient-to-tr from-text-accent/20 to-purple-200 dark:from-text-accent/20 dark:to-purple-900/20 rounded-full blur-3xl opacity-50 animate-pulse">
 			</div>
 
 			<!-- Artist Cutout Representation -->
 			<div class="relative z-10 w-full max-w-md h-full flex items-end justify-center">
 				<div
-					class="w-64 h-80 md:w-80 md:h-96 bg-gray-900 rounded-t-[10rem] rounded-b-[3rem] shadow-2xl relative overflow-hidden border-b-8 border-pink-500">
+					class="w-64 h-80 md:w-80 md:h-96 bg-gray-900 rounded-t-[10rem] rounded-b-[3rem] shadow-2xl relative overflow-hidden border-b-8 border-text-accent">
 					<div class="absolute inset-0 bg-gradient-to-b from-gray-700 to-gray-900"></div>
 					<!-- Simulated Image -->
 					<div
@@ -49,15 +49,15 @@ import Button from './Button.vue';
 						ARTIST
 					</div>
 					<div
-						class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white pt-20">
-						<p class="text-xs text-pink-300 font-bold uppercase tracking-wider mb-1">Featured Artist</p>
+						class="absolute bottom-0 start-0 end-0 p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white pt-20">
+						<p class="text-xs text-text-accent/80 font-bold uppercase tracking-wider mb-1">Featured Artist</p>
 						<h3 class="text-3xl font-bold">Zakaria</h3>
 					</div>
 				</div>
 			</div>
 
 			<!-- Floating 'Now Playing' Card -->
-			<div class="absolute bottom-10 -left-4 md:left-0 bg-surface-glass backdrop-blur-md p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce border border-white/50 dark:border-white/10"
+			<div class="absolute bottom-10 -start-4 md:start-0 bg-surface-glass backdrop-blur-md p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce border border-white/50 dark:border-white/10"
 				style="animation-duration: 3s">
 				<div
 					class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 shadow-inner">

@@ -42,7 +42,7 @@ const imageStyle = computed(() => {
 				class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 backdrop-blur-sm">
 				<div
 					class="w-14 h-14 rounded-full bg-grad-primary flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition duration-300">
-					<Play class="w-6 h-6 text-white fill-current ml-1" />
+					<Play class="w-6 h-6 text-white fill-current ms-1" />
 				</div>
 			</div>
 		</div>
@@ -61,7 +61,7 @@ const imageStyle = computed(() => {
 					{{ musicalKey }}
 				</div>
 				<div v-if="tempo"
-					class="bg-pink-500/10 px-2 py-0.5 rounded-md text-[10px] font-bold text-pink-500 border border-pink-500/20">
+					class="bg-text-accent/10 px-2 py-0.5 rounded-md text-[10px] font-bold text-text-accent border border-text-accent/20">
 					{{ tempo }}
 				</div>
 			</div>

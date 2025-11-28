@@ -13,7 +13,7 @@ const classes = computed(() => {
 
 	const variants = {
 		neutral: 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/5',
-		accent: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+		accent: 'bg-text-accent/10 text-text-accent border-text-accent/20',
 	};
 
 	const sizes = {

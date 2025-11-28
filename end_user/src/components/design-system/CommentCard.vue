@@ -31,7 +31,7 @@ const avatarStyle = computed(() => {
 				<span class="text-xs text-text-secondary">{{ timestamp }}</span>
 			</div>
 			<div
-				class="p-3 rounded-tr-2xl rounded-br-2xl rounded-bl-2xl text-sm leading-snug border bg-surface-base border-border-subtle text-text-secondary">
+				class="p-3 rounded-te-2xl rounded-be-2xl rounded-bs-2xl text-sm leading-snug border bg-surface-base border-border-subtle text-text-secondary">
 				{{ comment }}
 			</div>
 		</div>

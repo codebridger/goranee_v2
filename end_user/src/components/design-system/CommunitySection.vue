@@ -51,7 +51,7 @@ const displayActivities = props.activities || defaultActivities;
 		<div
 			class="bg-surface-card rounded-[2rem] p-8 shadow-lg border border-border-subtle relative overflow-hidden group hover:shadow-2xl transition duration-500">
 			<div
-				class="absolute top-0 right-0 w-32 h-32 bg-pink-100 dark:bg-pink-900/20 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-pink-200 dark:group-hover:bg-pink-900/30 transition">
+				class="absolute top-0 end-0 w-32 h-32 bg-text-accent/10 dark:bg-text-accent/20 rounded-full -me-10 -mt-10 blur-2xl group-hover:bg-text-accent/20 dark:group-hover:bg-text-accent/30 transition">
 			</div>
 			<Typography variant="h3" class="mb-6 flex items-center gap-2">
 				<div class="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-600 dark:text-green-400">
@@ -72,7 +72,7 @@ const displayActivities = props.activities || defaultActivities;
 								}}</span>
 						</p>
 						<div
-							class="bg-surface-base p-2 rounded-tr-xl rounded-br-xl rounded-bl-xl mt-1 text-xs text-text-secondary italic border border-border-subtle">
+							class="bg-surface-base p-2 rounded-te-xl rounded-be-xl rounded-bs-xl mt-1 text-xs text-text-secondary italic border border-border-subtle">
 							"{{ activity.comment }}"
 						</div>
 					</div>
@@ -85,21 +85,21 @@ const displayActivities = props.activities || defaultActivities;
 			class="rounded-[2rem] p-8 md:p-12 text-white relative overflow-hidden flex flex-col justify-center bg-grad-primary shadow-2xl shadow-pink-500/20">
 			<div class="relative z-10">
 				<h3 class="text-3xl font-black mb-4">{{ ctaTitle }}</h3>
-				<p class="text-pink-100 mb-8 max-w-sm leading-relaxed">
+				<p class="text-white/80 mb-8 max-w-sm leading-relaxed">
 					{{ ctaDescription }}
 					<span class="block mt-2 font-bold text-white">Join 15,000+ members today.</span>
 				</p>
 				<button
-					class="bg-white text-pink-600 px-8 py-4 rounded-full font-bold hover:bg-pink-50 transition shadow-lg flex items-center gap-2 group">
+					class="bg-white text-text-accent px-8 py-4 rounded-full font-bold hover:bg-text-accent/10 transition shadow-lg flex items-center gap-2 group">
 					{{ ctaButtonText }}
 					<ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" />
 				</button>
 			</div>
 			<!-- Decorative circles -->
 			<div
-				class="absolute top-1/2 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-sm animate-pulse">
+				class="absolute top-1/2 end-0 w-64 h-64 bg-white/10 rounded-full -me-16 -mt-16 blur-sm animate-pulse">
 			</div>
-			<div class="absolute bottom-0 right-20 w-32 h-32 bg-purple-500/30 rounded-full blur-xl"></div>
+			<div class="absolute bottom-0 end-20 w-32 h-32 bg-purple-500/30 rounded-full blur-xl"></div>
 		</div>
 	</section>
 </template>

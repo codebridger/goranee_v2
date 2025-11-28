@@ -21,7 +21,7 @@ const theme = {
 				</p>
 			</div>
 			<div>
-				<h5 class="font-bold mb-4 text-pink-400 uppercase text-xs tracking-wider">Discover</h5>
+				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">Discover</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
 					<li class="hover:text-white cursor-pointer transition">New Arrivals</li>
 					<li class="hover:text-white cursor-pointer transition">Trending Charts</li>
@@ -30,7 +30,7 @@ const theme = {
 				</ul>
 			</div>
 			<div>
-				<h5 class="font-bold mb-4 text-pink-400 uppercase text-xs tracking-wider">Community</h5>
+				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">Community</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
 					<li class="hover:text-white cursor-pointer transition">Sign Up / Login</li>
 					<li class="hover:text-white cursor-pointer transition">Submit a Chord</li>
@@ -39,7 +39,7 @@ const theme = {
 				</ul>
 			</div>
 			<div>
-				<h5 class="font-bold mb-4 text-pink-400 uppercase text-xs tracking-wider">Legal</h5>
+				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">Legal</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
 					<li class="hover:text-white cursor-pointer transition">Privacy Policy</li>
 					<li class="hover:text-white cursor-pointer transition">Terms of Service</li>

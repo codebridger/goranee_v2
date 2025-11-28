@@ -45,6 +45,6 @@ const avatarStyle = computed(() => {
 
 		<!-- Artist Info -->
 		<h3 class="font-bold text-xl text-text-primary mb-1">{{ name }}</h3>
-		<p class="text-sm text-pink-500 font-bold">{{ songCount }} Songs</p>
+		<p class="text-sm text-text-accent font-bold">{{ songCount }} Songs</p>
 	</div>
 </template>
