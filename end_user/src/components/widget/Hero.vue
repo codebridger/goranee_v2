@@ -2,6 +2,35 @@
 import { Music, Play } from 'lucide-vue-next';
 import Typography from '../base/Typography.vue';
 import Button from '../base/Button.vue';
+
+const props = withDefaults(
+  defineProps<{
+    badge?: string
+    title?: string
+    titleHighlight?: string
+    titleLine2?: string
+    description?: string
+    startPlayingText?: string
+    submitChordText?: string
+    featuredArtistLabel?: string
+    featuredArtistName?: string
+    trendingNowLabel?: string
+    trendingSongTitle?: string
+  }>(),
+  {
+    badge: 'The #1 Kurdish Chords Platform',
+    title: 'Play the',
+    titleHighlight: 'Melody',
+    titleLine2: 'Feel the Rhythm.',
+    description: 'Access thousands of chords, lyrics, and authentic Kurdish rhythms. Join the community of musicians today.',
+    startPlayingText: 'Start Playing',
+    submitChordText: 'Submit Chord',
+    featuredArtistLabel: 'Featured Artist',
+    featuredArtistName: 'Zakaria',
+    trendingNowLabel: 'Trending Now',
+    trendingSongTitle: 'Bo Kurdistan',
+  },
+)
 </script>
 
 <template>
@@ -10,23 +39,22 @@ import Button from '../base/Button.vue';
 		<div class="flex-1 space-y-6 z-10">
 			<div
 				class="inline-block px-4 py-1 rounded-full bg-text-accent/10 dark:bg-text-accent/20 text-text-accent dark:text-text-accent/90 text-xs font-bold tracking-wide uppercase mb-2 animate-fade-in-up">
-				The #1 Kurdish Chords Platform
+				{{ badge }}
 			</div>
 			<Typography variant="h1" class="leading-tight">
-				Play the <span class="text-transparent bg-clip-text bg-grad-primary">Melody</span> <br />
-				Feel the Rhythm.
+				{{ title }} <span class="text-transparent bg-clip-text bg-grad-primary">{{ titleHighlight }}</span> <br />
+				{{ titleLine2 }}
 			</Typography>
 			<Typography variant="body" class="text-text-secondary max-w-md">
-				Access thousands of chords, lyrics, and authentic Kurdish rhythms. Join the community of musicians
-				today.
+				{{ description }}
 			</Typography>
 			<div class="flex gap-4 pt-4">
 				<Button variant="primary" size="lg" class="flex items-center gap-2 hover:scale-105 transition">
-					<Music class="w-5 h-5" /> Start Playing
+					<Music class="w-5 h-5" /> {{ startPlayingText }}
 				</Button>
 				<Button variant="secondary" size="lg"
 					class="shadow-md border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-sm">
-					Submit Chord
+					{{ submitChordText }}
 				</Button>
 			</div>
 		</div>
@@ -50,8 +78,8 @@ import Button from '../base/Button.vue';
 					</div>
 					<div
 						class="absolute bottom-0 start-0 end-0 p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white pt-20">
-						<p class="text-xs text-text-accent/80 font-bold uppercase tracking-wider mb-1">Featured Artist</p>
-						<h3 class="text-3xl font-bold">Zakaria</h3>
+						<p class="text-xs text-text-accent/80 font-bold uppercase tracking-wider mb-1">{{ featuredArtistLabel }}</p>
+						<h3 class="text-3xl font-bold">{{ featuredArtistName }}</h3>
 					</div>
 				</div>
 			</div>
@@ -64,8 +92,8 @@ import Button from '../base/Button.vue';
 					<Play class="w-5 h-5 fill-current" />
 				</div>
 				<div>
-					<p class="text-[10px] text-text-secondary font-bold uppercase tracking-wide">Trending Now</p>
-					<p class="text-sm font-bold text-text-primary">Bo Kurdistan</p>
+					<p class="text-[10px] text-text-secondary font-bold uppercase tracking-wide">{{ trendingNowLabel }}</p>
+					<p class="text-sm font-bold text-text-primary">{{ trendingSongTitle }}</p>
 				</div>
 			</div>
 		</div>

@@ -9,17 +9,23 @@ export interface NavLink {
   to: string
 }
 
-const props = defineProps<{
-  links?: NavLink[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    logo?: string
+    searchPlaceholder?: string
+    links?: NavLink[]
+    loginText?: string
+    exploreText?: string
+  }>(),
+  {
+    logo: 'Goranee',
+    searchPlaceholder: 'Search for songs, artists...',
+    loginText: 'Log In',
+    exploreText: 'Explore',
+  },
+)
 
-const defaultLinks: NavLink[] = [
-  { label: 'Discovery', to: '/discovery' },
-  { label: 'Artists', to: '/artists' },
-  { label: 'Community', to: '/community' },
-]
-
-const navLinks = props.links || defaultLinks
+const navLinks = props.links || []
 const isMenuOpen = ref(false)
 </script>
 
@@ -34,12 +40,12 @@ const isMenuOpen = ref(false)
       >
         G
       </div>
-      <span class="text-2xl font-black tracking-tighter text-text-primary">Goranee</span>
+      <span class="text-2xl font-black tracking-tighter text-text-primary">{{ logo }}</span>
     </div>
 
     <!-- Search (Desktop) -->
     <div class="hidden md:block w-96">
-      <Input placeholder="Search for songs, artists..." :icon="Search" />
+      <Input :placeholder="searchPlaceholder" :icon="Search" />
     </div>
 
     <!-- Navigation Links (Desktop) -->
@@ -59,9 +65,9 @@ const isMenuOpen = ref(false)
       <button
         class="hidden md:block text-sm font-semibold text-text-primary hover:text-text-accent transition cursor-pointer"
       >
-        Log In
+        {{ loginText }}
       </button>
-      <Button variant="primary" size="sm">Explore</Button>
+      <Button variant="primary" size="sm">{{ exploreText }}</Button>
       <button class="md:hidden text-text-primary cursor-pointer" @click="isMenuOpen = !isMenuOpen">
         <Menu class="w-6 h-6" />
       </button>

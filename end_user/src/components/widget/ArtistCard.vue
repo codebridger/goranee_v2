@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps<{
-	name: string;
-	songCount: number;
-	avatarUrl?: string;
-	gradientBorder?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    name: string
+    songCount: number
+    avatarUrl?: string
+    gradientBorder?: string
+    songsLabel?: string
+  }>(),
+  {
+    songsLabel: 'Songs',
+  },
+);
 
 const emit = defineEmits<{
 	(e: 'click'): void;
@@ -45,6 +51,6 @@ const avatarStyle = computed(() => {
 
 		<!-- Artist Info -->
 		<h3 class="font-bold text-xl text-text-primary mb-1">{{ name }}</h3>
-		<p class="text-sm text-text-accent font-bold">{{ songCount }} Songs</p>
+		<p class="text-sm text-text-accent font-bold">{{ songCount }} {{ songsLabel }}</p>
 	</div>
 </template>

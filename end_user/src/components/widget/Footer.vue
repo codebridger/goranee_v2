@@ -1,9 +1,58 @@
 <script setup lang="ts">
 import { Share2, Mic } from 'lucide-vue-next';
 
-const theme = {
-	primaryGradient: 'bg-grad-primary',
-};
+const props = withDefaults(
+  defineProps<{
+    description?: string
+    discoverTitle?: string
+    discoverLinks?: {
+      newArrivals?: string
+      trendingCharts?: string
+      featuredArtists?: string
+      songRequests?: string
+    }
+    communityTitle?: string
+    communityLinks?: {
+      signUpLogin?: string
+      submitChord?: string
+      topContributors?: string
+      discordServer?: string
+    }
+    legalTitle?: string
+    legalLinks?: {
+      privacyPolicy?: string
+      termsOfService?: string
+      dmcaGuidelines?: string
+    }
+    copyright?: string
+    designSystem?: string
+  }>(),
+  {
+    description: 'The ultimate platform for Kurdish music chords, lyrics, and community connections.',
+    discoverTitle: 'Discover',
+    discoverLinks: () => ({
+      newArrivals: 'New Arrivals',
+      trendingCharts: 'Trending Charts',
+      featuredArtists: 'Featured Artists',
+      songRequests: 'Song Requests',
+    }),
+    communityTitle: 'Community',
+    communityLinks: () => ({
+      signUpLogin: 'Sign Up / Login',
+      submitChord: 'Submit Chord',
+      topContributors: 'Top Contributors',
+      discordServer: 'Discord Server',
+    }),
+    legalTitle: 'Legal',
+    legalLinks: () => ({
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service',
+      dmcaGuidelines: 'DMCA Guidelines',
+    }),
+    copyright: '© 2025 Goranee.ir. All rights reserved.',
+    designSystem: 'Design System: NeoBeat v1.1',
+  },
+)
 </script>
 
 <template>
@@ -17,39 +66,39 @@ const theme = {
 					<h4 class="font-black text-2xl tracking-tighter">Goranee</h4>
 				</div>
 				<p class="text-gray-400 text-sm leading-relaxed">
-					The ultimate platform for Kurdish music chords, lyrics, and community connections.
+					{{ description }}
 				</p>
 			</div>
 			<div>
-				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">Discover</h5>
+				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">{{ discoverTitle }}</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
-					<li class="hover:text-white cursor-pointer transition">New Arrivals</li>
-					<li class="hover:text-white cursor-pointer transition">Trending Charts</li>
-					<li class="hover:text-white cursor-pointer transition">Featured Artists</li>
-					<li class="hover:text-white cursor-pointer transition">Song Requests</li>
+					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.newArrivals }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.trendingCharts }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.featuredArtists }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.songRequests }}</li>
 				</ul>
 			</div>
 			<div>
-				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">Community</h5>
+				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">{{ communityTitle }}</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
-					<li class="hover:text-white cursor-pointer transition">Sign Up / Login</li>
-					<li class="hover:text-white cursor-pointer transition">Submit a Chord</li>
-					<li class="hover:text-white cursor-pointer transition">Top Contributors</li>
-					<li class="hover:text-white cursor-pointer transition">Discord Server</li>
+					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.signUpLogin }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.submitChord }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.topContributors }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.discordServer }}</li>
 				</ul>
 			</div>
 			<div>
-				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">Legal</h5>
+				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">{{ legalTitle }}</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
-					<li class="hover:text-white cursor-pointer transition">Privacy Policy</li>
-					<li class="hover:text-white cursor-pointer transition">Terms of Service</li>
-					<li class="hover:text-white cursor-pointer transition">DMCA Guidelines</li>
+					<li class="hover:text-white cursor-pointer transition">{{ legalLinks.privacyPolicy }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ legalLinks.termsOfService }}</li>
+					<li class="hover:text-white cursor-pointer transition">{{ legalLinks.dmcaGuidelines }}</li>
 				</ul>
 			</div>
 		</div>
 		<div
 			class="text-center text-gray-600 text-xs border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-			<span>© 2025 Goranee.ir. All rights reserved.</span>
+			<span>{{ copyright }}</span>
 			<div class="flex gap-4">
 				<div
 					class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition">
@@ -60,7 +109,7 @@ const theme = {
 					<Mic class="w-4 h-4" />
 				</div>
 			</div>
-			<span class="md:mt-0">Design System: <span class="text-gray-500">NeoBeat v1.1</span></span>
+			<span class="md:mt-0">{{ designSystem }}</span>
 		</div>
 	</footer>
 </template>

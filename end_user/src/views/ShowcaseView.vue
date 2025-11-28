@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Play,
   Heart,
@@ -12,6 +13,8 @@ import {
   Mic,
   Music,
 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 import Typography from '../components/base/Typography.vue'
 import Button from '../components/base/Button.vue'
 import Input from '../components/base/Input.vue'
@@ -64,7 +67,7 @@ const chordLines: ChordLine[] = [
         class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary cursor-pointer"
       >
         <component :is="isDark ? Sun : Moon" class="w-5 h-5" />
-        {{ isDark ? 'Switch to Light' : 'Switch to Dark' }}
+        {{ isDark ? t('showcase.themeToggle.switchToLight') : t('showcase.themeToggle.switchToDark') }}
       </button>
       <button
         @click="toggleDirection"
@@ -81,9 +84,9 @@ const chordLines: ChordLine[] = [
       >
         G
       </div>
-      <Typography variant="h1" class="mb-4">NeoBeat UI Kit</Typography>
+      <Typography variant="h1" class="mb-4">{{ t('showcase.title') }}</Typography>
       <Typography variant="body" class="text-text-secondary text-xl"
-        >Design System for Goranee.ir</Typography
+        >{{ t('showcase.subtitle') }}</Typography
       >
     </header>
 
@@ -93,9 +96,9 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight">01. Color Palette</Typography>
+          <Typography variant="h2" class="font-bold tracking-tight">{{ t('showcase.sections.colors.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
-            >Adaptive palette: {{ isDark ? 'Dark Mode Active' : 'Light Mode' }}</Typography
+            >{{ t('showcase.sections.colors.subtitle', { mode: isDark ? t('showcase.sections.colors.modes.darkMode') : t('showcase.sections.colors.modes.lightMode') }) }}</Typography
           >
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -104,7 +107,7 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-surface-base"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">Canvas Background</p>
+              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.canvasBackground') }}</p>
               <p class="text-xs font-mono text-text-secondary">
                 {{ isDark ? '#130a12' : '#FDF2F0' }}
               </p>
@@ -115,7 +118,7 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-text-primary"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">Primary Text</p>
+              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.primaryText') }}</p>
               <p class="text-xs font-mono text-text-secondary">
                 {{ isDark ? '#eddeeb' : '#2A1B28' }}
               </p>
@@ -126,7 +129,7 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-surface-card"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">Card Surface</p>
+              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.cardSurface') }}</p>
               <p class="text-xs font-mono text-text-secondary">
                 {{ isDark ? '#1f121d' : '#FFFFFF' }}
               </p>
@@ -137,7 +140,7 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-grad-primary"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">Electric Gradient</p>
+              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.electricGradient') }}</p>
               <p class="text-xs font-mono text-text-secondary">#FF2E93 -> #8E2DE2</p>
             </div>
           </div>
@@ -149,9 +152,9 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight">02. Typography</Typography>
+          <Typography variant="h2" class="font-bold tracking-tight">{{ t('showcase.sections.typography.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
-            >Headings in Sans-Serif, Chords in Monospace.</Typography
+            >{{ t('showcase.sections.typography.subtitle') }}</Typography
           >
         </div>
         <div
@@ -159,18 +162,17 @@ const chordLines: ChordLine[] = [
         >
           <div class="space-y-6">
             <div>
-              <span class="text-xs text-text-secondary font-mono uppercase">Display H1</span>
+              <span class="text-xs text-text-secondary font-mono uppercase">{{ t('showcase.sections.typography.displayH1') }}</span>
               <Typography variant="h1">Play the Melody</Typography>
             </div>
             <div>
-              <span class="text-xs text-text-secondary font-mono uppercase">Heading H2</span>
+              <span class="text-xs text-text-secondary font-mono uppercase">{{ t('showcase.sections.typography.headingH2') }}</span>
               <Typography variant="h2">Featured Artists</Typography>
             </div>
             <div>
-              <span class="text-xs text-text-secondary font-mono uppercase">Body Text</span>
+              <span class="text-xs text-text-secondary font-mono uppercase">{{ t('showcase.sections.typography.bodyText') }}</span>
               <Typography variant="body" class="text-text-secondary">
-                Goranee is a community-driven platform. Access thousands of Kurdish chords, lyrics,
-                and rhythms. Join us to share your musical knowledge.
+                {{ t('showcase.sections.typography.sampleText') }}
               </Typography>
             </div>
           </div>
@@ -178,7 +180,7 @@ const chordLines: ChordLine[] = [
           <!-- CHORD PREVIEW -->
           <div class="rounded-2xl p-6 border bg-surface-base dark:border-white/5 border-pink-100">
             <span class="text-xs text-pink-500 font-bold uppercase mb-4 block"
-              >Chord Sheet Preview</span
+              >{{ t('showcase.sections.typography.chordSheetPreview') }}</span
             >
             <div class="font-mono text-lg space-y-4">
               <div>
@@ -204,10 +206,10 @@ const chordLines: ChordLine[] = [
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
           <Typography variant="h2" class="font-bold tracking-tight"
-            >03. Buttons & Interactions</Typography
+            >{{ t('showcase.sections.buttons.title') }}</Typography
           >
           <Typography variant="body" class="text-text-secondary mt-1"
-            >Gradient primaries, ghost secondaries.
+            >{{ t('showcase.sections.buttons.subtitle') }}
           </Typography>
         </div>
         <div
@@ -215,12 +217,12 @@ const chordLines: ChordLine[] = [
         >
           <!-- Row 1: Main Buttons -->
           <div class="flex flex-wrap items-center gap-6">
-            <Button variant="primary">Primary Action</Button>
-            <Button variant="secondary">Secondary Action</Button>
+            <Button variant="primary">{{ t('showcase.sections.buttons.primaryAction') }}</Button>
+            <Button variant="secondary">{{ t('showcase.sections.buttons.secondaryAction') }}</Button>
             <button
               class="text-pink-600 font-bold hover:underline flex items-center gap-2 cursor-pointer"
             >
-              Text Link
+              {{ t('showcase.sections.buttons.textLink') }}
               <ArrowRight class="w-4 h-4 rtl:rotate-180" />
             </button>
           </div>
@@ -241,11 +243,11 @@ const chordLines: ChordLine[] = [
             <!-- Tags/Chips -->
             <span
               class="px-3 py-1 rounded-md text-xs font-bold border dark:bg-white/10 dark:border-white/5 dark:text-gray-300 bg-gray-100 border-gray-200 text-gray-600"
-              >Key: Am</span
+              >{{ t('showcase.sections.tags.key') }}</span
             >
             <span
               class="px-3 py-1 rounded-md bg-pink-500/10 text-xs font-bold text-pink-500 border border-pink-500/20"
-              >Rhythm: 7/8</span
+              >{{ t('showcase.sections.tags.rhythm') }}</span
             >
           </div>
 
@@ -263,7 +265,7 @@ const chordLines: ChordLine[] = [
 
       <!-- 4. CARDS -->
       <section>
-        <SectionTitle title="04. Component: Cards" subtitle="Reusable containers for content." />
+        <SectionTitle :title="t('showcase.sections.cards.title')" :subtitle="t('showcase.sections.cards.subtitle')" />
         <div class="grid md:grid-cols-3 gap-8">
           <!-- NEW: SongCard Component -->
           <SongCard
@@ -295,8 +297,8 @@ const chordLines: ChordLine[] = [
       <!-- 4.5 TAGS & ICON BUTTONS -->
       <section>
         <SectionTitle
-          title="04.5 Tags & Icon Buttons"
-          subtitle="Small UI elements for metadata and actions."
+          :title="t('showcase.sections.tags.title')"
+          :subtitle="t('showcase.sections.tags.subtitle')"
         />
         <div
           class="bg-surface-card rounded-3xl p-8 shadow-sm border dark:border-white/10 border-pink-50 space-y-8"
@@ -304,26 +306,26 @@ const chordLines: ChordLine[] = [
           <!-- Tags -->
           <div>
             <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">
-              Tags / Chips
+              {{ t('showcase.sections.tags.tagsChips') }}
             </h3>
             <div class="flex flex-wrap items-center gap-3">
-              <Tag label="Key: Am" variant="neutral" />
-              <Tag label="Rhythm: 7/8" variant="accent" />
-              <Tag label="Slow" variant="accent" size="sm" />
-              <Tag label="Popular" variant="neutral" :icon="Music" />
+              <Tag :label="t('showcase.sections.tags.key')" variant="neutral" />
+              <Tag :label="t('showcase.sections.tags.rhythm')" variant="accent" />
+              <Tag :label="t('showcase.sections.tags.slow')" variant="accent" size="sm" />
+              <Tag :label="t('showcase.sections.tags.popular')" variant="neutral" :icon="Music" />
             </div>
           </div>
 
           <!-- Icon Buttons -->
           <div>
             <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">
-              Icon Buttons
+              {{ t('showcase.sections.tags.iconButtons') }}
             </h3>
             <div class="flex flex-wrap items-center gap-4">
-              <IconButton :icon="Play" variant="primary" ariaLabel="Play song" />
-              <IconButton :icon="Heart" variant="secondary" ariaLabel="Like song" />
-              <IconButton :icon="Share2" variant="secondary" size="sm" ariaLabel="Share" />
-              <IconButton :icon="Settings" variant="primary" size="lg" ariaLabel="Settings" />
+              <IconButton :icon="Play" variant="primary" :ariaLabel="t('showcase.ariaLabels.playSong')" />
+              <IconButton :icon="Heart" variant="secondary" :ariaLabel="t('showcase.ariaLabels.likeSong')" />
+              <IconButton :icon="Share2" variant="secondary" size="sm" :ariaLabel="t('showcase.ariaLabels.share')" />
+              <IconButton :icon="Settings" variant="primary" size="lg" :ariaLabel="t('showcase.ariaLabels.settings')" />
             </div>
           </div>
         </div>
@@ -332,8 +334,8 @@ const chordLines: ChordLine[] = [
       <!-- 4.6 CHORD SHEET -->
       <section>
         <SectionTitle
-          title="04.6 Chord Sheet"
-          subtitle="Display chords inline with lyrics."
+          :title="t('showcase.sections.chordSheet.title')"
+          :subtitle="t('showcase.sections.chordSheet.subtitle')"
           :icon="Music"
         />
         <ChordSheet :lines="chordLines" />
@@ -344,9 +346,9 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight">05. Navigation</Typography>
+          <Typography variant="h2" class="font-bold tracking-tight">{{ t('showcase.sections.navigation.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
-            >Sticky 'Glassmorphism' Header.
+            >{{ t('showcase.sections.navigation.subtitle') }}
           </Typography>
         </div>
         <div
@@ -368,13 +370,13 @@ const chordLines: ChordLine[] = [
               <span class="text-xl font-black text-white">Goranee</span>
             </div>
             <div class="hidden md:flex gap-6 text-sm font-bold text-gray-200">
-              <a href="#" class="hover:text-pink-500">Discovery</a>
-              <a href="#" class="hover:text-pink-500">Artists</a>
-              <a href="#" class="hover:text-pink-500">Community</a>
+              <a href="#" class="hover:text-pink-500">{{ t('navbar.links.discovery') }}</a>
+              <a href="#" class="hover:text-pink-500">{{ t('navbar.links.artists') }}</a>
+              <a href="#" class="hover:text-pink-500">{{ t('navbar.links.community') }}</a>
             </div>
             <div class="flex items-center gap-3">
-              <button class="text-sm font-bold text-white cursor-pointer">Login</button>
-              <Button variant="primary" size="sm">Explore</Button>
+              <button class="text-sm font-bold text-white cursor-pointer">{{ t('navbar.login') }}</button>
+              <Button variant="primary" size="sm">{{ t('navbar.explore') }}</Button>
             </div>
           </nav>
         </div>
@@ -386,16 +388,16 @@ const chordLines: ChordLine[] = [
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
           <Typography variant="h2" class="font-bold tracking-tight"
-            >06. The Musician's Toolbox</Typography
+            >{{ t('showcase.sections.toolbox.title') }}</Typography
           >
           <Typography variant="body" class="text-text-secondary mt-1"
-            >Sticky controls for the Chord View page.
+            >{{ t('showcase.sections.toolbox.subtitle') }}
           </Typography>
         </div>
         <div
           class="h-64 rounded-3xl relative overflow-hidden border border-border-subtle flex items-center justify-center bg-surface-base"
         >
-          <p class="text-text-secondary font-bold">Page Content Area...</p>
+          <p class="text-text-secondary font-bold">{{ t('showcase.sections.toolbox.pageContent') }}</p>
 
           <!-- THE COMPONENT: Floating Bar -->
           <div class="absolute bottom-6 start-1/2 -translate-x-1/2">
@@ -410,10 +412,10 @@ const chordLines: ChordLine[] = [
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
           <Typography variant="h2" class="font-bold tracking-tight"
-            >07. Marketing Blocks</Typography
+            >{{ t('showcase.sections.marketing.title') }}</Typography
           >
           <Typography variant="body" class="text-text-secondary mt-1"
-            >Call to Action & Footer.</Typography
+            >{{ t('showcase.sections.marketing.subtitle') }}</Typography
           >
         </div>
 
@@ -422,15 +424,15 @@ const chordLines: ChordLine[] = [
           class="rounded-[2rem] p-12 text-white relative overflow-hidden flex flex-col items-center text-center bg-grad-primary shadow-xl mb-12"
         >
           <div class="relative z-10 max-w-2xl">
-            <h3 class="text-3xl font-black mb-4">Ready to play?</h3>
+            <h3 class="text-3xl font-black mb-4">{{ t('showcase.sections.marketing.cta.title') }}</h3>
             <p class="text-pink-100 mb-8 text-lg">
-              Join 15,000+ Kurdish musicians sharing chords and lyrics every day.
+              {{ t('showcase.sections.marketing.cta.description') }}
             </p>
             <Button
               variant="secondary"
               class="bg-white text-pink-600 border-transparent hover:bg-pink-50"
             >
-              Create Free Account
+              {{ t('showcase.sections.marketing.cta.button') }}
               <ArrowRight class="w-4 h-4 ms-2 rtl:rotate-180" />
             </Button>
           </div>
@@ -453,9 +455,9 @@ const chordLines: ChordLine[] = [
             >
               G
             </div>
-            <span class="font-bold tracking-tight">Goranee</span>
+            <span class="font-bold tracking-tight">{{ t('navbar.logo') }}</span>
           </div>
-          <div class="text-xs opacity-60">© 2025 Goranee.ir. All rights reserved.</div>
+          <div class="text-xs opacity-60">{{ t('footer.copyright') }}</div>
           <div class="flex gap-4">
             <div
               class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition"

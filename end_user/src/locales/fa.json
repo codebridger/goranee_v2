@@ -1,0 +1,179 @@
+{
+  "navbar": {
+    "logo": "گورانی",
+    "searchPlaceholder": "جستجوی آهنگ، هنرمند...",
+    "links": {
+      "discovery": "کشف",
+      "artists": "هنرمندان",
+      "community": "جامعه"
+    },
+    "login": "ورود",
+    "explore": "کاوش"
+  },
+  "hero": {
+    "badge": "پلتفرم شماره یک آکوردهای کردی",
+    "title": "ملودی را",
+    "titleHighlight": "بزن",
+    "titleLine2": "ریتم را احساس کن.",
+    "description": "دسترسی به هزاران آکورد، متن آهنگ و ریتم‌های اصیل کردی. امروز به جامعه موزیسین‌ها بپیوندید.",
+    "startPlaying": "شروع به پخش",
+    "submitChord": "ارسال آکورد",
+    "featuredArtist": "هنرمند ویژه",
+    "trendingNow": "در حال ترند"
+  },
+  "home": {
+    "loadingToggle": {
+      "viewContent": "مشاهده محتوا",
+      "previewLoading": "پیش‌نمایش حالت بارگذاری"
+    },
+    "themeToggle": {
+      "switchToLight": "تغییر به روشن",
+      "switchToDark": "تغییر به تاریک"
+    },
+    "discovery": {
+      "title": "کشف",
+      "subtitle": "آکوردهای تازه اضافه شده این هفته",
+      "tabs": {
+        "all": "همه",
+        "pop": "پاپ",
+        "folklore": "فولکلور",
+        "slow": "آهسته",
+        "halparke": "هالپارکه"
+      }
+    },
+    "artists": {
+      "title": "هنرمندان ویژه",
+      "viewAll": "مشاهده همه",
+      "songs": "آهنگ"
+    }
+  },
+  "community": {
+    "title": "به جامعه بپیوندید",
+    "description": "آکوردهای خود را آپلود کنید، آهنگ درخواست دهید و با سایر موزیسین‌های کردی ارتباط برقرار کنید.",
+    "descriptionHighlight": "امروز به بیش از ۱۵,۰۰۰ عضو بپیوندید.",
+    "button": "ایجاد حساب رایگان",
+    "justHappened": "تازه اتفاق افتاده",
+    "activities": {
+      "commentedOn": "نظر داد روی",
+      "uploaded": "آپلود کرد",
+      "requested": "درخواست داد"
+    }
+  },
+  "footer": {
+    "description": "پلتفرم نهایی برای آکوردها، متن آهنگ‌ها و ارتباطات جامعه موسیقی کردی.",
+    "sections": {
+      "discover": {
+        "title": "کشف",
+        "newArrivals": "ورودی‌های جدید",
+        "trendingCharts": "چارت‌های ترند",
+        "featuredArtists": "هنرمندان ویژه",
+        "songRequests": "درخواست آهنگ"
+      },
+      "community": {
+        "title": "جامعه",
+        "signUpLogin": "ثبت‌نام / ورود",
+        "submitChord": "ارسال آکورد",
+        "topContributors": "مشارکت‌کنندگان برتر",
+        "discordServer": "سرور دیسکورد"
+      },
+      "legal": {
+        "title": "قانونی",
+        "privacyPolicy": "سیاست حریم خصوصی",
+        "termsOfService": "شرایط استفاده",
+        "dmcaGuidelines": "راهنمای DMCA"
+      }
+    },
+    "copyright": "© ۲۰۲۵ Goranee.ir. تمامی حقوق محفوظ است.",
+    "designSystem": "سیستم طراحی: NeoBeat v1.1"
+  },
+  "showcase": {
+    "title": "کیت UI NeoBeat",
+    "subtitle": "سیستم طراحی برای Goranee.ir",
+    "sections": {
+      "colors": {
+        "title": "۰۱. پالت رنگ",
+        "subtitle": "پالت تطبیقی: {mode}",
+        "modes": {
+          "darkMode": "حالت تاریک فعال",
+          "lightMode": "حالت روشن"
+        },
+        "labels": {
+          "canvasBackground": "پس‌زمینه بوم",
+          "primaryText": "متن اصلی",
+          "cardSurface": "سطح کارت",
+          "electricGradient": "گرادیان الکتریکی"
+        }
+      },
+      "typography": {
+        "title": "۰۲. تایپوگرافی",
+        "subtitle": "تیترها در Sans-Serif، آکوردها در Monospace.",
+        "displayH1": "نمایش H1",
+        "headingH2": "تیتر H2",
+        "bodyText": "متن بدنه",
+        "chordSheetPreview": "پیش‌نمایش برگه آکورد",
+        "sampleText": "گورانی یک پلتفرم مبتنی بر جامعه است. دسترسی به هزاران آکورد، متن آهنگ و ریتم کردی. برای به اشتراک گذاشتن دانش موسیقی خود به ما بپیوندید."
+      },
+      "buttons": {
+        "title": "۰۳. دکمه‌ها و تعاملات",
+        "subtitle": "گرادیان‌های اولیه، ارواح ثانویه.",
+        "primaryAction": "عمل اولیه",
+        "secondaryAction": "عمل ثانویه",
+        "textLink": "لینک متن"
+      },
+      "cards": {
+        "title": "۰۴. کامپوننت: کارت‌ها",
+        "subtitle": "ظروف قابل استفاده مجدد برای محتوا."
+      },
+      "tags": {
+        "title": "۰۴.۵ تگ‌ها و دکمه‌های آیکون",
+        "subtitle": "عناصر UI کوچک برای متادیتا و اعمال.",
+        "tagsChips": "تگ‌ها / چیپ‌ها",
+        "iconButtons": "دکمه‌های آیکون",
+        "key": "کلید: Am",
+        "rhythm": "ریتم: ۷/۸",
+        "slow": "آهسته",
+        "popular": "محبوب"
+      },
+      "chordSheet": {
+        "title": "۰۴.۶ برگه آکورد",
+        "subtitle": "نمایش آکوردها به صورت خطی با متن آهنگ."
+      },
+      "navigation": {
+        "title": "۰۵. ناوبری",
+        "subtitle": "هدر 'Glassmorphism' چسبنده."
+      },
+      "toolbox": {
+        "title": "۰۶. جعبه ابزار موزیسین",
+        "subtitle": "کنترل‌های چسبنده برای صفحه نمایش آکورد.",
+        "pageContent": "ناحیه محتوای صفحه..."
+      },
+      "marketing": {
+        "title": "۰۷. بلوک‌های بازاریابی",
+        "subtitle": "فراخوان به عمل و فوتر.",
+        "cta": {
+          "title": "آماده پخش هستید؟",
+          "description": "به بیش از ۱۵,۰۰۰ موزیسین کردی که هر روز آکورد و متن آهنگ به اشتراک می‌گذارند بپیوندید.",
+          "button": "ایجاد حساب رایگان"
+        }
+      }
+    },
+    "themeToggle": {
+      "switchToLight": "تغییر به روشن",
+      "switchToDark": "تغییر به تاریک"
+    },
+    "ariaLabels": {
+      "playSong": "پخش آهنگ",
+      "likeSong": "لایک آهنگ",
+      "share": "اشتراک‌گذاری",
+      "settings": "تنظیمات"
+    }
+  },
+  "common": {
+    "songs": "آهنگ",
+    "ago": "پیش",
+    "hours": "س",
+    "minutes": "د",
+    "days": "ر"
+  }
+}
+

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Play, ArrowRight, Moon, Sun, ToggleLeft, ToggleRight } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Play, ArrowRight } from 'lucide-vue-next'
 import Typography from '../components/base/Typography.vue'
 import Button from '../components/base/Button.vue'
 import Card from '../components/base/Card.vue'
@@ -10,26 +11,25 @@ import TabFilter from '../components/widget/TabFilter.vue'
 import SkeletonCard from '../components/widget/SkeletonCard.vue'
 import CommunitySection from '../components/widget/CommunitySection.vue'
 import Footer from '../components/widget/Footer.vue'
+import DevFloatingWidget from '../components/widget/DevFloatingWidget.vue'
+import { setDocumentDirection, type MessageLanguages } from '../i18n'
+
+const { t, locale } = useI18n()
 
 const isDark = ref(false)
-const isRTL = ref(false)
 const isLoading = ref(false)
-const activeTab = ref('All')
+
+// Watch locale changes and update document direction
+watch(
+  locale,
+  (newLocale) => {
+    setDocumentDirection(newLocale as MessageLanguages)
+  },
+  { immediate: true },
+)
 
 const toggleTheme = () => {
-  isDark.value = !isDark.value
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-    document.documentElement.classList.remove('light')
-  } else {
-    document.documentElement.classList.remove('dark')
-    document.documentElement.classList.add('light')
-  }
-}
-
-const toggleDirection = () => {
-  isRTL.value = !isRTL.value
-  document.documentElement.dir = isRTL.value ? 'rtl' : 'ltr'
+  // Theme toggle is handled by DevFloatingWidget
 }
 
 const featuredSongs = [
@@ -47,51 +47,59 @@ const artists = [
   { name: 'Navid', color: 'from-emerald-500 to-teal-500' },
 ]
 
-const tabs = ['All', 'Pop', 'Folklore', 'Slow', 'Halparke']
+const tabs = computed(() => [
+  t('home.discovery.tabs.all'),
+  t('home.discovery.tabs.pop'),
+  t('home.discovery.tabs.folklore'),
+  t('home.discovery.tabs.slow'),
+  t('home.discovery.tabs.halparke'),
+])
+
+const activeTab = ref(t('home.discovery.tabs.all'))
 </script>
 
 <template>
   <div
     class="min-h-screen bg-surface-base text-text-primary transition-colors duration-300 font-sans relative"
   >
-    <!-- Dev Tool: Toggle Loading State -->
-    <div
-      class="fixed bottom-4 left-4 z-50 bg-black/80 text-white px-4 py-2 rounded-full text-xs cursor-pointer flex items-center gap-2 hover:bg-black"
-      @click="isLoading = !isLoading"
-    >
-      <ToggleRight v-if="isLoading" class="text-green-400" />
-      <ToggleLeft v-else class="text-gray-400" />
-      {{ isLoading ? 'View Content' : 'Preview Loading State' }}
-    </div>
+    <!-- Dev Mode Floating Widget -->
+    <DevFloatingWidget
+      v-model:is-dark="isDark"
+      v-model:is-loading="isLoading"
+      :on-theme-toggle="toggleTheme"
+    />
 
-    <!-- Theme/Direction Controls -->
-    <div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-      <button
-        @click="toggleTheme"
-        class="bg-surface-card p-3 rounded-full shadow-lg border border-border-subtle hover:scale-110 transition cursor-pointer"
-      >
-        <Moon v-if="!isDark" class="w-6 h-6" />
-        <Sun v-else class="w-6 h-6" />
-      </button>
-      <button
-        @click="toggleDirection"
-        class="bg-surface-card p-3 rounded-full shadow-lg border border-border-subtle hover:scale-110 transition font-bold text-xs cursor-pointer"
-      >
-        {{ isRTL ? 'LTR' : 'RTL' }}
-      </button>
-    </div>
+    <Navbar
+      :logo="t('navbar.logo')"
+      :search-placeholder="t('navbar.searchPlaceholder')"
+      :links="[
+        { label: t('navbar.links.discovery'), to: '/discovery' },
+        { label: t('navbar.links.artists'), to: '/artists' },
+        { label: t('navbar.links.community'), to: '/community' },
+      ]"
+      :login-text="t('navbar.login')"
+      :explore-text="t('navbar.explore')"
+    />
 
-    <Navbar />
-
-    <Hero />
+    <Hero
+      :badge="t('hero.badge')"
+      :title="t('hero.title')"
+      :title-highlight="t('hero.titleHighlight')"
+      :title-line2="t('hero.titleLine2')"
+      :description="t('hero.description')"
+      :start-playing-text="t('hero.startPlaying')"
+      :submit-chord-text="t('hero.submitChord')"
+      :featured-artist-label="t('hero.featuredArtist')"
+      :trending-now-label="t('hero.trendingNow')"
+    />
 
     <!-- --- SONG DISCOVERY --- -->
     <section class="px-6 py-16 max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
         <div>
-          <Typography variant="h2" class="font-bold">Discovery</Typography>
+          <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary"
-            >Fresh chords added this week</Typography
+            >{{ t('home.discovery.subtitle') }}</Typography
           >
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="activeTab = $event" />
@@ -148,12 +156,12 @@ const tabs = ['All', 'Pop', 'Folklore', 'Slow', 'Halparke']
     >
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center mb-8">
-          <Typography variant="h2" class="font-bold">Featured Artists</Typography>
+          <Typography variant="h2" class="font-bold">{{ t('home.artists.title') }}</Typography>
           <a
             href="#"
             class="text-text-accent font-bold text-sm flex items-center hover:underline group"
           >
-            View All
+            {{ t('home.artists.viewAll') }}
             <ArrowRight
               class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180"
             />
@@ -187,16 +195,46 @@ const tabs = ['All', 'Pop', 'Folklore', 'Slow', 'Halparke']
             >
             <span
               class="text-xs text-text-secondary font-medium bg-surface-card px-2 py-0.5 rounded-full shadow-sm mt-1"
-              >12 Songs</span
+              >12 {{ t('home.artists.songs') }}</span
             >
           </div>
         </div>
       </div>
     </section>
 
-    <CommunitySection />
+    <CommunitySection
+      :just-happened-title="t('community.justHappened')"
+      :cta-title="t('community.title')"
+      :cta-description="t('community.description')"
+      :cta-description-highlight="t('community.descriptionHighlight')"
+      :cta-button-text="t('community.button')"
+    />
 
-    <Footer />
+    <Footer
+      :description="t('footer.description')"
+      :discover-title="t('footer.sections.discover.title')"
+      :discover-links="{
+        newArrivals: t('footer.sections.discover.newArrivals'),
+        trendingCharts: t('footer.sections.discover.trendingCharts'),
+        featuredArtists: t('footer.sections.discover.featuredArtists'),
+        songRequests: t('footer.sections.discover.songRequests'),
+      }"
+      :community-title="t('footer.sections.community.title')"
+      :community-links="{
+        signUpLogin: t('footer.sections.community.signUpLogin'),
+        submitChord: t('footer.sections.community.submitChord'),
+        topContributors: t('footer.sections.community.topContributors'),
+        discordServer: t('footer.sections.community.discordServer'),
+      }"
+      :legal-title="t('footer.sections.legal.title')"
+      :legal-links="{
+        privacyPolicy: t('footer.sections.legal.privacyPolicy'),
+        termsOfService: t('footer.sections.legal.termsOfService'),
+        dmcaGuidelines: t('footer.sections.legal.dmcaGuidelines'),
+      }"
+      :copyright="t('footer.copyright')"
+      :design-system="t('footer.designSystem')"
+    />
   </div>
 </template>
 

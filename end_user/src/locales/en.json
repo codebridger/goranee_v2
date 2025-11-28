@@ -1,0 +1,179 @@
+{
+  "navbar": {
+    "logo": "Goranee",
+    "searchPlaceholder": "Search for songs, artists...",
+    "links": {
+      "discovery": "Discovery",
+      "artists": "Artists",
+      "community": "Community"
+    },
+    "login": "Log In",
+    "explore": "Explore"
+  },
+  "hero": {
+    "badge": "The #1 Kurdish Chords Platform",
+    "title": "Play the",
+    "titleHighlight": "Melody",
+    "titleLine2": "Feel the Rhythm.",
+    "description": "Access thousands of chords, lyrics, and authentic Kurdish rhythms. Join the community of musicians today.",
+    "startPlaying": "Start Playing",
+    "submitChord": "Submit Chord",
+    "featuredArtist": "Featured Artist",
+    "trendingNow": "Trending Now"
+  },
+  "home": {
+    "loadingToggle": {
+      "viewContent": "View Content",
+      "previewLoading": "Preview Loading State"
+    },
+    "themeToggle": {
+      "switchToLight": "Switch to Light",
+      "switchToDark": "Switch to Dark"
+    },
+    "discovery": {
+      "title": "Discovery",
+      "subtitle": "Fresh chords added this week",
+      "tabs": {
+        "all": "All",
+        "pop": "Pop",
+        "folklore": "Folklore",
+        "slow": "Slow",
+        "halparke": "Halparke"
+      }
+    },
+    "artists": {
+      "title": "Featured Artists",
+      "viewAll": "View All",
+      "songs": "Songs"
+    }
+  },
+  "community": {
+    "title": "Join the Community",
+    "description": "Upload your own chords, request songs, and connect with other Kurdish musicians.",
+    "descriptionHighlight": "Join 15,000+ members today.",
+    "button": "Create Free Account",
+    "justHappened": "Just Happened",
+    "activities": {
+      "commentedOn": "commented on",
+      "uploaded": "uploaded",
+      "requested": "requested"
+    }
+  },
+  "footer": {
+    "description": "The ultimate platform for Kurdish music chords, lyrics, and community connections.",
+    "sections": {
+      "discover": {
+        "title": "Discover",
+        "newArrivals": "New Arrivals",
+        "trendingCharts": "Trending Charts",
+        "featuredArtists": "Featured Artists",
+        "songRequests": "Song Requests"
+      },
+      "community": {
+        "title": "Community",
+        "signUpLogin": "Sign Up / Login",
+        "submitChord": "Submit Chord",
+        "topContributors": "Top Contributors",
+        "discordServer": "Discord Server"
+      },
+      "legal": {
+        "title": "Legal",
+        "privacyPolicy": "Privacy Policy",
+        "termsOfService": "Terms of Service",
+        "dmcaGuidelines": "DMCA Guidelines"
+      }
+    },
+    "copyright": "© 2025 Goranee.ir. All rights reserved.",
+    "designSystem": "Design System: NeoBeat v1.1"
+  },
+  "showcase": {
+    "title": "NeoBeat UI Kit",
+    "subtitle": "Design System for Goranee.ir",
+    "sections": {
+      "colors": {
+        "title": "01. Color Palette",
+        "subtitle": "Adaptive palette: {mode}",
+        "modes": {
+          "darkMode": "Dark Mode Active",
+          "lightMode": "Light Mode"
+        },
+        "labels": {
+          "canvasBackground": "Canvas Background",
+          "primaryText": "Primary Text",
+          "cardSurface": "Card Surface",
+          "electricGradient": "Electric Gradient"
+        }
+      },
+      "typography": {
+        "title": "02. Typography",
+        "subtitle": "Headings in Sans-Serif, Chords in Monospace.",
+        "displayH1": "Display H1",
+        "headingH2": "Heading H2",
+        "bodyText": "Body Text",
+        "chordSheetPreview": "Chord Sheet Preview",
+        "sampleText": "Goranee is a community-driven platform. Access thousands of Kurdish chords, lyrics, and rhythms. Join us to share your musical knowledge."
+      },
+      "buttons": {
+        "title": "03. Buttons & Interactions",
+        "subtitle": "Gradient primaries, ghost secondaries.",
+        "primaryAction": "Primary Action",
+        "secondaryAction": "Secondary Action",
+        "textLink": "Text Link"
+      },
+      "cards": {
+        "title": "04. Component: Cards",
+        "subtitle": "Reusable containers for content."
+      },
+      "tags": {
+        "title": "04.5 Tags & Icon Buttons",
+        "subtitle": "Small UI elements for metadata and actions.",
+        "tagsChips": "Tags / Chips",
+        "iconButtons": "Icon Buttons",
+        "key": "Key: Am",
+        "rhythm": "Rhythm: 7/8",
+        "slow": "Slow",
+        "popular": "Popular"
+      },
+      "chordSheet": {
+        "title": "04.6 Chord Sheet",
+        "subtitle": "Display chords inline with lyrics."
+      },
+      "navigation": {
+        "title": "05. Navigation",
+        "subtitle": "Sticky 'Glassmorphism' Header."
+      },
+      "toolbox": {
+        "title": "06. The Musician's Toolbox",
+        "subtitle": "Sticky controls for the Chord View page.",
+        "pageContent": "Page Content Area..."
+      },
+      "marketing": {
+        "title": "07. Marketing Blocks",
+        "subtitle": "Call to Action & Footer.",
+        "cta": {
+          "title": "Ready to play?",
+          "description": "Join 15,000+ Kurdish musicians sharing chords and lyrics every day.",
+          "button": "Create Free Account"
+        }
+      }
+    },
+    "themeToggle": {
+      "switchToLight": "Switch to Light",
+      "switchToDark": "Switch to Dark"
+    },
+    "ariaLabels": {
+      "playSong": "Play song",
+      "likeSong": "Like song",
+      "share": "Share",
+      "settings": "Settings"
+    }
+  },
+  "common": {
+    "songs": "Songs",
+    "ago": "ago",
+    "hours": "h",
+    "minutes": "m",
+    "days": "d"
+  }
+}
+

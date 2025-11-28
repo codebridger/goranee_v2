@@ -12,14 +12,18 @@ export interface Activity {
 const props = withDefaults(
   defineProps<{
     activities?: Activity[]
+    justHappenedTitle?: string
     ctaTitle?: string
     ctaDescription?: string
+    ctaDescriptionHighlight?: string
     ctaButtonText?: string
   }>(),
   {
+    justHappenedTitle: 'Just Happened',
     ctaTitle: 'Join the Community',
     ctaDescription:
       'Upload your own chords, request songs, and connect with other Kurdish musicians.',
+    ctaDescriptionHighlight: 'Join 15,000+ members today.',
     ctaButtonText: 'Create Free Account',
   },
 )
@@ -57,14 +61,14 @@ const displayActivities = props.activities || defaultActivities
       <div
         class="absolute top-0 end-0 w-32 h-32 bg-text-accent/10 dark:bg-text-accent/20 rounded-full -me-10 -mt-10 blur-2xl group-hover:bg-text-accent/20 dark:group-hover:bg-text-accent/30 transition"
       ></div>
-      <Typography variant="h3" class="mb-6 flex items-center gap-2">
-        <div
-          class="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-600 dark:text-green-400"
-        >
-          <Clock class="w-5 h-5" />
-        </div>
-        Just Happened
-      </Typography>
+        <Typography variant="h3" class="mb-6 flex items-center gap-2">
+          <div
+            class="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-600 dark:text-green-400"
+          >
+            <Clock class="w-5 h-5" />
+          </div>
+          {{ justHappenedTitle }}
+        </Typography>
       <div class="space-y-6">
         <div
           v-for="(activity, i) in displayActivities"
@@ -99,7 +103,7 @@ const displayActivities = props.activities || defaultActivities
         <h3 class="text-3xl font-black mb-4">{{ ctaTitle }}</h3>
         <p class="text-white/80 mb-8 max-w-sm leading-relaxed">
           {{ ctaDescription }}
-          <span class="block mt-2 font-bold text-white">Join 15,000+ members today.</span>
+          <span class="block mt-2 font-bold text-white">{{ ctaDescriptionHighlight }}</span>
         </p>
         <button
           class="bg-white text-text-accent px-8 py-4 rounded-full font-bold hover:bg-text-accent/10 transition shadow-lg flex items-center gap-2 group cursor-pointer"
