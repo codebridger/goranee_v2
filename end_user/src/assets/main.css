@@ -14,10 +14,10 @@
   --background-image-grad-primary: linear-gradient(135deg, #FF2E93 0%, #8E2DE2 100%);
   --background-image-grad-secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 
-  --font-sans: Inter, Noto Sans, sans-serif;
-  --font-heading: Montserrat, Poppins, sans-serif;
-  --font-kurdish: Rudaw, Noto Sans Kurdish, sans-serif;
-  --font-mono: Roboto Mono, monospace;
+  --font-family-sans: Inter, 'Noto Sans', sans-serif;
+  --font-family-heading: Montserrat, Poppins, sans-serif;
+  --font-family-kurdish: 'Noto Sans Kurdish', sans-serif;
+  --font-family-mono: 'Roboto Mono', monospace;
 
   --radius-sm: 8px;
   --radius-md: 16px;
@@ -74,5 +74,6 @@ html.light {
 body {
   background-color: var(--surface-base);
   color: var(--text-primary);
+  font-family: var(--font-family-sans);
   transition: background-color 0.3s, color 0.3s;
 }

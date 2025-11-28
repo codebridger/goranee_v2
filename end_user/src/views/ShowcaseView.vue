@@ -79,8 +79,10 @@ const chordLines: ChordLine[] = [
     <main class="max-w-7xl mx-auto space-y-20">
       <!-- 1. COLORS -->
       <section>
-        <div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-          <Typography variant="h2" class="font-black tracking-tight">01. Color Palette</Typography>
+        <div
+          class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
+        >
+          <Typography variant="h2" class="font-bold tracking-tight">01. Color Palette</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
             >Adaptive palette: {{ isDark ? 'Dark Mode Active' : 'Light Mode' }}</Typography
           >
@@ -88,7 +90,7 @@ const chordLines: ChordLine[] = [
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="flex flex-col gap-2">
             <div
-              class="w-full h-24 rounded-2xl shadow-sm border border-border-subtle bg-surface-base"
+              class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-surface-base"
             ></div>
             <div>
               <p class="font-bold text-sm text-text-primary">Canvas Background</p>
@@ -99,7 +101,7 @@ const chordLines: ChordLine[] = [
           </div>
           <div class="flex flex-col gap-2">
             <div
-              class="w-full h-24 rounded-2xl shadow-sm border border-border-subtle bg-text-primary"
+              class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-text-primary"
             ></div>
             <div>
               <p class="font-bold text-sm text-text-primary">Primary Text</p>
@@ -110,7 +112,7 @@ const chordLines: ChordLine[] = [
           </div>
           <div class="flex flex-col gap-2">
             <div
-              class="w-full h-24 rounded-2xl shadow-sm border border-border-subtle bg-surface-card"
+              class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-surface-card"
             ></div>
             <div>
               <p class="font-bold text-sm text-text-primary">Card Surface</p>
@@ -121,7 +123,7 @@ const chordLines: ChordLine[] = [
           </div>
           <div class="flex flex-col gap-2">
             <div
-              class="w-full h-24 rounded-2xl shadow-sm border border-border-subtle bg-grad-primary"
+              class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-grad-primary"
             ></div>
             <div>
               <p class="font-bold text-sm text-text-primary">Electric Gradient</p>
@@ -133,14 +135,16 @@ const chordLines: ChordLine[] = [
 
       <!-- 2. TYPOGRAPHY -->
       <section>
-        <div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-          <Typography variant="h2" class="font-black tracking-tight">02. Typography</Typography>
+        <div
+          class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
+        >
+          <Typography variant="h2" class="font-bold tracking-tight">02. Typography</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
             >Headings in Sans-Serif, Chords in Monospace.</Typography
           >
         </div>
         <div
-          class="bg-surface-card rounded-3xl p-8 shadow-sm border border-border-subtle transition-all duration-300 grid md:grid-cols-2 gap-12"
+          class="bg-surface-card rounded-3xl p-8 shadow-sm border dark:border-white/10 border-pink-50 transition-all duration-300 grid md:grid-cols-2 gap-12"
         >
           <div class="space-y-6">
             <div>
@@ -161,7 +165,7 @@ const chordLines: ChordLine[] = [
           </div>
 
           <!-- CHORD PREVIEW -->
-          <div class="rounded-2xl p-6 border bg-surface-base border-border-subtle">
+          <div class="rounded-2xl p-6 border bg-surface-base dark:border-white/5 border-pink-100">
             <span class="text-xs text-pink-500 font-bold uppercase mb-4 block"
               >Chord Sheet Preview</span
             >
@@ -185,8 +189,10 @@ const chordLines: ChordLine[] = [
 
       <!-- 3. BUTTONS & CONTROLS -->
       <section>
-        <div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-          <Typography variant="h2" class="font-black tracking-tight"
+        <div
+          class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
+        >
+          <Typography variant="h2" class="font-bold tracking-tight"
             >03. Buttons & Interactions</Typography
           >
           <Typography variant="body" class="text-text-secondary mt-1"
@@ -194,7 +200,7 @@ const chordLines: ChordLine[] = [
           </Typography>
         </div>
         <div
-          class="bg-surface-card rounded-3xl p-8 shadow-sm border border-border-subtle transition-all duration-300 space-y-8"
+          class="bg-surface-card rounded-3xl p-8 shadow-sm border dark:border-white/10 border-pink-50 transition-all duration-300 space-y-8"
         >
           <!-- Row 1: Main Buttons -->
           <div class="flex flex-wrap items-center gap-6">
@@ -221,7 +227,7 @@ const chordLines: ChordLine[] = [
 
             <!-- Tags/Chips -->
             <span
-              class="px-3 py-1 rounded-md text-xs font-bold border bg-surface-base border-border-subtle text-text-secondary"
+              class="px-3 py-1 rounded-md text-xs font-bold border dark:bg-white/10 dark:border-white/5 dark:text-gray-300 bg-gray-100 border-gray-200 text-gray-600"
               >Key: Am</span
             >
             <span
@@ -280,7 +286,7 @@ const chordLines: ChordLine[] = [
           subtitle="Small UI elements for metadata and actions."
         />
         <div
-          class="bg-surface-card rounded-3xl p-8 shadow-sm border border-border-subtle space-y-8"
+          class="bg-surface-card rounded-3xl p-8 shadow-sm border dark:border-white/10 border-pink-50 space-y-8"
         >
           <!-- Tags -->
           <div>
@@ -322,8 +328,10 @@ const chordLines: ChordLine[] = [
 
       <!-- 5. COMPLEX COMPONENTS: NAVIGATION -->
       <section>
-        <div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-          <Typography variant="h2" class="font-black tracking-tight">05. Navigation</Typography>
+        <div
+          class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
+        >
+          <Typography variant="h2" class="font-bold tracking-tight">05. Navigation</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
             >Sticky 'Glassmorphism' Header.
           </Typography>
@@ -361,8 +369,10 @@ const chordLines: ChordLine[] = [
 
       <!-- 6. COMPLEX COMPONENTS: FLOATING TOOLBOX -->
       <section>
-        <div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-          <Typography variant="h2" class="font-black tracking-tight"
+        <div
+          class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
+        >
+          <Typography variant="h2" class="font-bold tracking-tight"
             >06. The Musician's Toolbox</Typography
           >
           <Typography variant="body" class="text-text-secondary mt-1"
@@ -383,8 +393,10 @@ const chordLines: ChordLine[] = [
 
       <!-- 7. CTA & FOOTER -->
       <section>
-        <div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-          <Typography variant="h2" class="font-black tracking-tight"
+        <div
+          class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
+        >
+          <Typography variant="h2" class="font-bold tracking-tight"
             >07. Marketing Blocks</Typography
           >
           <Typography variant="body" class="text-text-secondary mt-1"
