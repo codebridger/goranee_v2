@@ -11,7 +11,7 @@ const props = defineProps<{
 }>();
 
 const classes = computed(() => {
-  const base = 'inline-flex items-center justify-center rounded-full font-bold transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+  const base = 'inline-flex items-center justify-center rounded-full font-bold transition-all duration-300 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
     primary: 'bg-grad-primary text-white shadow-lg hover:shadow-pink-500/30 hover:-translate-y-0.5 active:scale-95',

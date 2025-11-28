@@ -64,14 +64,14 @@ const chordLines: ChordLine[] = [
     <div class="fixed bottom-8 end-8 z-50 flex flex-col gap-2">
       <button
         @click="toggleTheme"
-        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary"
+        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary cursor-pointer"
       >
         <component :is="isDark ? Sun : Moon" class="w-5 h-5" />
         {{ isDark ? 'Switch to Light' : 'Switch to Dark' }}
       </button>
       <button
         @click="toggleDirection"
-        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary text-sm"
+        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary text-sm cursor-pointer"
       >
         {{ isRTL ? 'LTR' : 'RTL' }}
       </button>
@@ -220,7 +220,7 @@ const chordLines: ChordLine[] = [
           <div class="flex flex-wrap items-center gap-6">
             <Button variant="primary">Primary Action</Button>
             <Button variant="secondary">Secondary Action</Button>
-            <button class="text-pink-600 font-bold hover:underline flex items-center gap-2">
+            <button class="text-pink-600 font-bold hover:underline flex items-center gap-2 cursor-pointer">
               Text Link
               <ArrowRight class="w-4 h-4 rtl:rotate-180" />
             </button>
@@ -229,12 +229,12 @@ const chordLines: ChordLine[] = [
           <!-- Row 2: Icon Buttons & Tools -->
           <div class="flex flex-wrap items-center gap-6">
             <button
-              class="w-12 h-12 rounded-full bg-grad-primary flex items-center justify-center text-white shadow-md hover:scale-105 transition"
+              class="w-12 h-12 rounded-full bg-grad-primary flex items-center justify-center text-white shadow-md hover:scale-105 transition cursor-pointer"
             >
               <Play class="w-5 h-5 fill-current" />
             </button>
             <button
-              class="w-12 h-12 rounded-full border border-border-subtle flex items-center justify-center transition bg-surface-card text-text-secondary hover:text-text-accent"
+              class="w-12 h-12 rounded-full border border-border-subtle flex items-center justify-center transition bg-surface-card text-text-secondary hover:text-text-accent cursor-pointer"
             >
               <Heart class="w-5 h-5" />
             </button>
@@ -374,7 +374,7 @@ const chordLines: ChordLine[] = [
               <a href="#" class="hover:text-pink-500">Community</a>
             </div>
             <div class="flex items-center gap-3">
-              <button class="text-sm font-bold text-white">Login</button>
+              <button class="text-sm font-bold text-white cursor-pointer">Login</button>
               <Button variant="primary" size="sm">Explore</Button>
             </div>
           </nav>

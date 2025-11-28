@@ -90,7 +90,7 @@ const displayActivities = props.activities || defaultActivities;
 					<span class="block mt-2 font-bold text-white">Join 15,000+ members today.</span>
 				</p>
 				<button
-					class="bg-white text-text-accent px-8 py-4 rounded-full font-bold hover:bg-text-accent/10 transition shadow-lg flex items-center gap-2 group">
+					class="bg-white text-text-accent px-8 py-4 rounded-full font-bold hover:bg-text-accent/10 transition shadow-lg flex items-center gap-2 group cursor-pointer">
 					{{ ctaButtonText }}
 					<ArrowRight class="w-4 h-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180" />
 				</button>

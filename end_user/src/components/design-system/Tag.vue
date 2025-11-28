@@ -9,7 +9,7 @@ const props = defineProps<{
 }>();
 
 const classes = computed(() => {
-	const base = 'inline-flex items-center gap-1 rounded-md font-bold border';
+	const base = 'inline-flex items-center gap-1 rounded-md font-bold border cursor-pointer';
 
 	const variants = {
 		neutral: 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/5',

@@ -40,17 +40,17 @@ const isMenuOpen = ref(false);
 
     <!-- Navigation Links (Desktop) -->
     <div class="hidden lg:flex gap-6 text-sm font-bold text-text-primary">
-      <a v-for="link in navLinks" :key="link.to" :href="link.to" class="hover:text-text-accent transition-colors">
+      <a v-for="link in navLinks" :key="link.to" :href="link.to" class="hover:text-text-accent transition-colors cursor-pointer">
         {{ link.label }}
       </a>
     </div>
 
     <!-- Actions -->
     <div class="flex items-center gap-4">
-      <button class="hidden md:block text-sm font-semibold text-text-primary hover:text-text-accent transition">Log
+      <button class="hidden md:block text-sm font-semibold text-text-primary hover:text-text-accent transition cursor-pointer">Log
         In</button>
       <Button variant="primary" size="sm">Explore</Button>
-      <button class="md:hidden text-text-primary" @click="isMenuOpen = !isMenuOpen">
+      <button class="md:hidden text-text-primary cursor-pointer" @click="isMenuOpen = !isMenuOpen">
         <Menu class="w-6 h-6" />
       </button>
     </div>

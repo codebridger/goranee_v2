@@ -68,14 +68,14 @@ const tabs = ['All', 'Pop', 'Folklore', 'Slow', 'Halparke']
     <div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
       <button
         @click="toggleTheme"
-        class="bg-surface-card p-3 rounded-full shadow-lg border border-border-subtle hover:scale-110 transition"
+        class="bg-surface-card p-3 rounded-full shadow-lg border border-border-subtle hover:scale-110 transition cursor-pointer"
       >
         <Moon v-if="!isDark" class="w-6 h-6" />
         <Sun v-else class="w-6 h-6" />
       </button>
       <button
         @click="toggleDirection"
-        class="bg-surface-card p-3 rounded-full shadow-lg border border-border-subtle hover:scale-110 transition font-bold text-xs"
+        class="bg-surface-card p-3 rounded-full shadow-lg border border-border-subtle hover:scale-110 transition font-bold text-xs cursor-pointer"
       >
         {{ isRTL ? 'LTR' : 'RTL' }}
       </button>

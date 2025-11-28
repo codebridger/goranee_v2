@@ -13,7 +13,7 @@ const emit = defineEmits<{
 }>();
 
 const classes = computed(() => {
-	const base = 'rounded-full flex items-center justify-center transition';
+	const base = 'rounded-full flex items-center justify-center transition cursor-pointer';
 
 	const variants = {
 		primary: 'bg-grad-primary text-white shadow-md hover:scale-105',
