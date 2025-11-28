@@ -29,6 +29,7 @@ import IconButton from '../components/design-system/IconButton.vue'
 import SectionTitle from '../components/design-system/SectionTitle.vue'
 
 const isDark = ref(false)
+const isRTL = ref(false)
 const autoScroll = ref(true)
 
 const toggleTheme = () => {
@@ -40,6 +41,11 @@ const toggleTheme = () => {
     document.documentElement.classList.remove('dark')
     document.documentElement.classList.add('light')
   }
+}
+
+const toggleDirection = () => {
+  isRTL.value = !isRTL.value
+  document.documentElement.dir = isRTL.value ? 'rtl' : 'ltr'
 }
 
 // Chord sheet data
@@ -54,14 +60,22 @@ const chordLines: ChordLine[] = [
   <div
     class="min-h-screen bg-surface-base text-text-primary transition-colors duration-500 font-sans p-8 pb-32 selection:bg-pink-500 selection:text-white"
   >
-    <!-- GLOBAL THEME TOGGLE (Floating) -->
-    <button
-      @click="toggleTheme"
-      class="fixed bottom-8 right-8 z-50 px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary"
-    >
-      <component :is="isDark ? Sun : Moon" class="w-5 h-5" />
-      {{ isDark ? 'Switch to Light' : 'Switch to Dark' }}
-    </button>
+    <!-- GLOBAL THEME/DIRECTION TOGGLE (Floating) -->
+    <div class="fixed bottom-8 end-8 z-50 flex flex-col gap-2">
+      <button
+        @click="toggleTheme"
+        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary"
+      >
+        <component :is="isDark ? Sun : Moon" class="w-5 h-5" />
+        {{ isDark ? 'Switch to Light' : 'Switch to Dark' }}
+      </button>
+      <button
+        @click="toggleDirection"
+        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary text-sm"
+      >
+        {{ isRTL ? 'LTR' : 'RTL' }}
+      </button>
+    </div>
 
     <!-- HEADER -->
     <header class="max-w-7xl mx-auto mb-16 text-center pt-10">
@@ -208,7 +222,7 @@ const chordLines: ChordLine[] = [
             <Button variant="secondary">Secondary Action</Button>
             <button class="text-pink-600 font-bold hover:underline flex items-center gap-2">
               Text Link
-              <ArrowRight class="w-4 h-4" />
+              <ArrowRight class="w-4 h-4 rtl:rotate-180" />
             </button>
           </div>
 
@@ -344,7 +358,7 @@ const chordLines: ChordLine[] = [
 
           <!-- THE COMPONENT -->
           <nav
-            class="absolute top-0 left-0 right-0 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center bg-white/10"
+            class="absolute top-0 start-0 end-0 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center bg-white/10"
           >
             <div class="flex items-center gap-2">
               <div
@@ -385,7 +399,7 @@ const chordLines: ChordLine[] = [
           <p class="text-text-secondary font-bold">Page Content Area...</p>
 
           <!-- THE COMPONENT: Floating Bar -->
-          <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
+          <div class="absolute bottom-6 start-1/2 -translate-x-1/2">
             <FloatingToolbox />
           </div>
         </div>
@@ -418,15 +432,15 @@ const chordLines: ChordLine[] = [
               class="bg-white text-pink-600 border-transparent hover:bg-pink-50"
             >
               Create Free Account
-              <ArrowRight class="w-4 h-4 ml-2" />
+              <ArrowRight class="w-4 h-4 ms-2 rtl:rotate-180" />
             </Button>
           </div>
           <!-- Decor -->
           <div
-            class="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-20 -mt-20 blur-2xl"
+            class="absolute top-0 start-0 w-64 h-64 bg-white/10 rounded-full -ms-20 -mt-20 blur-2xl"
           ></div>
           <div
-            class="absolute bottom-0 right-0 w-64 h-64 bg-purple-900/20 rounded-full -mr-20 -mb-20 blur-2xl"
+            class="absolute bottom-0 end-0 w-64 h-64 bg-purple-900/20 rounded-full -me-20 -mb-20 blur-2xl"
           ></div>
         </div>
 
