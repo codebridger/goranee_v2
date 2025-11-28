@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Play,
@@ -14,7 +14,7 @@ import {
   Music,
 } from 'lucide-vue-next'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 import Typography from '../components/base/Typography.vue'
 import Button from '../components/base/Button.vue'
 import Input from '../components/base/Input.vue'
@@ -27,25 +27,24 @@ import ChordSheet, { type ChordLine } from '../components/widget/ChordSheet.vue'
 import Tag from '../components/base/Tag.vue'
 import IconButton from '../components/base/IconButton.vue'
 import SectionTitle from '../components/widget/SectionTitle.vue'
+import DevFloatingWidget from '../components/widget/DevFloatingWidget.vue'
+import { setDocumentDirection, type MessageLanguages } from '../i18n'
 
 const isDark = ref(false)
-const isRTL = ref(false)
+const isLoading = ref(false)
 const autoScroll = ref(true)
 
-const toggleTheme = () => {
-  isDark.value = !isDark.value
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-    document.documentElement.classList.remove('light')
-  } else {
-    document.documentElement.classList.remove('dark')
-    document.documentElement.classList.add('light')
-  }
-}
+// Watch locale changes and update document direction
+watch(
+  locale,
+  (newLocale) => {
+    setDocumentDirection(newLocale as MessageLanguages)
+  },
+  { immediate: true },
+)
 
-const toggleDirection = () => {
-  isRTL.value = !isRTL.value
-  document.documentElement.dir = isRTL.value ? 'rtl' : 'ltr'
+const toggleTheme = () => {
+  // Theme toggle is handled by DevFloatingWidget
 }
 
 // Chord sheet data
@@ -60,22 +59,12 @@ const chordLines: ChordLine[] = [
   <div
     class="min-h-screen bg-surface-base text-text-primary transition-colors duration-500 font-sans p-8 pb-32 selection:bg-pink-500 selection:text-white"
   >
-    <!-- GLOBAL THEME/DIRECTION TOGGLE (Floating) -->
-    <div class="fixed bottom-8 end-8 z-50 flex flex-col gap-2">
-      <button
-        @click="toggleTheme"
-        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary cursor-pointer"
-      >
-        <component :is="isDark ? Sun : Moon" class="w-5 h-5" />
-        {{ isDark ? t('showcase.themeToggle.switchToLight') : t('showcase.themeToggle.switchToDark') }}
-      </button>
-      <button
-        @click="toggleDirection"
-        class="px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 bg-text-primary text-surface-base hover:bg-text-secondary text-sm cursor-pointer"
-      >
-        {{ isRTL ? 'LTR' : 'RTL' }}
-      </button>
-    </div>
+    <!-- Dev Mode Floating Widget -->
+    <DevFloatingWidget
+      v-model:is-dark="isDark"
+      v-model:is-loading="isLoading"
+      :on-theme-toggle="toggleTheme"
+    />
 
     <!-- HEADER -->
     <header class="max-w-7xl mx-auto mb-16 text-center pt-10">
@@ -85,9 +74,9 @@ const chordLines: ChordLine[] = [
         G
       </div>
       <Typography variant="h1" class="mb-4">{{ t('showcase.title') }}</Typography>
-      <Typography variant="body" class="text-text-secondary text-xl"
-        >{{ t('showcase.subtitle') }}</Typography
-      >
+      <Typography variant="body" class="text-text-secondary text-xl">{{
+        t('showcase.subtitle')
+      }}</Typography>
     </header>
 
     <main class="max-w-7xl mx-auto space-y-20">
@@ -96,10 +85,16 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight">{{ t('showcase.sections.colors.title') }}</Typography>
-          <Typography variant="body" class="text-text-secondary mt-1"
-            >{{ t('showcase.sections.colors.subtitle', { mode: isDark ? t('showcase.sections.colors.modes.darkMode') : t('showcase.sections.colors.modes.lightMode') }) }}</Typography
-          >
+          <Typography variant="h2" class="font-bold tracking-tight">{{
+            t('showcase.sections.colors.title')
+          }}</Typography>
+          <Typography variant="body" class="text-text-secondary mt-1">{{
+            t('showcase.sections.colors.subtitle', {
+              mode: isDark
+                ? t('showcase.sections.colors.modes.darkMode')
+                : t('showcase.sections.colors.modes.lightMode'),
+            })
+          }}</Typography>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="flex flex-col gap-2">
@@ -107,7 +102,9 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-surface-base"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.canvasBackground') }}</p>
+              <p class="font-bold text-sm text-text-primary">
+                {{ t('showcase.sections.colors.labels.canvasBackground') }}
+              </p>
               <p class="text-xs font-mono text-text-secondary">
                 {{ isDark ? '#130a12' : '#FDF2F0' }}
               </p>
@@ -118,7 +115,9 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-text-primary"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.primaryText') }}</p>
+              <p class="font-bold text-sm text-text-primary">
+                {{ t('showcase.sections.colors.labels.primaryText') }}
+              </p>
               <p class="text-xs font-mono text-text-secondary">
                 {{ isDark ? '#eddeeb' : '#2A1B28' }}
               </p>
@@ -129,7 +128,9 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-surface-card"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.cardSurface') }}</p>
+              <p class="font-bold text-sm text-text-primary">
+                {{ t('showcase.sections.colors.labels.cardSurface') }}
+              </p>
               <p class="text-xs font-mono text-text-secondary">
                 {{ isDark ? '#1f121d' : '#FFFFFF' }}
               </p>
@@ -140,7 +141,9 @@ const chordLines: ChordLine[] = [
               class="w-full h-24 rounded-2xl shadow-sm border dark:border-white/10 border-gray-100 bg-grad-primary"
             ></div>
             <div>
-              <p class="font-bold text-sm text-text-primary">{{ t('showcase.sections.colors.labels.electricGradient') }}</p>
+              <p class="font-bold text-sm text-text-primary">
+                {{ t('showcase.sections.colors.labels.electricGradient') }}
+              </p>
               <p class="text-xs font-mono text-text-secondary">#FF2E93 -> #8E2DE2</p>
             </div>
           </div>
@@ -152,25 +155,33 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight">{{ t('showcase.sections.typography.title') }}</Typography>
-          <Typography variant="body" class="text-text-secondary mt-1"
-            >{{ t('showcase.sections.typography.subtitle') }}</Typography
-          >
+          <Typography variant="h2" class="font-bold tracking-tight">{{
+            t('showcase.sections.typography.title')
+          }}</Typography>
+          <Typography variant="body" class="text-text-secondary mt-1">{{
+            t('showcase.sections.typography.subtitle')
+          }}</Typography>
         </div>
         <div
           class="bg-surface-card rounded-3xl p-8 shadow-sm border dark:border-white/10 border-pink-50 transition-all duration-300 grid md:grid-cols-2 gap-12"
         >
           <div class="space-y-6">
             <div>
-              <span class="text-xs text-text-secondary font-mono uppercase">{{ t('showcase.sections.typography.displayH1') }}</span>
+              <span class="text-xs text-text-secondary font-mono uppercase">{{
+                t('showcase.sections.typography.displayH1')
+              }}</span>
               <Typography variant="h1">Play the Melody</Typography>
             </div>
             <div>
-              <span class="text-xs text-text-secondary font-mono uppercase">{{ t('showcase.sections.typography.headingH2') }}</span>
+              <span class="text-xs text-text-secondary font-mono uppercase">{{
+                t('showcase.sections.typography.headingH2')
+              }}</span>
               <Typography variant="h2">Featured Artists</Typography>
             </div>
             <div>
-              <span class="text-xs text-text-secondary font-mono uppercase">{{ t('showcase.sections.typography.bodyText') }}</span>
+              <span class="text-xs text-text-secondary font-mono uppercase">{{
+                t('showcase.sections.typography.bodyText')
+              }}</span>
               <Typography variant="body" class="text-text-secondary">
                 {{ t('showcase.sections.typography.sampleText') }}
               </Typography>
@@ -179,9 +190,9 @@ const chordLines: ChordLine[] = [
 
           <!-- CHORD PREVIEW -->
           <div class="rounded-2xl p-6 border bg-surface-base dark:border-white/5 border-pink-100">
-            <span class="text-xs text-pink-500 font-bold uppercase mb-4 block"
-              >{{ t('showcase.sections.typography.chordSheetPreview') }}</span
-            >
+            <span class="text-xs text-pink-500 font-bold uppercase mb-4 block">{{
+              t('showcase.sections.typography.chordSheetPreview')
+            }}</span>
             <div class="font-mono text-lg space-y-4">
               <div>
                 <span class="text-[#FF2E93] font-bold">[Am]</span>
@@ -205,9 +216,9 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight"
-            >{{ t('showcase.sections.buttons.title') }}</Typography
-          >
+          <Typography variant="h2" class="font-bold tracking-tight">{{
+            t('showcase.sections.buttons.title')
+          }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
             >{{ t('showcase.sections.buttons.subtitle') }}
           </Typography>
@@ -218,7 +229,9 @@ const chordLines: ChordLine[] = [
           <!-- Row 1: Main Buttons -->
           <div class="flex flex-wrap items-center gap-6">
             <Button variant="primary">{{ t('showcase.sections.buttons.primaryAction') }}</Button>
-            <Button variant="secondary">{{ t('showcase.sections.buttons.secondaryAction') }}</Button>
+            <Button variant="secondary">{{
+              t('showcase.sections.buttons.secondaryAction')
+            }}</Button>
             <button
               class="text-pink-600 font-bold hover:underline flex items-center gap-2 cursor-pointer"
             >
@@ -265,7 +278,10 @@ const chordLines: ChordLine[] = [
 
       <!-- 4. CARDS -->
       <section>
-        <SectionTitle :title="t('showcase.sections.cards.title')" :subtitle="t('showcase.sections.cards.subtitle')" />
+        <SectionTitle
+          :title="t('showcase.sections.cards.title')"
+          :subtitle="t('showcase.sections.cards.subtitle')"
+        />
         <div class="grid md:grid-cols-3 gap-8">
           <!-- NEW: SongCard Component -->
           <SongCard
@@ -322,10 +338,28 @@ const chordLines: ChordLine[] = [
               {{ t('showcase.sections.tags.iconButtons') }}
             </h3>
             <div class="flex flex-wrap items-center gap-4">
-              <IconButton :icon="Play" variant="primary" :ariaLabel="t('showcase.ariaLabels.playSong')" />
-              <IconButton :icon="Heart" variant="secondary" :ariaLabel="t('showcase.ariaLabels.likeSong')" />
-              <IconButton :icon="Share2" variant="secondary" size="sm" :ariaLabel="t('showcase.ariaLabels.share')" />
-              <IconButton :icon="Settings" variant="primary" size="lg" :ariaLabel="t('showcase.ariaLabels.settings')" />
+              <IconButton
+                :icon="Play"
+                variant="primary"
+                :ariaLabel="t('showcase.ariaLabels.playSong')"
+              />
+              <IconButton
+                :icon="Heart"
+                variant="secondary"
+                :ariaLabel="t('showcase.ariaLabels.likeSong')"
+              />
+              <IconButton
+                :icon="Share2"
+                variant="secondary"
+                size="sm"
+                :ariaLabel="t('showcase.ariaLabels.share')"
+              />
+              <IconButton
+                :icon="Settings"
+                variant="primary"
+                size="lg"
+                :ariaLabel="t('showcase.ariaLabels.settings')"
+              />
             </div>
           </div>
         </div>
@@ -346,7 +380,9 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight">{{ t('showcase.sections.navigation.title') }}</Typography>
+          <Typography variant="h2" class="font-bold tracking-tight">{{
+            t('showcase.sections.navigation.title')
+          }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
             >{{ t('showcase.sections.navigation.subtitle') }}
           </Typography>
@@ -375,7 +411,9 @@ const chordLines: ChordLine[] = [
               <a href="#" class="hover:text-pink-500">{{ t('navbar.links.community') }}</a>
             </div>
             <div class="flex items-center gap-3">
-              <button class="text-sm font-bold text-white cursor-pointer">{{ t('navbar.login') }}</button>
+              <button class="text-sm font-bold text-white cursor-pointer">
+                {{ t('navbar.login') }}
+              </button>
               <Button variant="primary" size="sm">{{ t('navbar.explore') }}</Button>
             </div>
           </nav>
@@ -387,9 +425,9 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight"
-            >{{ t('showcase.sections.toolbox.title') }}</Typography
-          >
+          <Typography variant="h2" class="font-bold tracking-tight">{{
+            t('showcase.sections.toolbox.title')
+          }}</Typography>
           <Typography variant="body" class="text-text-secondary mt-1"
             >{{ t('showcase.sections.toolbox.subtitle') }}
           </Typography>
@@ -397,7 +435,9 @@ const chordLines: ChordLine[] = [
         <div
           class="h-64 rounded-3xl relative overflow-hidden border border-border-subtle flex items-center justify-center bg-surface-base"
         >
-          <p class="text-text-secondary font-bold">{{ t('showcase.sections.toolbox.pageContent') }}</p>
+          <p class="text-text-secondary font-bold">
+            {{ t('showcase.sections.toolbox.pageContent') }}
+          </p>
 
           <!-- THE COMPONENT: Floating Bar -->
           <div class="absolute bottom-6 start-1/2 -translate-x-1/2">
@@ -411,12 +451,12 @@ const chordLines: ChordLine[] = [
         <div
           class="mb-8 border-b dark:border-white/10 border-pink-200 pb-4 mt-12 transition-colors duration-300"
         >
-          <Typography variant="h2" class="font-bold tracking-tight"
-            >{{ t('showcase.sections.marketing.title') }}</Typography
-          >
-          <Typography variant="body" class="text-text-secondary mt-1"
-            >{{ t('showcase.sections.marketing.subtitle') }}</Typography
-          >
+          <Typography variant="h2" class="font-bold tracking-tight">{{
+            t('showcase.sections.marketing.title')
+          }}</Typography>
+          <Typography variant="body" class="text-text-secondary mt-1">{{
+            t('showcase.sections.marketing.subtitle')
+          }}</Typography>
         </div>
 
         <!-- COMPONENT: CTA -->
@@ -424,7 +464,9 @@ const chordLines: ChordLine[] = [
           class="rounded-[2rem] p-12 text-white relative overflow-hidden flex flex-col items-center text-center bg-grad-primary shadow-xl mb-12"
         >
           <div class="relative z-10 max-w-2xl">
-            <h3 class="text-3xl font-black mb-4">{{ t('showcase.sections.marketing.cta.title') }}</h3>
+            <h3 class="text-3xl font-black mb-4">
+              {{ t('showcase.sections.marketing.cta.title') }}
+            </h3>
             <p class="text-pink-100 mb-8 text-lg">
               {{ t('showcase.sections.marketing.cta.description') }}
             </p>
