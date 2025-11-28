@@ -2,6 +2,47 @@
 import { Clock, ArrowRight } from 'lucide-vue-next';
 import Typography from './Typography.vue';
 import Button from './Button.vue';
+
+export interface Activity {
+	username: string;
+	action: string;
+	songTitle: string;
+	comment: string;
+}
+
+const props = withDefaults(defineProps<{
+	activities?: Activity[];
+	ctaTitle?: string;
+	ctaDescription?: string;
+	ctaButtonText?: string;
+}>(), {
+	ctaTitle: 'Join the Community',
+	ctaDescription: 'Upload your own chords, request songs, and connect with other Kurdish musicians.',
+	ctaButtonText: 'Create Free Account',
+});
+
+const defaultActivities: Activity[] = [
+	{
+		username: 'Alan88',
+		action: 'commented on',
+		songTitle: 'Nazdar - Baran',
+		comment: 'The bridge chords sound perfect! Thanks for the update.',
+	},
+	{
+		username: 'Sara_Music',
+		action: 'uploaded',
+		songTitle: 'Xam - Zakaria',
+		comment: 'Just added the full chord sheet with capo suggestions!',
+	},
+	{
+		username: 'KurdishGuitar',
+		action: 'requested',
+		songTitle: 'Bo Kurdistan',
+		comment: 'Does anyone have the chords for this classic?',
+	},
+];
+
+const displayActivities = props.activities || defaultActivities;
 </script>
 
 <template>
@@ -19,18 +60,20 @@ import Button from './Button.vue';
 				Just Happened
 			</Typography>
 			<div class="space-y-6">
-				<div v-for="i in 3" :key="i"
+				<div v-for="(activity, i) in displayActivities" :key="i"
 					class="flex gap-4 items-start p-2 rounded-xl hover:bg-surface-base transition">
 					<div
 						class="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex-shrink-0 border-2 border-white dark:border-white/10 shadow-sm">
 					</div>
 					<div>
-						<p class="text-sm text-text-primary"><span class="font-bold">Alan88</span> commented on <span
-								class="font-bold text-text-accent hover:underline cursor-pointer">Nazdar - Baran</span>
+						<p class="text-sm text-text-primary"><span class="font-bold">{{ activity.username }}</span> {{
+							activity.action }} <span
+								class="font-bold text-text-accent hover:underline cursor-pointer">{{ activity.songTitle
+								}}</span>
 						</p>
 						<div
 							class="bg-surface-base p-2 rounded-tr-xl rounded-br-xl rounded-bl-xl mt-1 text-xs text-text-secondary italic border border-border-subtle">
-							"The bridge chords sound perfect! Thanks for the update."
+							"{{ activity.comment }}"
 						</div>
 					</div>
 				</div>
@@ -41,14 +84,14 @@ import Button from './Button.vue';
 		<div
 			class="rounded-[2rem] p-8 md:p-12 text-white relative overflow-hidden flex flex-col justify-center bg-grad-primary shadow-2xl shadow-pink-500/20">
 			<div class="relative z-10">
-				<h3 class="text-3xl font-black mb-4">Join the Community</h3>
+				<h3 class="text-3xl font-black mb-4">{{ ctaTitle }}</h3>
 				<p class="text-pink-100 mb-8 max-w-sm leading-relaxed">
-					Upload your own chords, request songs, and connect with other Kurdish musicians.
+					{{ ctaDescription }}
 					<span class="block mt-2 font-bold text-white">Join 15,000+ members today.</span>
 				</p>
 				<button
 					class="bg-white text-pink-600 px-8 py-4 rounded-full font-bold hover:bg-pink-50 transition shadow-lg flex items-center gap-2 group">
-					Create Free Account
+					{{ ctaButtonText }}
 					<ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition" />
 				</button>
 			</div>

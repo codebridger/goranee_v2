@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Share2, Mic } from 'lucide-vue-next';
+
 const theme = {
 	primaryGradient: 'bg-grad-primary',
 };
@@ -46,9 +48,19 @@ const theme = {
 			</div>
 		</div>
 		<div
-			class="text-center text-gray-600 text-xs border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+			class="text-center text-gray-600 text-xs border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
 			<span>© 2025 Goranee.ir. All rights reserved.</span>
-			<span class="mt-2 md:mt-0">Design System: <span class="text-gray-500">NeoBeat v1.1</span></span>
+			<div class="flex gap-4">
+				<div
+					class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition">
+					<Share2 class="w-4 h-4" />
+				</div>
+				<div
+					class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition">
+					<Mic class="w-4 h-4" />
+				</div>
+			</div>
+			<span class="md:mt-0">Design System: <span class="text-gray-500">NeoBeat v1.1</span></span>
 		</div>
 	</footer>
 </template>

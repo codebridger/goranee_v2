@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import {
 	Play, Heart, ArrowRight, Search, Settings,
-	Minus, Plus, Moon, Sun, Share2, Mic
+	Minus, Plus, Moon, Sun, Share2, Mic, Music
 } from 'lucide-vue-next';
 import Typography from '../components/design-system/Typography.vue';
 import Button from '../components/design-system/Button.vue';
@@ -11,6 +11,12 @@ import Card from '../components/design-system/Card.vue';
 import Toggle from '../components/design-system/Toggle.vue';
 import FloatingToolbox from '../components/design-system/FloatingToolbox.vue';
 import CommentCard from '../components/design-system/CommentCard.vue';
+import SongCard from '../components/design-system/SongCard.vue';
+import ArtistCard from '../components/design-system/ArtistCard.vue';
+import ChordSheet, { type ChordLine } from '../components/design-system/ChordSheet.vue';
+import Tag from '../components/design-system/Tag.vue';
+import IconButton from '../components/design-system/IconButton.vue';
+import SectionTitle from '../components/design-system/SectionTitle.vue';
 
 const isDark = ref(false);
 const autoScroll = ref(true);
@@ -23,6 +29,13 @@ const toggleTheme = () => {
 		document.documentElement.classList.remove('dark');
 	}
 };
+
+// Chord sheet data
+const chordLines: ChordLine[] = [
+	{ chord: 'Am', lyrics: 'Ewa disan baran bari' },
+	{ chord: 'G', lyrics: 'Firmesk la chawm hate xware' },
+	{ chord: 'F', lyrics: 'Bochi to wa be wafa buy?' },
+];
 </script>
 
 <template>
@@ -51,7 +64,7 @@ const toggleTheme = () => {
 			<section>
 				<div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
 					<Typography variant="h2" class="font-black tracking-tight">01. Color Palette</Typography>
-					<Typography variant="body" class="text-text-secondary mt-1">Adaptive palette: {{ isDark ? 'Dark Mode Active' : 'Light Mode Active' }}</Typography>
+					<Typography variant="body" class="text-text-secondary mt-1">Adaptive palette: {{ isDark ? 'Dark Mode Active' : 'Light Mode' }}</Typography>
 				</div>
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
 					<div class="flex flex-col gap-2">
@@ -192,61 +205,59 @@ const toggleTheme = () => {
 
 			<!-- 4. CARDS -->
 			<section>
-				<div class="mb-8 border-b border-border-subtle pb-4 mt-12 transition-colors duration-300">
-					<Typography variant="h2" class="font-black tracking-tight">04. Component: Cards</Typography>
-					<Typography variant="body" class="text-text-secondary mt-1">Reusable containers for content.
-					</Typography>
-				</div>
+				<SectionTitle title="04. Component: Cards" subtitle="Reusable containers for content." />
 				<div class="grid md:grid-cols-3 gap-8">
 
-					<!-- COMPONENT: Song Card -->
-					<Card variant="song" hoverable>
-						<div
-							class="h-48 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-4 relative overflow-hidden shadow-inner group">
-							<div
-								class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 backdrop-blur-sm">
-								<div
-									class="w-14 h-14 rounded-full bg-grad-primary flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition duration-300">
-									<Play class="w-6 h-6 text-white fill-current ml-1" />
-								</div>
-							</div>
-						</div>
-						<div class="flex justify-between items-start">
-							<div>
-								<Typography variant="h3" class="mb-1">Xam (Sorrow)</Typography>
-								<Typography variant="caption" class="text-text-secondary normal-case">Zakaria Abdulla
-								</Typography>
-							</div>
-							<div class="flex flex-col items-end gap-1">
-								<div
-									class="px-2 py-1 rounded-md text-xs font-bold border min-w-[30px] text-center bg-surface-base border-border-subtle text-text-secondary">
-									Cm</div>
-								<div
-									class="bg-pink-500/10 px-2 py-0.5 rounded-md text-[10px] font-bold text-pink-500 border border-pink-500/20">
-									Slow</div>
-							</div>
-						</div>
-					</Card>
+					<!-- NEW: SongCard Component -->
+					<SongCard title="Xam (Sorrow)" artist="Zakaria Abdulla" musical-key="Cm" tempo="Slow"
+						image-gradient="from-indigo-500 to-purple-600" @click="() => console.log('Song clicked')" />
 
-					<!-- COMPONENT: Artist Avatar -->
-					<Card variant="artist">
-						<div class="relative group cursor-pointer">
-							<div
-								class="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-red-500 p-[4px] mb-4 group-hover:scale-105 transition duration-300 shadow-xl">
-								<div
-									class="w-full h-full rounded-full border-4 border-surface-card overflow-hidden relative bg-gray-200 dark:bg-gray-800">
-									<div class="absolute inset-0 bg-gray-500/20"></div>
-								</div>
-							</div>
-						</div>
-						<Typography variant="h3" class="mb-1">Chopy Fatah</Typography>
-						<p class="text-sm text-pink-500 font-bold">142 Songs</p>
-					</Card>
+					<!-- NEW: ArtistCard Component -->
+					<ArtistCard name="Chopy Fatah" :song-count="142" gradient-border="from-orange-400 to-red-500"
+						@click="() => console.log('Artist clicked')" />
 
 					<!-- COMPONENT: Comment Bubble -->
-					<CommentCard />
+					<CommentCard username="MusicLover99" timestamp="2h ago"
+						comment="This is the most accurate version I've found! The bridge chords are spot on." />
 
 				</div>
+			</section>
+
+			<!-- 4.5 TAGS & ICON BUTTONS -->
+			<section>
+				<SectionTitle title="04.5 Tags & Icon Buttons" subtitle="Small UI elements for metadata and actions." />
+				<div class="bg-surface-card rounded-3xl p-8 shadow-sm border border-border-subtle space-y-8">
+
+					<!-- Tags -->
+					<div>
+						<h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">Tags / Chips
+						</h3>
+						<div class="flex flex-wrap items-center gap-3">
+							<Tag label="Key: Am" variant="neutral" />
+							<Tag label="Rhythm: 7/8" variant="accent" />
+							<Tag label="Slow" variant="accent" size="sm" />
+							<Tag label="Popular" variant="neutral" :icon="Music" />
+						</div>
+					</div>
+
+					<!-- Icon Buttons -->
+					<div>
+						<h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">Icon Buttons
+						</h3>
+						<div class="flex flex-wrap items-center gap-4">
+							<IconButton :icon="Play" variant="primary" ariaLabel="Play song" />
+							<IconButton :icon="Heart" variant="secondary" ariaLabel="Like song" />
+							<IconButton :icon="Share2" variant="secondary" size="sm" ariaLabel="Share" />
+							<IconButton :icon="Settings" variant="primary" size="lg" ariaLabel="Settings" />
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- 4.6 CHORD SHEET -->
+			<section>
+				<SectionTitle title="04.6 Chord Sheet" subtitle="Display chords inline with lyrics." :icon="Music" />
+				<ChordSheet :lines="chordLines" />
 			</section>
 
 			<!-- 5. COMPLEX COMPONENTS: NAVIGATION -->
