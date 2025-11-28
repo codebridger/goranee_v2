@@ -154,7 +154,9 @@ const tabs = ['All', 'Pop', 'Folklore', 'Slow', 'Halparke']
             class="text-text-accent font-bold text-sm flex items-center hover:underline group"
           >
             View All
-            <ArrowRight class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180" />
+            <ArrowRight
+              class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180"
+            />
           </a>
         </div>
 
