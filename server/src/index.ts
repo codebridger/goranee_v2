@@ -7,14 +7,18 @@ require("dotenv").config({
   path: path.resolve(__dirname, "../.env"),
 });
 
+const uploadPath = path.join(__dirname, "..", "uploads");
+
+console.log("uploadPath", uploadPath);
+
 // Create the rest server
 // The createRest function returns a promise
 const app = createRest({
   port: 8081,
   modulesPath: path.join(__dirname, "..", "dist", "modules"),
   staticPath: {
-    path: path.join(__dirname, "assets"),
-    actualPath: path.join(__dirname, "uploads"),
+    path: "/assets",
+    actualPath: uploadPath,
   },
   mongo: {
     mongoBaseAddress: "mongodb://localhost:27017",

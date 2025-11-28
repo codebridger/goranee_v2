@@ -1,4 +1,4 @@
-import { dataProvider } from '@modular-rest/client'
+import { dataProvider,fileProvider, Types } from '@modular-rest/client'
 import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
 import type { SongWithPopulatedRefs, Artist, Song } from '~/types/song.type'
 
@@ -99,9 +99,14 @@ export const useHomeService = () => {
     }
   }
 
+  const getImageUrl = (file:any) => {
+    return fileProvider.getFileLink(file)
+  }
+
   return {
     getTrendingSongs,
     getFeaturedArtists,
+    getImageUrl,
   }
 }
 

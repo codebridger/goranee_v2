@@ -96,6 +96,7 @@ onMounted(async () => {
             "
             :musical-key="song.chords?.keySignature"
             :tempo="song.rhythm"
+            :image-url="homeService.getImageUrl(song.image)"
             :image-gradient="`from-${(song as any)._mockColor}-400 to-${(song as any)._mockColor}-600`"
           />
         </template>
