@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Music, Play } from 'lucide-vue-next';
-import Typography from './Typography.vue';
-import Button from './Button.vue';
+import Typography from '../base/Typography.vue';
+import Button from '../base/Button.vue';
 </script>
 
 <template>

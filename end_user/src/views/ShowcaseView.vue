@@ -6,27 +6,24 @@ import {
   ArrowRight,
   Search,
   Settings,
-  Minus,
-  Plus,
   Moon,
   Sun,
   Share2,
   Mic,
   Music,
 } from 'lucide-vue-next'
-import Typography from '../components/design-system/Typography.vue'
-import Button from '../components/design-system/Button.vue'
-import Input from '../components/design-system/Input.vue'
-import Card from '../components/design-system/Card.vue'
-import Toggle from '../components/design-system/Toggle.vue'
-import FloatingToolbox from '../components/design-system/FloatingToolbox.vue'
-import CommentCard from '../components/design-system/CommentCard.vue'
-import SongCard from '../components/design-system/SongCard.vue'
-import ArtistCard from '../components/design-system/ArtistCard.vue'
-import ChordSheet, { type ChordLine } from '../components/design-system/ChordSheet.vue'
-import Tag from '../components/design-system/Tag.vue'
-import IconButton from '../components/design-system/IconButton.vue'
-import SectionTitle from '../components/design-system/SectionTitle.vue'
+import Typography from '../components/base/Typography.vue'
+import Button from '../components/base/Button.vue'
+import Input from '../components/base/Input.vue'
+import Toggle from '../components/base/Toggle.vue'
+import FloatingToolbox from '../components/widget/FloatingToolbox.vue'
+import CommentCard from '../components/widget/CommentCard.vue'
+import SongCard from '../components/widget/SongCard.vue'
+import ArtistCard from '../components/widget/ArtistCard.vue'
+import ChordSheet, { type ChordLine } from '../components/widget/ChordSheet.vue'
+import Tag from '../components/base/Tag.vue'
+import IconButton from '../components/base/IconButton.vue'
+import SectionTitle from '../components/widget/SectionTitle.vue'
 
 const isDark = ref(false)
 const isRTL = ref(false)
@@ -220,7 +217,9 @@ const chordLines: ChordLine[] = [
           <div class="flex flex-wrap items-center gap-6">
             <Button variant="primary">Primary Action</Button>
             <Button variant="secondary">Secondary Action</Button>
-            <button class="text-pink-600 font-bold hover:underline flex items-center gap-2 cursor-pointer">
+            <button
+              class="text-pink-600 font-bold hover:underline flex items-center gap-2 cursor-pointer"
+            >
               Text Link
               <ArrowRight class="w-4 h-4 rtl:rotate-180" />
             </button>

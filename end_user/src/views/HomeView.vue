@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Play, ArrowRight, Moon, Sun, ToggleLeft, ToggleRight } from 'lucide-vue-next'
-import Typography from '../components/design-system/Typography.vue'
-import Button from '../components/design-system/Button.vue'
-import Card from '../components/design-system/Card.vue'
-import Navbar from '../components/design-system/Navbar.vue'
-import Hero from '../components/design-system/Hero.vue'
-import TabFilter from '../components/design-system/TabFilter.vue'
-import SkeletonCard from '../components/design-system/SkeletonCard.vue'
-import CommunitySection from '../components/design-system/CommunitySection.vue'
-import Footer from '../components/design-system/Footer.vue'
+import Typography from '../components/base/Typography.vue'
+import Button from '../components/base/Button.vue'
+import Card from '../components/base/Card.vue'
+import Navbar from '../components/widget/Navbar.vue'
+import Hero from '../components/widget/Hero.vue'
+import TabFilter from '../components/widget/TabFilter.vue'
+import SkeletonCard from '../components/widget/SkeletonCard.vue'
+import CommunitySection from '../components/widget/CommunitySection.vue'
+import Footer from '../components/widget/Footer.vue'
 
 const isDark = ref(false)
 const isRTL = ref(false)
