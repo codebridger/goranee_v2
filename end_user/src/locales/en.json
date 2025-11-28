@@ -33,6 +33,7 @@
     "discovery": {
       "title": "Discovery",
       "subtitle": "Fresh chords added this week",
+      "emptyState": "No songs found. Be the first to submit one!",
       "tabs": {
         "all": "All",
         "pop": "Pop",
@@ -44,7 +45,8 @@
     "artists": {
       "title": "Featured Artists",
       "viewAll": "View All",
-      "songs": "Songs"
+      "songs": "Songs",
+      "emptyState": "No featured artists yet."
     }
   },
   "community": {
@@ -173,7 +175,7 @@
     "ago": "ago",
     "hours": "h",
     "minutes": "m",
-    "days": "d"
+    "days": "d",
+    "unknownArtist": "Unknown Artist"
   }
 }
-

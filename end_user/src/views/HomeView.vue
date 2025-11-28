@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Play, ArrowRight } from 'lucide-vue-next'
+import { ArrowRight, Music } from 'lucide-vue-next'
 import Typography from '../components/base/Typography.vue'
-import Button from '../components/base/Button.vue'
-import Card from '../components/base/Card.vue'
 import Navbar from '../components/widget/Navbar.vue'
 import Hero from '../components/widget/Hero.vue'
 import TabFilter from '../components/widget/TabFilter.vue'
@@ -12,25 +10,17 @@ import SkeletonCard from '../components/widget/SkeletonCard.vue'
 import CommunitySection from '../components/widget/CommunitySection.vue'
 import Footer from '../components/widget/Footer.vue'
 import DevFloatingWidget from '../components/widget/DevFloatingWidget.vue'
+import SongCard from '../components/widget/SongCard.vue'
+import ArtistCard from '../components/widget/ArtistCard.vue'
+
+import { homeService } from '../services/home.service'
+import type { SongWithPopulatedRefs, Artist } from '../types/song.type'
 
 const { t } = useI18n()
 
-const isLoading = ref(false)
-
-const featuredSongs = [
-  { title: 'Xam', artist: 'Zakaria', key: 'Cm', rhythm: 'Slow 6/8', img: 'purple' },
-  { title: 'Gule', artist: 'Hassan', key: 'Am', rhythm: 'Kurdish 7/8', img: 'pink' },
-  { title: 'Baran', artist: 'Nazdar', key: 'Gm', rhythm: '4/4 Pop', img: 'blue' },
-  { title: 'Dlem', artist: 'Kamaran', key: 'Dm', rhythm: 'Georgina', img: 'orange' },
-]
-
-const artists = [
-  { name: 'Zakaria', color: 'from-pink-500 to-rose-500' },
-  { name: 'Dashni', color: 'from-purple-500 to-indigo-500' },
-  { name: 'Hassan', color: 'from-blue-500 to-cyan-500' },
-  { name: 'Chopy', color: 'from-orange-500 to-red-500' },
-  { name: 'Navid', color: 'from-emerald-500 to-teal-500' },
-]
+const isLoading = ref(true)
+const trendingSongs = ref<SongWithPopulatedRefs[]>([])
+const featuredArtists = ref<Artist[]>([])
 
 const tabs = computed(() => [
   t('home.discovery.tabs.all'),
@@ -41,6 +31,22 @@ const tabs = computed(() => [
 ])
 
 const activeTab = ref(t('home.discovery.tabs.all'))
+
+onMounted(async () => {
+  isLoading.value = true
+  try {
+    const [songs, artists] = await Promise.all([
+      homeService.getTrendingSongs(),
+      homeService.getFeaturedArtists(),
+    ])
+    trendingSongs.value = songs
+    featuredArtists.value = artists
+  } catch (error) {
+    console.error('Failed to load home data:', error)
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
@@ -90,43 +96,28 @@ const activeTab = ref(t('home.discovery.tabs.all'))
         <template v-if="isLoading">
           <SkeletonCard v-for="i in 4" :key="i" />
         </template>
+        <template v-else-if="trendingSongs.length > 0">
+          <SongCard
+            v-for="song in trendingSongs"
+            :key="song._id"
+            :title="song.title"
+            :artist="
+              song.artists && song.artists[0] ? song.artists[0].name : t('common.unknownArtist')
+            "
+            :musical-key="song.chords?.keySignature"
+            :tempo="song.rhythm"
+            :image-gradient="`from-${(song as any)._mockColor}-400 to-${(song as any)._mockColor}-600`"
+          />
+        </template>
         <template v-else>
-          <Card v-for="(song, i) in featuredSongs" :key="i" variant="song" hoverable>
-            <div
-              class="h-48 rounded-2xl bg-gradient-to-br mb-4 relative overflow-hidden shadow-inner group"
-              :class="`from-${song.img}-400 to-${song.img}-600`"
-            >
-              <div
-                class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 backdrop-blur-sm"
-              >
-                <div
-                  class="w-14 h-14 rounded-full bg-grad-primary flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition duration-300"
-                >
-                  <Play class="w-6 h-6 text-white fill-current ml-1" />
-                </div>
-              </div>
+          <div
+            class="col-span-full flex flex-col items-center justify-center py-12 text-text-secondary"
+          >
+            <div class="p-4 rounded-full bg-surface-card mb-4">
+              <Music class="w-8 h-8 text-text-secondary/50" />
             </div>
-            <div class="flex justify-between items-start">
-              <div>
-                <Typography variant="h3" class="mb-1">{{ song.title }}</Typography>
-                <Typography variant="caption" class="text-text-secondary normal-case"
-                  >{{ song.artist }}
-                </Typography>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <div
-                  class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded-md text-xs font-bold text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 min-w-[30px] text-center"
-                >
-                  {{ song.key }}
-                </div>
-                <div
-                  class="bg-pink-50 dark:bg-pink-900/20 px-2 py-0.5 rounded-md text-[10px] font-bold text-pink-600 dark:text-pink-300 border border-pink-100 dark:border-pink-900/30"
-                >
-                  {{ song.rhythm }}
-                </div>
-              </div>
-            </div>
-          </Card>
+            <Typography variant="body">{{ t('home.discovery.emptyState') }}</Typography>
+          </div>
         </template>
       </div>
     </section>
@@ -149,36 +140,30 @@ const activeTab = ref(t('home.discovery.tabs.all'))
           </a>
         </div>
 
-        <div class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide">
-          <div
-            v-for="(artist, i) in artists"
-            :key="i"
-            class="flex flex-col items-center flex-shrink-0 group cursor-pointer snap-center"
-          >
+        <div
+          v-if="isLoading || featuredArtists.length > 0"
+          class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide"
+        >
+          <template v-if="isLoading">
+            <!-- Skeleton for artists could go here if needed -->
+          </template>
+          <template v-else>
             <div
-              class="w-28 h-28 rounded-full bg-gradient-to-br p-[3px] mb-3 group-hover:scale-110 transition duration-300 shadow-lg relative"
-              :class="artist.color"
+              v-for="artist in featuredArtists"
+              :key="artist._id"
+              class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
             >
-              <div
-                class="w-full h-full bg-gray-200 dark:bg-gray-800 rounded-full border-4 border-white dark:border-gray-900 overflow-hidden relative"
-              >
-                <!-- Placeholder for Avatar Image -->
-                <div class="absolute inset-0 bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
-              </div>
-              <!-- Online Status Dot -->
-              <div
-                class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white dark:border-gray-900 rounded-full"
-              ></div>
+              <ArtistCard
+                :name="artist.name"
+                :song-count="artist.chords || 0"
+                :songs-label="t('home.artists.songs')"
+                :gradient-border="(artist as any)._mockColor"
+              />
             </div>
-            <span
-              class="font-bold text-text-primary group-hover:text-text-accent transition text-lg"
-              >{{ artist.name }}</span
-            >
-            <span
-              class="text-xs text-text-secondary font-medium bg-surface-card px-2 py-0.5 rounded-full shadow-sm mt-1"
-              >12 {{ t('home.artists.songs') }}</span
-            >
-          </div>
+          </template>
+        </div>
+        <div v-else class="flex justify-center py-8 text-text-secondary">
+          <Typography variant="body">{{ t('home.artists.emptyState') }}</Typography>
         </div>
       </div>
     </section>

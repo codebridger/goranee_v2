@@ -4,8 +4,10 @@
       "path": "."
     },
     {
+      "path": "server"
+    },
+    {
       "path": "end_user"
     }
-  ],
-  "settings": {}
+  ]
 }
