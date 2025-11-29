@@ -90,14 +90,7 @@ onMounted(async () => {
           <SongCard
             v-for="song in trendingSongs"
             :key="song._id"
-            :title="song.title"
-            :artist="
-              song.artists && song.artists[0] ? song.artists[0].name : t('common.unknownArtist')
-            "
-            :musical-key="song.chords?.keySignature"
-            :tempo="song.rhythm"
-            :image-url="homeService.getImageUrl(song.image)"
-            :image-gradient="`from-${(song as any)._mockColor}-400 to-${(song as any)._mockColor}-600`"
+            :song="song"
           />
         </template>
         <template v-else>
