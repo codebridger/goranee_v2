@@ -1,5 +1,3 @@
-import type { Locale } from '@nuxtjs/i18n'
-
 export type MessageLanguages = 'en' | 'fa'
 
 // RTL language configuration
@@ -11,7 +9,7 @@ export const isRtlLanguage = (locale: string): boolean => {
 
 // Set document direction based on locale
 export const setDocumentDirection = (locale: string) => {
-  if (process.client && typeof document !== 'undefined') {
+  if (import.meta.client && typeof document !== 'undefined') {
     document.documentElement.dir = isRtlLanguage(locale) ? 'rtl' : 'ltr'
   }
 }
