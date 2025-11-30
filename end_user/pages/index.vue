@@ -2,11 +2,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { ArrowRight, Music } from 'lucide-vue-next'
 
-import { useHomeService } from '~/composables/useHomeService'
+import { useTabService } from '~/composables/useTabService'
 import type { SongWithPopulatedRefs, Artist } from '~/types/song.type'
 
 const { t } = useI18n()
-const homeService = useHomeService()
+const tabService = useTabService()
 
 const isLoading = ref(true)
 const trendingSongs = ref<SongWithPopulatedRefs[]>([])
@@ -26,8 +26,8 @@ onMounted(async () => {
   isLoading.value = true
   try {
     const [songs, artists] = await Promise.all([
-      homeService.getTrendingSongs(),
-      homeService.getFeaturedArtists(),
+      tabService.fetchSongs(8),
+      tabService.fetchFeaturedArtists(),
     ])
     trendingSongs.value = songs
     featuredArtists.value = artists

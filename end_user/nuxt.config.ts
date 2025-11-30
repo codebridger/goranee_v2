@@ -31,15 +31,10 @@ export default defineNuxtConfig({
         file: 'fa.json',
       },
     ],
-    lazy: true,
     langDir: 'locales',
     defaultLocale: 'fa',
     strategy: 'no_prefix',
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'i18n_redirected',
-      redirectOn: 'root',
-    },
+    detectBrowserLanguage: false,
   },
 
   // CSS configuration
