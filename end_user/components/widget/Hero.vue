@@ -97,9 +97,9 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
   -->
     <div :class="[
         'relative w-full overflow-hidden text-white font-sans',
-        'pt-20 h-[70dvh]',
+        'pt-20 h-[80dvh]',
         'md:pt-0 md:h-[80dvh]',
-        'lg:h-[100dvh]'
+        'lg:h-dvh'
     ]">
 
         <!-- Loading State -->
@@ -115,7 +115,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
             <!-- Generative Dark Background (Concert Stage Style) -->
             <div class="absolute inset-0 z-0 bg-[#0a0a0f]">
                 <!-- Animated gradient background -->
-                <div class="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#0a0a0f] to-[#16213e] opacity-80">
+                <div class="absolute inset-0 bg-linear-to-br from-[#1a1a2e] via-[#0a0a0f] to-[#16213e] opacity-80">
                 </div>
 
                 <!-- Particles Effect -->
@@ -147,7 +147,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
                 <!-- Smoke/fog effect at bottom -->
                 <div
-                    class="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[#0a0a0f]/90 via-[#0a0a0f]/50 to-transparent">
+                    class="absolute bottom-0 left-0 right-0 h-64 bg-linear-to-t from-[#0a0a0f]/90 via-[#0a0a0f]/50 to-transparent">
                 </div>
 
                 <!-- Subtle grid/noise texture -->
@@ -159,7 +159,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
             <!-- Gradient Overlay for Text Area (end side) -->
             <div :class="[
                 'absolute inset-y-0 end-0 z-5 hero-text-gradient',
-                'hidden md:block md:w-1/2'
+                'hidden lg:block lg:w-1/2'
             ]"></div>
 
             <!-- Mobile Content Wrapper (flex column for mobile, removed on desktop) -->
@@ -185,7 +185,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 ]" :key="activeSong._id" />
                             <!-- Fallback silhouette when no image -->
                             <div v-else :class="[
-                                'bg-gradient-to-t from-gray-800/50 to-gray-700/30 rounded-t-full opacity-40',
+                                'bg-linear-to-t from-gray-800/50 to-gray-700/30 rounded-t-full opacity-40',
                                 'h-48 w-48'
                             ]" :key="'fallback-' + activeSong._id">
                             </div>
@@ -242,24 +242,25 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 <!-- Chord Preview Block -->
                                 <div :class="[
                                     'font-mono space-y-1 text-gray-200 animate-fade-in-up delay-100',
-                                    'text-sm sm:text-base md:text-lg'
+                                    'text-sm sm:text-base md:text-lg',
+                                    'bg-white/5 rounded-xl p-4 backdrop-blur-sm border border-white/5'
                                 ]">
                                     <template v-if="getChordPreview(activeSong).length > 0">
                                         <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
-                                            class="leading-relaxed">
-                                            <span class="text-primary font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
+                                            class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
+                                            <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
+                                                }}]</span>
                                             <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="text-gray-200">
-                                            <span class="text-primary font-bold">[Cm]</span>
-                                            <span class="ms-1">Ewa disan baran bari...</span>
+                                            <span class="text-base font-bold">[Cm]</span>
+                                            <span class="text-basems-1">Ewa disan baran bari...</span>
                                         </div>
                                         <div class="text-gray-200">
-                                            <span class="text-primary font-bold">[Gm]</span>
-                                            <span class="ms-1">Firmesk la chawm...</span>
+                                            <span class="text-base font-bold">[Gm]</span>
+                                            <span class="text-basems-1">Firmesk la chawm...</span>
                                         </div>
                                     </template>
                                 </div>
@@ -296,9 +297,89 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                 </div>
             </div>
 
+            <!-- Tablet Content Wrapper (medium screens only) -->
+            <div :class="[
+                'hidden md:flex lg:hidden flex-col items-center justify-center h-full',
+                'absolute inset-0 z-20 px-24 py-12'
+            ]">
+                <Transition name="slide-fade" mode="out-in">
+                    <div :key="activeSong._id" class="flex flex-col justify-center w-full h-full max-w-2xl space-y-8">
+                        <!-- Top Row: Title/Artist (Left) | Image (Right) -->
+                        <div class="w-full grid grid-cols-12 items-start gap-6 rtl:grid-cols-reverse">
+                            <!-- Left: Text Info (8/12 cols) -->
+                            <div class="col-span-9 text-start space-y-2 rtl:order-last">
+                                <h1 class="font-black text-white text-4xl leading-tight tracking-tight">
+                                    {{ activeSong.title }}
+                                </h1>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <span class="text-gray-300 font-medium text-xl">
+                                        {{ getArtistName(activeSong) }}
+                                    </span>
+                                    <span v-if="activeSong.chords?.keySignature"
+                                        class="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
+                                        {{ activeSong.chords.keySignature }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Right: Artist Image (3/12 cols) -->
+                            <div class="col-span-3 flex justify-end rtl:order-first">
+                                <div class="relative w-32 h-32 shrink-0">
+                                    <img v-if="getArtistImage(activeSong)" :src="getArtistImage(activeSong)!"
+                                        :alt="getArtistName(activeSong)"
+                                        class="rounded-xl h-full w-full object-cover shadow-2xl border border-white/10" />
+                                    <div v-else
+                                        class="h-full w-full bg-linear-to-t from-gray-800 to-gray-700 rounded-xl opacity-40">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Row: Chords Preview -->
+                        <div
+                            class="w-full text-center bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/5">
+                            <div class="font-mono space-y-2 text-gray-200 text-base">
+                                <template v-if="getChordPreview(activeSong).length > 0">
+                                    <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
+                                        class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
+                                        <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
+                                        }}]</span>
+                                        <span class="text-gray-100 ms-1">{{ line.text }}</span>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class="text-gray-200">
+                                        <span class="text-base font-bold">[Cm]</span>
+                                        <span class="text-base ms-1">Ewa disan baran bari...</span>
+                                    </div>
+                                    <div class="text-gray-200">
+                                        <span class="text-base font-bold">[Gm]</span>
+                                        <span class="text-base ms-1">Firmesk la chawm...</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Row: Play Button -->
+                        <div class="w-full flex justify-end pt-10">
+                            <Button variant="primary" size="lg" :class="[
+                                'rounded-full', 'px-10 py-4',
+                                'shadow-lg', 'shadow-primary/30', 'hover:shadow-primary/50',
+                                'transition-all', 'hover:scale-105',
+                                'bg-linear-to-r!', 'from-primary!', 'to-pink-600!',
+                                'flex items-center space-x-2 text-lg font-bold'
+                            ]">
+                                <span>{{ $t('hero.startPlaying') }}</span>
+                                <Play class="w-6 h-6 me-2 fill-current rtl:rotate-180" />
+                            </Button>
+                        </div>
+                    </div>
+                </Transition>
+            </div>
+
             <!-- Artist Image - Desktop: Positioned in the image area (start side, fixed 50% width) -->
             <div :class="[
-                'z-10 hidden md:flex items-center justify-center pointer-events-none px-4',
+                'z-10 hidden lg:flex items-center justify-center pointer-events-none px-4',
                 'absolute top-16 bottom-8 w-[45%] start-[5%] h-auto'
             ]">
                 <div class="relative h-full w-full flex items-center justify-center overflow-hidden">
@@ -314,7 +395,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                             ]" :key="activeSong._id" />
                         <!-- Fallback silhouette when no image -->
                         <div v-else
-                            class="h-[60%] w-48 bg-gradient-to-t from-gray-800/50 to-gray-700/30 rounded-t-full opacity-40"
+                            class="h-[60%] w-48 bg-linear-to-t from-gray-800/50 to-gray-700/30 rounded-t-full opacity-40"
                             :key="'fallback-' + activeSong._id">
                         </div>
                     </Transition>
@@ -323,7 +404,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
             <!-- Content Container - Desktop: Positioned in the text area (end side, fixed 50% width) -->
             <div :class="[
-                'z-20 hidden md:flex items-center',
+                'z-20 hidden lg:flex items-center',
                 'absolute inset-y-0 w-[45%] end-[5%] px-8 pb-20',
                 'rtl:text-right ltr:text-left'
             ]">
@@ -363,31 +444,32 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                             <!-- Chord Preview Block -->
                             <div :class="[
                                 'font-mono space-y-1 text-gray-200 animate-fade-in-up delay-100',
-                                'text-lg md:text-xl lg:text-2xl xl:text-3xl'
+                                'text-lg md:text-xl lg:text-2xl xl:text-3xl',
+                                'bg-white/5 rounded-xl p-6 backdrop-blur-sm border border-white/5'
                             ]">
                                 <template v-if="getChordPreview(activeSong).length > 0">
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
-                                        class="leading-relaxed">
-                                        <span class="text-primary font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
+                                        class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
+                                        <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
+                                        }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
                                 <template v-else>
                                     <div class="text-gray-200">
-                                        <span class="text-primary font-bold">[Cm]</span>
-                                        <span class="ms-1">Ewa disan baran bari...</span>
+                                        <span class="text-base font-bold">[Cm]</span>
+                                        <span class="text-base ms-1">Ewa disan baran bari...</span>
                                     </div>
                                     <div class="text-gray-200">
-                                        <span class="text-primary font-bold">[Gm]</span>
-                                        <span class="ms-1">Firmesk la chawm...</span>
+                                        <span class="text-base font-bold">[Gm]</span>
+                                        <span class="text-base ms-1">Firmesk la chawm...</span>
                                     </div>
                                 </template>
                             </div>
 
                             <!-- Actions - Matching reference style -->
                             <div :class="[
-                                'flex items-center gap-3 pt-3 animate-fade-in-up delay-150',
+                                'flex items-center gap-3 pt-10 animate-fade-in-up delay-150',
                                 'justify-center md:justify-end'
                             ]">
                                 <Button variant="primary" size="lg" :class="[
