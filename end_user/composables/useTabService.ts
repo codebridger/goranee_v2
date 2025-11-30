@@ -16,24 +16,32 @@ export const useTabService = () => {
   /**
    * Fetch songs with limited fields optimized for SongCard
    */
-  const fetchSongs = async (limit: number = 8): Promise<SongWithPopulatedRefs[]> => {
+  const fetchSongs = async (
+    limit: number = 8,
+    skip: number = 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    projection: any = {}
+  ): Promise<SongWithPopulatedRefs[]> => {
     try {
+      const defaultProjection = {
+        title: 1,
+        rhythm: 1,
+        image: 1,
+        artists: 1,
+        'chords.keySignature': 1,
+        'chords.list.title': 1,
+      }
+
       const songs = await dataProvider.find<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         query: {},
         options: {
           limit,
+          skip,
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists'],
-          projection: {
-            title: 1,
-            rhythm: 1,
-            image: 1,
-            artists: 1,
-            'chords.keySignature': 1,
-            'chords.list.title': 1,
-          },
+          projection: { ...defaultProjection, ...projection },
         },
       })
 

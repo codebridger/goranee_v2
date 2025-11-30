@@ -26,12 +26,13 @@ const activeTab = ref(t('home.discovery.tabs.all'))
 onMounted(async () => {
   isLoading.value = true
   try {
-    const [songs, artists] = await Promise.all([
-      tabService.fetchSongs(13),
+    const [hero, trending, artists] = await Promise.all([
+      tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }),
+      tabService.fetchSongs(8, 5),
       tabService.fetchFeaturedArtists(),
     ])
-    heroSongs.value = songs.slice(0, 5)
-    trendingSongs.value = songs.slice(5)
+    heroSongs.value = hero
+    trendingSongs.value = trending
     featuredArtists.value = artists
   } catch (error) {
     console.error('Failed to load home data:', error)
@@ -42,9 +43,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-surface-base text-text-primary transition-colors duration-300 font-sans relative"
-  >
+  <div class="min-h-screen bg-surface-base text-text-primary transition-colors duration-300 font-sans relative">
     <!-- Dev Mode Floating Widget -->
     <DevFloatingWidget v-model:is-loading="isLoading" />
 
@@ -52,24 +51,14 @@ onMounted(async () => {
     <div class="relative">
       <!-- Navbar overlaid on hero -->
       <div class="absolute top-0 left-0 right-0 z-50">
-        <Navbar
-          :logo="t('navbar.logo')"
-          :search-placeholder="t('navbar.searchPlaceholder')"
-          :links="[
-            { label: t('navbar.links.discovery'), to: '/discovery' },
-            { label: t('navbar.links.artists'), to: '/artists' },
-            { label: t('navbar.links.community'), to: '/community' },
-          ]"
-          :login-text="t('navbar.login')"
-          :explore-text="t('navbar.explore')"
-          :is-transparent="true"
-        />
+        <Navbar :logo="t('navbar.logo')" :search-placeholder="t('navbar.searchPlaceholder')" :links="[
+          { label: t('navbar.links.discovery'), to: '/discovery' },
+          { label: t('navbar.links.artists'), to: '/artists' },
+          { label: t('navbar.links.community'), to: '/community' },
+        ]" :login-text="t('navbar.login')" :explore-text="t('navbar.explore')" :is-transparent="true" />
       </div>
 
-      <Hero
-        :songs="heroSongs"
-        :is-loading="isLoading"
-      />
+      <Hero :songs="heroSongs" :is-loading="isLoading" />
     </div>
 
     <!-- --- SONG DISCOVERY --- -->
@@ -79,7 +68,7 @@ onMounted(async () => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-          }}</Typography>
+            }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="activeTab = $event" />
       </div>
@@ -89,16 +78,10 @@ onMounted(async () => {
           <SkeletonCard v-for="i in 4" :key="i" />
         </template>
         <template v-else-if="trendingSongs.length > 0">
-          <SongCard
-            v-for="song in trendingSongs"
-            :key="song._id"
-            :song="song"
-          />
+          <SongCard v-for="song in trendingSongs" :key="song._id" :song="song" />
         </template>
         <template v-else>
-          <div
-            class="col-span-full flex flex-col items-center justify-center py-12 text-text-secondary"
-          >
+          <div class="col-span-full flex flex-col items-center justify-center py-12 text-text-secondary">
             <div class="p-4 rounded-full bg-surface-card mb-4">
               <Music class="w-8 h-8 text-text-secondary/50" />
             </div>
@@ -109,42 +92,27 @@ onMounted(async () => {
     </section>
 
     <!-- --- ARTIST SCROLL (Snap Scrolling) --- -->
-    <section
-      class="py-16 bg-surface-card/50 backdrop-blur-sm border-y border-white dark:border-white/5"
-    >
+    <section class="py-16 bg-surface-card/50 backdrop-blur-sm border-y border-white dark:border-white/5">
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center mb-8">
           <Typography variant="h2" class="font-bold">{{ t('home.artists.title') }}</Typography>
-          <a
-            href="#"
-            class="text-text-accent font-bold text-sm flex items-center hover:underline group"
-          >
+          <a href="#" class="text-text-accent font-bold text-sm flex items-center hover:underline group">
             {{ t('home.artists.viewAll') }}
             <ArrowRight
-              class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180"
-            />
+              class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180" />
           </a>
         </div>
 
-        <div
-          v-if="isLoading || featuredArtists.length > 0"
-          class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide"
-        >
+        <div v-if="isLoading || featuredArtists.length > 0"
+          class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide">
           <template v-if="isLoading">
             <!-- Skeleton for artists could go here if needed -->
           </template>
           <template v-else>
-            <div
-              v-for="artist in featuredArtists"
-              :key="artist._id"
-              class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
-            >
-              <ArtistCard
-                :name="artist.name"
-                :song-count="artist.chords || 0"
-                :songs-label="t('home.artists.songs')"
-                :gradient-border="(artist as any)._mockColor"
-              />
+            <div v-for="artist in featuredArtists" :key="artist._id"
+              class="flex flex-col items-center shrink-0 group cursor-pointer snap-center">
+              <ArtistCard :name="artist.name" :song-count="artist.chords || 0" :songs-label="t('home.artists.songs')"
+                :gradient-border="(artist as any)._mockColor" />
             </div>
           </template>
         </div>
@@ -154,39 +122,26 @@ onMounted(async () => {
       </div>
     </section>
 
-    <CommunitySection
-      :just-happened-title="t('community.justHappened')"
-      :cta-title="t('community.title')"
-      :cta-description="t('community.description')"
-      :cta-description-highlight="t('community.descriptionHighlight')"
-      :cta-button-text="t('community.button')"
-    />
+    <CommunitySection :just-happened-title="t('community.justHappened')" :cta-title="t('community.title')"
+      :cta-description="t('community.description')" :cta-description-highlight="t('community.descriptionHighlight')"
+      :cta-button-text="t('community.button')" />
 
-    <Footer
-      :description="t('footer.description')"
-      :discover-title="t('footer.sections.discover.title')"
+    <Footer :description="t('footer.description')" :discover-title="t('footer.sections.discover.title')"
       :discover-links="{
         newArrivals: t('footer.sections.discover.newArrivals'),
         trendingCharts: t('footer.sections.discover.trendingCharts'),
         featuredArtists: t('footer.sections.discover.featuredArtists'),
         songRequests: t('footer.sections.discover.songRequests'),
-      }"
-      :community-title="t('footer.sections.community.title')"
-      :community-links="{
+      }" :community-title="t('footer.sections.community.title')" :community-links="{
         signUpLogin: t('footer.sections.community.signUpLogin'),
         submitChord: t('footer.sections.community.submitChord'),
         topContributors: t('footer.sections.community.topContributors'),
         discordServer: t('footer.sections.community.discordServer'),
-      }"
-      :legal-title="t('footer.sections.legal.title')"
-      :legal-links="{
+      }" :legal-title="t('footer.sections.legal.title')" :legal-links="{
         privacyPolicy: t('footer.sections.legal.privacyPolicy'),
         termsOfService: t('footer.sections.legal.termsOfService'),
         dmcaGuidelines: t('footer.sections.legal.dmcaGuidelines'),
-      }"
-      :copyright="t('footer.copyright')"
-      :design-system="t('footer.designSystem')"
-    />
+      }" :copyright="t('footer.copyright')" :design-system="t('footer.designSystem')" />
   </div>
 </template>
 
@@ -204,5 +159,3 @@ onMounted(async () => {
   /* Firefox */
 }
 </style>
-
-
