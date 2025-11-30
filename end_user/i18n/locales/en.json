@@ -17,7 +17,6 @@
     "titleLine2": "Feel the Rhythm.",
     "description": "Access thousands of chords, lyrics, and authentic Kurdish rhythms. Join the community of musicians today.",
     "startPlaying": "Start Playing",
-    "submitChord": "Submit Chord",
     "featuredArtist": "Featured Artist",
     "trendingNow": "Trending Now"
   },
@@ -179,4 +178,3 @@
     "unknownArtist": "Unknown Artist"
   }
 }
-

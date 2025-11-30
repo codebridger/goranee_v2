@@ -9,6 +9,7 @@ const { t } = useI18n()
 const tabService = useTabService()
 
 const isLoading = ref(true)
+const heroSongs = ref<SongWithPopulatedRefs[]>([])
 const trendingSongs = ref<SongWithPopulatedRefs[]>([])
 const featuredArtists = ref<Artist[]>([])
 
@@ -26,10 +27,11 @@ onMounted(async () => {
   isLoading.value = true
   try {
     const [songs, artists] = await Promise.all([
-      tabService.fetchSongs(8),
+      tabService.fetchSongs(13),
       tabService.fetchFeaturedArtists(),
     ])
-    trendingSongs.value = songs
+    heroSongs.value = songs.slice(0, 5)
+    trendingSongs.value = songs.slice(5)
     featuredArtists.value = artists
   } catch (error) {
     console.error('Failed to load home data:', error)
@@ -46,29 +48,29 @@ onMounted(async () => {
     <!-- Dev Mode Floating Widget -->
     <DevFloatingWidget v-model:is-loading="isLoading" />
 
-    <Navbar
-      :logo="t('navbar.logo')"
-      :search-placeholder="t('navbar.searchPlaceholder')"
-      :links="[
-        { label: t('navbar.links.discovery'), to: '/discovery' },
-        { label: t('navbar.links.artists'), to: '/artists' },
-        { label: t('navbar.links.community'), to: '/community' },
-      ]"
-      :login-text="t('navbar.login')"
-      :explore-text="t('navbar.explore')"
-    />
+    <!-- Hero Section with Overlaid Navbar -->
+    <div class="relative">
+      <!-- Navbar overlaid on hero -->
+      <div class="absolute top-0 left-0 right-0 z-50">
+        <Navbar
+          :logo="t('navbar.logo')"
+          :search-placeholder="t('navbar.searchPlaceholder')"
+          :links="[
+            { label: t('navbar.links.discovery'), to: '/discovery' },
+            { label: t('navbar.links.artists'), to: '/artists' },
+            { label: t('navbar.links.community'), to: '/community' },
+          ]"
+          :login-text="t('navbar.login')"
+          :explore-text="t('navbar.explore')"
+          :is-transparent="true"
+        />
+      </div>
 
-    <Hero
-      :badge="t('hero.badge')"
-      :title="t('hero.title')"
-      :title-highlight="t('hero.titleHighlight')"
-      :title-line2="t('hero.titleLine2')"
-      :description="t('hero.description')"
-      :start-playing-text="t('hero.startPlaying')"
-      :submit-chord-text="t('hero.submitChord')"
-      :featured-artist-label="t('hero.featuredArtist')"
-      :trending-now-label="t('hero.trendingNow')"
-    />
+      <Hero
+        :songs="heroSongs"
+        :is-loading="isLoading"
+      />
+    </div>
 
     <!-- --- SONG DISCOVERY --- -->
     <section class="px-6 py-16 max-w-7xl mx-auto">
