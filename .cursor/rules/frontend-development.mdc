@@ -1,0 +1,119 @@
+---
+description: Rules and guidelines for Frontend Development (Nuxt 4, Tailwind 4)
+globs: end_user/**/*.vue, end_user/**/*.ts, end_user/**/*.js
+---
+
+# Frontend Development Guidelines
+
+## Technology Stack
+- **Framework**: Nuxt 4
+- **Styling**: Tailwind CSS v4
+- **State Management**: Pinia
+- **API Client**: @modular-rest/client
+- **Icons**: Lucide Vue Next
+
+## Architecture & Modularity
+
+### 1. Separation of Concerns
+- **Business Logic**: MUST be encapsulated in Composables (`composables/`). Do not write complex business logic directly inside Vue components.
+- **UI Layer**: Components (`components/`) should focus on presentation and user interaction, delegating data fetching and state manipulation to composables.
+- **Modularity**: Break down complex logic into smaller, reusable scripts.
+
+### 2. Component Structure
+- Use `<script setup lang="ts">`.
+- Keep components small and focused.
+- Use `defineProps` and `defineEmits` for clear interfaces.
+- Use `computed` for derived state.
+
+### 3. Data Fetching
+- Use `@modular-rest/client` for all API interactions.
+- Wrap API calls in service-oriented composables (e.g., `useSongService`, `useAuthService`).
+- Handle loading and error states within the composable or the component using the returned state.
+
+## Design System Implementation
+
+Adhere strictly to the "Electric Melody" design system.
+
+### Color Tokens (Tailwind Classes)
+- **Surfaces**: `bg-surface-base`, `bg-surface-card`, `bg-surface-glass`
+- **Text**: `text-text-primary`, `text-text-secondary`, `text-text-accent`
+- **Borders**: `border-border-subtle`
+- **Gradients**: `bg-grad-primary`, `bg-grad-secondary`
+- **Tailwind 4 Syntax**: Use new gradient syntax (e.g., `bg-linear-to-br` instead of `bg-gradient-to-br`).
+
+### Typography
+- Use semantic tags (`h1`, `h2`, `p`) styled with utility classes.
+- Ensure multi-script support (Latin & Kurdish) via configured font families.
+
+## Documentation & Code Quality
+
+### 1. JSDoc
+- All composables and exported functions MUST have JSDoc comments explaining:
+  - Purpose
+  - Parameters (`@param`)
+  - Return value (`@returns`)
+  - Example usage (optional but recommended)
+
+### 2. Modularity
+- Break down large files.
+- If a component exceeds 200 lines, consider extracting sub-components.
+- If a composable handles multiple distinct domains, split it.
+
+## Code Examples
+
+### Preferred Composable Pattern
+```typescript
+import { dataProvider } from '@modular-rest/client'
+import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
+import type { Song } from '~/types/song.type'
+
+/**
+ * Service for managing song-related operations
+ */
+export const useSongService = () => {
+  
+  /**
+   * Fetches a list of songs with optional filters
+   * @param limit - Number of items to fetch
+   * @returns Promise containing array of songs
+   */
+  const fetchSongs = async (limit: number = 10): Promise<Song[]> => {
+    try {
+      return await dataProvider.find<Song>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.SONG,
+        query: {},
+        options: { limit }
+      })
+    } catch (error) {
+      console.error('Error fetching songs:', error)
+      return []
+    }
+  }
+
+  return {
+    fetchSongs
+  }
+}
+```
+
+### Preferred Component Pattern
+```vue
+<script setup lang="ts">
+import { useSongService } from '~/composables/useSongService'
+
+const props = defineProps<{
+  title: string
+}>()
+
+const { fetchSongs } = useSongService()
+// ... usage
+</script>
+
+<template>
+  <div class="bg-surface-card border border-border-subtle rounded-3xl p-4 shadow-card hover:shadow-hover transition-all">
+    <h3 class="text-text-primary font-bold">{{ title }}</h3>
+    <p class="text-text-secondary">Content here...</p>
+  </div>
+</template>
+```
