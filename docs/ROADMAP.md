@@ -1,87 +1,141 @@
 # Goranee v2 Roadmap
 
-This roadmap outlines the implementation plan to bring the Goranee v2 PRD to life, prioritizing core value (playing chords) and discovery.
+This roadmap outlines the high-level implementation epics for Goranee v2. Each item below represents a complex feature set that will require its own detailed technical implementation plan.
 
 ## Phase 1: Core MVP & Navigation (Immediate Priority)
 
 The goal is to have a browsable, usable site where users can find and play songs.
 
 ### 1. Homepage Completion (PG-001)
-- [ ] **Navbar Interactions**: Implement scroll-based glass effect (transparent on hero, glass on scroll).
-- [ ] **Search Wire-up**: Connect navbar search input to a functional results page or dropdown.
-- [ ] **Mobile Responsiveness**: Ensure mobile menu and search behavior work smoothly.
-- [ ] **Artist Reel Loading**: Add skeleton states for the artist carousel.
-- [ ] **Routing**: Wire up "View All" links to `/artists` and `/discovery`.
+*Refining the entry point to be responsive, interactive, and connected.*
+- [ ] **Navbar Interactions & State**:
+    - Implement scroll-aware background (transparent at top, frosted glass after 50px scroll).
+    - Manage mobile menu toggle state and animations.
+    - Ensure "Active Route" styling for navigation links.
+- [ ] **Global Search Integration**:
+    - Connect the Navbar search input to the `useTabService` or a dedicated search store.
+    - Implement a dropdown "Quick Results" preview and direct navigation to `/discovery?q=...` on submit.
+    - Handle mobile-specific search UI (expandable input or separate full-screen search overlay).
+- [ ] **Artist Reel & Skeleton Loading**:
+    - Implement proper loading states (Shimmer/Skeleton) for the `ArtistCard` carousel.
+    - Handle empty states and API errors gracefully (toast notifications).
+- [ ] **Routing & Navigation**:
+    - Wire up all "View All" and CTA links to their respective placeholder or real routes (`/artists`, `/discovery`, `/community`).
 
 ### 2. Chord View "Workstation" (PG-002)
-- [ ] **Route Implementation**: Create `pages/songs/[id].vue`.
-- [ ] **Data Fetching**: Fetch full song details + chord sections from backend.
-- [ ] **Immersive Header**: Blurred artist background, huge title, metadata chips.
-- [ ] **Chord Sheet**: Bind the existing `ChordSheet.vue` to real backend data.
-- [ ] **Floating Toolbox**:
-    - [ ] **Transpose**: Implement regex-based key shifting (client-side).
-    - [ ] **Auto-Scroll**: Variable speed scroll loop.
-    - [ ] **Font Size**: Reactive controls for chord sheet text.
-- [ ] **Recommendations**: "More by Artist" sidebar using `useTabService`.
+*The core product experience: A distraction-free, feature-rich player for musicians.*
+- [ ] **Dynamic Route & Data Layer (`pages/songs/[id].vue`)**:
+    - Create the dynamic route to handle song IDs/slugs.
+    - Implement `useSong(id)` composable to fetch full song details, including `sections`, `lines`, and `artists` population.
+    - Handle 404s and loading states for the entire page view.
+- [ ] **Immersive Header Component**:
+    - Build a responsive header showing the Artist image (blurred/hero), Song Title, and Metadata (Key, Rhythm, Difficulty).
+    - Integrate "Play Audio" (link to YouTube/MP3) and "Save to Library" actions.
+- [ ] **Interactive Chord Sheet**:
+    - Enhance `ChordSheet.vue` to accept raw chord-pro or structured JSON data.
+    - Implement chord rendering logic that supports transposition (shifting notes dynamically).
+    - Styling for readability: Large fonts, clear contrast, monospace chords.
+- [ ] **Floating Toolbox (The "Deck")**:
+    - **Transpose Engine**: Create a utility to shift chords (+/- semitones) and update the view instantly.
+    - **Auto-Scroll**: Implement a smooth vertical scroll with adjustable speed slider (0.5x to 2x).
+    - **Appearance Controls**: Font size toggles (A+/A-) and potentially High Contrast mode.
+    - **Responsive Behavior**: Dock to bottom on mobile, sticky sidebar/float on desktop.
+- [ ] **Sidebar & Recommendations**:
+    - Fetch and display "More from this Artist" (top 5 songs).
+    - Fetch "Similar Vibe" songs (based on Rhythm/Genre tags).
 
 ### 3. Artist Profile (PG-003)
-- [ ] **Route Implementation**: Create `pages/artists/[id].vue`.
-- [ ] **Hero Header**: Halo avatar, stats, bio.
-- [ ] **Discography Grid**:
-    - [ ] "Popular Now" list (top 5).
-    - [ ] Full searchable/sortable song grid.
-- [ ] **Similar Artists**: Re-use the artist reel component for "Fans Also Like".
+*A hub for artist discovery and discography exploration.*
+- [ ] **Artist Route (`pages/artists/[id].vue`)**:
+    - Fetch Artist profile data (bio, image, stats) and full song catalog.
+- [ ] **Hero & Bio Section**:
+    - "Halo" Avatar styling with gradient borders.
+    - Key stats display (Total Songs, Total Plays).
+    - Collapsible "About" text for long bios.
+    - use a mock test for bio info.
+- [ ] **Discography & Catalog Grid**:
+    - **Popularity List**: A stylized "Top 5" list with numbering (1-5) for their biggest hits.
+    - **Full Catalog Filter**: A searchable, sortable grid of all songs (Sort by: Date, Popularity, Key).
+- [ ] **"Fans Also Like"**:
+    - A horizontal reel of related artists (based on genre/era) to keep users browsing.
 
-### 4. Discovery & Search
-- [ ] **Search Page**: `pages/discovery.vue` (or `/search`).
-    - [ ] Grid results with pagination/infinite scroll.
-    - [ ] Filters: Genre, Key, Rhythm.
-    - [ ] Empty state: "Request this song".
-- [ ] **Artists Index**: `pages/artists/index.vue` listing all featured artists.
+### 4. Discovery & Search Engine
+*Helping users find specific content or explore new music.*
+- [ ] **Search Page (`pages/discovery.vue` or `/search`)**:
+    - Accept query parameters (`?q=`, `?genre=`, `?key=`).
+    - Implement a layout with Filters Sidebar (Desktop) / Drawer (Mobile) and Results Grid.
+- [ ] **Filtering Logic**:
+    - Filter by Genre (Pop, Folklore, etc.), Key (Cm, Am...), and Rhythm.
+    - Sort options (Newest, Most Viewed, A-Z).
+- [ ] **Results Grid**:
+    - Efficient pagination or Infinite Scroll for large result sets.
+    - Re-use `SongCard` with optimized props for list views.
+    - "No Results" empty state with a "Request Song" CTA.
+- [ ] **Artists Index (`pages/artists/index.vue`)**:
+    - A simple, paginated grid of all available artists, sortable by name or popularity.
 
 ---
 
 ## Phase 2: Community & Engagement
 
-Focus on user retention and content growth.
+Focus on user retention, identity, and content growth.
 
-### 1. Authentication UI
-- [ ] **Auth Modals**: Login / Register / Forgot Password UI using `useAuth`.
-- [ ] **User Menu**: Avatar in navbar for logged-in users (Profile, Settings, Logout).
-- [ ] **Anonymous Init**: Ensure `loginAsAnonymous` runs seamlessly for guests.
+### 1. Authentication & User Profile
+- [ ] **Auth UI & Flows**:
+    - Create attractive Login/Register modals (glassmorphism style).
+    - Implement "Forgot Password" flow.
+    - Handle auth persistence and token refresh in `useAuth`.
+- [ ] **User Navigation**:
+    - Dynamic Navbar state: Replace "Login" with User Avatar + Dropdown.
+    - Dropdown actions: "My Profile", "My Library", "Settings", "Logout".
+- [ ] **Anonymous Experience**:
+    - Ensure the "Guest" experience is smooth (anonymous token handling) before forced registration.
 
-### 2. Social Features
-- [ ] **Favorites**: "Heart" button on Song/Artist cards + "My Library" page.
-- [ ] **Comments**:
-    - [ ] Read-only comment list on Chord View.
-    - [ ] "Post Comment" form (auth-gated).
-- [ ] **User Submissions**:
-    - [ ] `pages/upload.vue` for submitting new chords (Markdown editor).
+### 2. Social Features & UGC
+- [ ] **Favorites & Library**:
+    - Implement "Toggle Favorite" action on all cards and headers.
+    - Create `pages/library.vue` to list saved Songs and followed Artists.
+- [ ] **Comments System**:
+    - **Display**: Render comments on Chord View (User avatar, name, date, text).
+    - **Action**: "Add Comment" form (requires login).
+    - **API**: Connect to backend comment endpoints (CRUD).
+- [ ] **User Submissions (`/upload`)**:
+    - **Wizard UI**: A multi-step form for users to submit new chords.
+        - Step 1: Metadata (Title, Artist, Key).
+        - Step 2: Editor (Markdown/ChordPro text area).
+        - Step 3: Review & Submit.
 
 ---
 
 ## Phase 3: Monetization & Polish
 
-Preparing for launch and revenue.
+Preparing for launch, revenue generation, and production quality.
 
-### 1. Monetization
-- [ ] **Premium Gating**:
-    - [ ] Lock "Download PDF" button.
-    - [ ] Limit Transpose range for free users (optional).
-- [ ] **Subscription UI**:
-    - [ ] `pages/pricing.vue` with plan comparison.
-    - [ ] "Upgrade" banners/badges.
+### 1. Monetization Layer
+- [ ] **Premium Feature Gating**:
+    - Identify premium actions (PDF Download, Advanced Transpose).
+    - Implement a "Locked" UI state (padlock icon, disabled button).
+    - Create an "Upgrade to Unlock" modal trigger.
+- [ ] **Subscription Pages**:
+    - `pages/pricing.vue`: Compare Free vs. Premium tiers.
+    - Integration with payment gateway (Stripe/LemonSqueezy) or backend checkout initialization.
 
-### 2. Polish & Performance
-- [ ] **Performance**: Image optimization (`<NuxtImg>`), lazy loading for heavy lists.
-- [ ] **SEO**: Meta tags for songs/artists (OpenGraph images, descriptions).
-- [ ] **Error Handling**: Global error toasts (e.g., "Network Error"), 404 pages.
-- [ ] **Localization**: Full pass on `en.json` / `fa.json` for new pages.
+### 2. Polish, SEO & Performance
+- [ ] **SEO Strategy**:
+    - Dynamic `useHead` meta tags for every Song and Artist page (Title, Description, OG Image).
+    - Sitemap generation.
+- [ ] **Performance Optimization**:
+    - Implement `<NuxtImg>` for optimized image delivery and format selection (WebP).
+    - Code splitting for heavy components (e.g., the Toolbox, Comment Editor).
+    - Virtual scrolling for very long song lists.
+- [ ] **Error Handling & Localization**:
+    - Global error boundary and Toast notification system.
+    - 404 (Not Found) and 500 (Server Error) page designs.
+    - Complete `en.json` / `fa.json` translation keys for all new features.
 
 ---
 
 ## Status Legend
-- [ ] Pending
-- [x] Completed
-- [~] In Progress
-
+- [ ] **Pending**: Not started.
+- [~] **In Progress**: Currently being implemented.
+- [x] **Completed**: Finished and verified.

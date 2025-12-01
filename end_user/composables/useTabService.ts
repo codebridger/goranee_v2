@@ -155,10 +155,44 @@ export const useTabService = () => {
     })
   }
 
+  const searchSongs = async (
+    query: string,
+    limit: number = 5
+  ): Promise<SongWithPopulatedRefs[]> => {
+    try {
+      if (!query || query.trim().length === 0) return []
+
+      const songs = await dataProvider.find<Song>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.SONG,
+        query: {
+          title: { $regex: query, $options: 'i' }
+        },
+        options: {
+          limit,
+          populate: ['artists'],
+          projection: {
+            title: 1,
+            rhythm: 1,
+            image: 1,
+            artists: 1,
+            'chords.keySignature': 1
+          },
+        },
+      })
+
+      return _processSongs(songs || [])
+    } catch (error) {
+      console.error('Failed to search songs:', error)
+      return []
+    }
+  }
+
   return {
     fetchSongs,
     fetchSongwithPagination,
     fetchFeaturedArtists,
+    searchSongs,
     getImageUrl,
   }
 }

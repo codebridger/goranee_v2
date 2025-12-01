@@ -43,23 +43,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-surface-base text-text-primary transition-colors duration-300 font-sans relative">
-    <!-- Dev Mode Floating Widget -->
-    <DevFloatingWidget v-model:is-loading="isLoading" />
-
-    <!-- Hero Section with Overlaid Navbar -->
-    <div class="relative">
-      <!-- Navbar overlaid on hero -->
-      <div class="absolute top-0 left-0 right-0 z-50">
-        <Navbar :logo="t('navbar.logo')" :search-placeholder="t('navbar.searchPlaceholder')" :links="[
-          { label: t('navbar.links.discovery'), to: '/discovery' },
-          { label: t('navbar.links.artists'), to: '/artists' },
-          { label: t('navbar.links.community'), to: '/community' },
-        ]" :login-text="t('navbar.login')" :explore-text="t('navbar.explore')" :is-transparent="true" />
-      </div>
-
-      <Hero :songs="heroSongs" :is-loading="isLoading" />
-    </div>
+  <div class="bg-surface-base text-text-primary transition-colors duration-300 font-sans relative">
+    <!-- Hero Section -->
+    <Hero :songs="heroSongs" :is-loading="isLoading" />
 
     <!-- --- SONG DISCOVERY --- -->
     <section class="px-6 py-16 max-w-7xl mx-auto">
@@ -96,17 +82,17 @@ onMounted(async () => {
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center mb-8">
           <Typography variant="h2" class="font-bold">{{ t('home.artists.title') }}</Typography>
-          <a href="#" class="text-text-accent font-bold text-sm flex items-center hover:underline group">
+          <NuxtLink to="/artists" class="text-text-accent font-bold text-sm flex items-center hover:underline group">
             {{ t('home.artists.viewAll') }}
             <ArrowRight
               class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180" />
-          </a>
+          </NuxtLink>
         </div>
 
         <div v-if="isLoading || featuredArtists.length > 0"
           class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide">
           <template v-if="isLoading">
-            <!-- Skeleton for artists could go here if needed -->
+            <SkeletonArtistCard v-for="i in 6" :key="i" class="shrink-0 snap-center" />
           </template>
           <template v-else>
             <div v-for="artist in featuredArtists" :key="artist._id"
@@ -126,22 +112,6 @@ onMounted(async () => {
       :cta-description="t('community.description')" :cta-description-highlight="t('community.descriptionHighlight')"
       :cta-button-text="t('community.button')" />
 
-    <Footer :description="t('footer.description')" :discover-title="t('footer.sections.discover.title')"
-      :discover-links="{
-        newArrivals: t('footer.sections.discover.newArrivals'),
-        trendingCharts: t('footer.sections.discover.trendingCharts'),
-        featuredArtists: t('footer.sections.discover.featuredArtists'),
-        songRequests: t('footer.sections.discover.songRequests'),
-      }" :community-title="t('footer.sections.community.title')" :community-links="{
-        signUpLogin: t('footer.sections.community.signUpLogin'),
-        submitChord: t('footer.sections.community.submitChord'),
-        topContributors: t('footer.sections.community.topContributors'),
-        discordServer: t('footer.sections.community.discordServer'),
-      }" :legal-title="t('footer.sections.legal.title')" :legal-links="{
-        privacyPolicy: t('footer.sections.legal.privacyPolicy'),
-        termsOfService: t('footer.sections.legal.termsOfService'),
-        dmcaGuidelines: t('footer.sections.legal.dmcaGuidelines'),
-      }" :copyright="t('footer.copyright')" :design-system="t('footer.designSystem')" />
   </div>
 </template>
 
