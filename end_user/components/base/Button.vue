@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 const props = defineProps<{
-  variant?: 'primary' | 'secondary'
+  variant?: 'primary' | 'secondary' | 'link'
   size?: 'sm' | 'md' | 'lg'
   block?: boolean
   disabled?: boolean
@@ -19,6 +19,7 @@ const classes = computed(() => {
       'bg-grad-primary text-white shadow-lg hover:shadow-pink-500/30 hover:-translate-y-0.5 active:scale-95',
     secondary:
       'bg-transparent border border-border-subtle text-text-primary hover:bg-surface-base/50',
+    link: 'bg-transparent text-text-accent hover:underline p-0 shadow-none',
   }
 
   const sizes = {

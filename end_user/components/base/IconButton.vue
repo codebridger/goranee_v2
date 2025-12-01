@@ -18,7 +18,7 @@ const classes = computed(() => {
   const variants = {
     primary: 'bg-grad-primary text-white shadow-md hover:scale-105',
     secondary:
-      'bg-white dark:bg-white/5 border border-border-subtle text-text-secondary hover:text-text-accent',
+      'bg-surface-card border border-border-subtle text-text-secondary hover:text-text-accent',
   }
 
   const sizes = {
