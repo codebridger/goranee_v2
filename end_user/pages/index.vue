@@ -3,41 +3,82 @@ import { ref, computed, onMounted } from 'vue'
 import { ArrowRight, Music } from 'lucide-vue-next'
 
 import { useTabService } from '~/composables/useTabService'
-import type { SongWithPopulatedRefs, Artist } from '~/types/song.type'
+import type { SongWithPopulatedRefs, Artist, Genre } from '~/types/song.type'
 
 const { t } = useI18n()
 const tabService = useTabService()
 
 const isLoading = ref(true)
+const isListLoading = ref(true)
 const heroSongs = ref<SongWithPopulatedRefs[]>([])
 const trendingSongs = ref<SongWithPopulatedRefs[]>([])
 const featuredArtists = ref<Artist[]>([])
+const genres = ref<Genre[]>([])
+const songCache = ref<Record<string, SongWithPopulatedRefs[]>>({})
 
 const tabs = computed(() => [
   t('home.discovery.tabs.all'),
-  t('home.discovery.tabs.pop'),
-  t('home.discovery.tabs.folklore'),
-  t('home.discovery.tabs.slow'),
-  t('home.discovery.tabs.halparke'),
+  ...genres.value.map(g => g.title || '').filter(Boolean)
 ])
 
 const activeTab = ref(t('home.discovery.tabs.all'))
 
+const handleTabChange = async (tabName: string) => {
+  activeTab.value = tabName
+
+  // If cache exists, use it
+  if (songCache.value[tabName]) {
+    trendingSongs.value = songCache.value[tabName]
+    return
+  }
+
+  isListLoading.value = true
+  try {
+    let songs: SongWithPopulatedRefs[] = []
+
+    if (tabName === t('home.discovery.tabs.all')) {
+      // For 'All', we fetch the latest songs
+      songs = await tabService.fetchSongs(8, 5, {}, {}, { _id: -1 })
+    } else {
+      // Find the genre object by title
+      const genre = genres.value.find(g => g.title === tabName)
+      if (genre && genre._id) {
+        // Fetch songs filtered by genre ID, sorted by latest
+        songs = await tabService.fetchSongs(8, 0, {}, { genres: genre._id }, { _id: -1 })
+      }
+    }
+
+    // Cache the result
+    songCache.value[tabName] = songs
+    trendingSongs.value = songs
+  } catch (error) {
+    console.error(`Failed to fetch songs for tab ${tabName}:`, error)
+  } finally {
+    isListLoading.value = false
+  }
+}
+
 onMounted(async () => {
   isLoading.value = true
   try {
-    const [hero, trending, artists] = await Promise.all([
-      tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }),
-      tabService.fetchSongs(8, 5),
+    const [hero, trending, artists, fetchedGenres] = await Promise.all([
+      tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }, {}, { _id: -1 }),
+      tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
       tabService.fetchFeaturedArtists(),
+      tabService.fetchGenres(),
     ])
     heroSongs.value = hero
     trendingSongs.value = trending
     featuredArtists.value = artists
+    genres.value = fetchedGenres
+
+    // Cache initial "All" tab data
+    songCache.value[t('home.discovery.tabs.all')] = trending
   } catch (error) {
     console.error('Failed to load home data:', error)
   } finally {
     isLoading.value = false
+    isListLoading.value = false
   }
 })
 </script>
@@ -56,11 +97,11 @@ onMounted(async () => {
             t('home.discovery.subtitle')
             }}</Typography>
         </div>
-        <TabFilter :tabs="tabs" :activeTab="activeTab" @change="activeTab = $event" />
+        <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <template v-if="isLoading">
+        <template v-if="isListLoading">
           <SkeletonCard v-for="i in 4" :key="i" />
         </template>
         <template v-else-if="trendingSongs.length > 0">
