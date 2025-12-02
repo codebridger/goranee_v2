@@ -142,9 +142,9 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
     Solution: Use explicit RTL/LTR variants to control positioning
   -->
     <div :class="[
-        'relative w-full overflow-hidden text-white font-sans max-h-[1080px]',
-        'pt-20 h-[80dvh]',
-        'md:pt-0 md:h-[80dvh]',
+        'relative w-full overflow-hidden text-white font-sans flex flex-col',
+        'pt-20 min-h-[max(80dvh,680px)] h-auto',
+        'md:pt-0 md:h-[80dvh] md:min-h-0 md:max-h-[1080px] md:block',
         'lg:h-dvh'
     ]">
 
@@ -210,11 +210,11 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
             <!-- Mobile Content Wrapper (flex column for mobile, removed on desktop) -->
             <div :class="[
-                'flex flex-col h-full pt-4 px-4 pb-16',
+                'flex-1 flex flex-col w-full pt-4 px-4 pb-16',
                 'md:hidden'
             ]">
                 <!-- Layer A: Search (Top) -->
-                <div class="w-full mb-4 relative z-40 shrink-0">
+                <div class="w-full mb-4 relative z-40 shrink-0 px-8">
                     <Input v-model="searchQuery" @input="performSearch" @keydown.enter="handleSearchSubmit"
                         :placeholder="t('navbar.searchPlaceholder')" :icon="Search" />
 
@@ -251,11 +251,11 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                 </div>
 
                 <!-- Layer B: Artist Stage (Middle) -->
-                <div class="flex-1 flex flex-col justify-center min-h-0">
+                <div class="flex-1 flex flex-col justify-center min-h-0 gap-6">
                     <!-- Artist Image -->
                     <div :class="[
                         'z-10 flex items-center justify-center pointer-events-none px-4',
-                        'relative w-full mb-3 shrink-0',
+                        'relative w-full shrink-0',
                         'h-40 sm:h-56'
                     ]">
                         <div :class="[
@@ -333,7 +333,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                             <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                                 class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                                 <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                                    }}]</span>
+                                                }}]</span>
                                                 <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                             </div>
                                         </template>
@@ -352,36 +352,36 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                             </Transition>
                         </div>
                     </div>
-                </div>
 
-                <!-- Layer C: Action Buttons (Bottom) -->
-                <div class="mt-4 shrink-0 z-30">
-                    <Transition name="slide-fade" mode="out-in">
-                        <div :key="activeSong._id" :class="[
-                            'flex items-center gap-3 animate-fade-in-up delay-150',
-                            'justify-center'
-                        ]">
-                            <Button variant="secondary" size="md" to="/discovery" :class="[
-                                'rounded-full', 'px-4 py-2',
-                                'border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm',
-                                'transition-all hover:scale-105',
-                                'flex items-center justify-center font-bold'
+                    <!-- Layer C: Action Buttons (Bottom) -->
+                    <div class="shrink-0 z-30">
+                        <Transition name="slide-fade" mode="out-in">
+                            <div :key="activeSong._id" :class="[
+                                'flex items-center gap-3 animate-fade-in-up delay-150',
+                                'justify-center'
                             ]">
-                                <span>{{ t('navbar.explore') }}</span>
-                            </Button>
+                                <Button variant="secondary" size="md" to="/discovery" :class="[
+                                    'rounded-full', 'px-4 py-2',
+                                    'border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm',
+                                    'transition-all hover:scale-105',
+                                    'flex items-center justify-center font-bold'
+                                ]">
+                                    <span>{{ t('navbar.explore') }}</span>
+                                </Button>
 
-                            <Button variant="primary" size="md" :class="[
-                                'rounded-full', 'px-4 py-2',
-                                'shadow-lg shadow-primary/30 hover:shadow-primary/50',
-                                'transition-all hover:scale-105',
-                                'bg-linear-to-r! from-primary! to-pink-600!',
-                                'flex items-center space-x-1 font-bold'
-                            ]">
-                                <span>{{ $t('hero.startPlaying') }}</span>
-                                <Play class="w-3 h-3 me-2 fill-current rtl:rotate-180" />
-                            </Button>
-                        </div>
-                    </Transition>
+                                <Button variant="primary" size="md" :class="[
+                                    'rounded-full', 'px-4 py-2',
+                                    'shadow-lg shadow-primary/30 hover:shadow-primary/50',
+                                    'transition-all hover:scale-105',
+                                    'bg-linear-to-r! from-primary! to-pink-600!',
+                                    'flex items-center space-x-1 font-bold'
+                                ]">
+                                    <span>{{ $t('hero.startPlaying') }}</span>
+                                    <Play class="w-3 h-3 me-2 fill-current rtl:rotate-180" />
+                                </Button>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
             </div>
 
@@ -431,7 +431,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                        }}]</span>
+                                            }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
@@ -539,7 +539,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                        }}]</span>
+                                            }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
