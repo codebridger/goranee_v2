@@ -15,7 +15,7 @@ The goal is to have a browsable, usable site where users can find and play songs
 - [~] **Global Search Integration**:
     - [x] Connect the Navbar search input to the `useTabService` or a dedicated search store.
     - [x] Implement a dropdown "Quick Results" preview and direct navigation to `/discovery?q=...` on submit.
-    - [ ] Handle mobile-specific search UI (expandable input or separate full-screen search overlay).
+    - [x] Handle mobile-specific search UI (expandable input or separate full-screen search overlay).
 - [x] **Artist Reel & Skeleton Loading**:
     - [x] Implement proper loading states (Shimmer/Skeleton) for the `ArtistCard` carousel.
     - [x] Handle empty states and API errors gracefully (toast notifications).
