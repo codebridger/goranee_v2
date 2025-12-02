@@ -32,16 +32,14 @@ const toggleBio = () => {
 </script>
 
 <template>
-  <div
-    class="relative w-full overflow-hidden bg-surface-card/50 border-b border-border-subtle pb-12 pt-24 lg:pt-28">
+  <div class="relative w-full overflow-hidden bg-surface-card/50 border-b border-border-subtle pb-12 pt-24 lg:pt-28">
     <!-- Animated Pattern Background -->
     <div class="absolute inset-0 pointer-events-none">
       <!-- Base surface -->
       <div class="absolute inset-0 bg-surface-base"></div>
 
       <!-- Animated blobs (Wave variant) -->
-      <div
-        class="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full bg-grad-primary opacity-40 blur-3xl"
+      <div class="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full bg-grad-primary opacity-40 blur-3xl"
         :class="props.motionVariant === 'wave' ? 'artist-hero-blob-wave' : 'artist-hero-blob-static'">
       </div>
       <div
@@ -53,31 +51,21 @@ const toggleBio = () => {
       <div class="absolute inset-0 artist-hero-noise mix-blend-soft-light opacity-60"></div>
 
       <!-- Light sweep (sweep variant) -->
-      <div
-        v-if="props.motionVariant === 'sweep'"
-        class="absolute inset-0 artist-hero-light">
+      <div v-if="props.motionVariant === 'sweep'" class="absolute inset-0 artist-hero-light">
       </div>
 
       <!-- Floating dust particles (dust variant) -->
-      <div
-        v-if="props.motionVariant === 'dust'"
-        class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          v-for="i in 14"
-          :key="i"
-          class="artist-hero-dust"
-          :style="{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 8}s`,
-            animationDuration: `${12 + Math.random() * 8}s`,
-          }"
-        />
+      <div v-if="props.motionVariant === 'dust'" class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div v-for="i in 14" :key="i" class="artist-hero-dust" :style="{
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 8}s`,
+          animationDuration: `${12 + Math.random() * 8}s`,
+        }" />
       </div>
 
       <!-- Rotating vignette (vignette variant) -->
-      <div
-        v-if="props.motionVariant === 'vignette'"
+      <div v-if="props.motionVariant === 'vignette'"
         class="absolute -top-40 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full artist-hero-vignette">
       </div>
     </div>
@@ -88,8 +76,7 @@ const toggleBio = () => {
         <div class="artist-hero-image flex-1 flex justify-center w-full lg:w-auto">
           <div class="relative group">
             <!-- Pulsing accent ring (pulse variant) -->
-            <div
-              v-if="props.motionVariant === 'pulse'"
+            <div v-if="props.motionVariant === 'pulse'"
               class="absolute inset-[-10px] rounded-full artist-hero-pulse-ring">
             </div>
             <div
@@ -109,7 +96,8 @@ const toggleBio = () => {
         </div>
 
         <!-- Bio Side (LTR: Right, RTL: Left) -->
-        <div class="artist-hero-bio flex-1 flex flex-col items-center lg:items-start text-center lg:text-start w-full lg:w-auto">
+        <div
+          class="artist-hero-bio flex-1 flex flex-col items-center lg:items-start text-center lg:text-start w-full lg:w-auto">
           <!-- Name & Stats -->
           <h1
             class="text-4xl lg:text-6xl font-black mb-4 tracking-tight text-transparent bg-clip-text bg-linear-to-r from-text-primary to-text-secondary leading-tight">
@@ -173,6 +161,7 @@ const toggleBio = () => {
   [dir="ltr"] .artist-hero-image {
     order: 1;
   }
+
   [dir="ltr"] .artist-hero-bio {
     order: 2;
   }
@@ -181,6 +170,7 @@ const toggleBio = () => {
   [dir="rtl"] .artist-hero-image {
     order: 2;
   }
+
   [dir="rtl"] .artist-hero-bio {
     order: 1;
   }
@@ -189,21 +179,26 @@ const toggleBio = () => {
 @keyframes artist-hero-blob {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.5;
   }
+
   50% {
-    transform: translate3d(20px, -30px, 0) scale(1.08);
+    transform: translate3d(80px, -110px, 0) scale(1.25);
+    opacity: 0.9;
   }
+
   100% {
     transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.5;
   }
 }
 
 .artist-hero-blob-static {
-  /* no animation, just a static gradient blob */
+  animation: none;
 }
 
 .artist-hero-blob-wave {
-  animation: artist-hero-blob 18s ease-in-out infinite;
+  animation: artist-hero-blob 8s ease-in-out infinite;
 }
 
 .artist-hero-blob-wave-delay-1 {
@@ -220,13 +215,16 @@ const toggleBio = () => {
     opacity: 0;
     transform: translate3d(-30%, 0, 0);
   }
+
   25% {
     opacity: 0.7;
   }
+
   75% {
     opacity: 0.7;
     transform: translate3d(30%, 0, 0);
   }
+
   100% {
     opacity: 0;
     transform: translate3d(60%, 0, 0);
@@ -234,12 +232,10 @@ const toggleBio = () => {
 }
 
 .artist-hero-light {
-  background-image: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.3) 40%,
-    rgba(255, 255, 255, 0) 80%
-  );
+  background-image: linear-gradient(120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 40%,
+      rgba(255, 255, 255, 0) 80%);
   mix-blend-mode: screen;
   animation: artist-hero-light 16s ease-in-out infinite;
 }
@@ -249,13 +245,16 @@ const toggleBio = () => {
     transform: translate3d(0, 10px, 0);
     opacity: 0;
   }
+
   20% {
     opacity: 0.6;
   }
+
   80% {
     opacity: 0.6;
     transform: translate3d(0, -20px, 0);
   }
+
   100% {
     opacity: 0;
     transform: translate3d(0, -30px, 0);
@@ -278,32 +277,43 @@ const toggleBio = () => {
   0% {
     transform: translate3d(-50%, 0, 0) rotate(0deg);
   }
+
+  50% {
+    transform: translate3d(-50%, 0, 0) rotate(180deg);
+  }
+
   100% {
     transform: translate3d(-50%, 0, 0) rotate(360deg);
   }
 }
 
 .artist-hero-vignette {
-  background: radial-gradient(circle at center,
-      rgba(255, 255, 255, 0.12) 0,
-      rgba(255, 255, 255, 0.04) 35%,
-      transparent 65%);
+  background:
+    radial-gradient(circle at 30% 25%,
+      rgba(255, 255, 255, 0.26) 0,
+      rgba(255, 255, 255, 0.10) 35%,
+      transparent 70%),
+    radial-gradient(circle at 75% 70%,
+      rgba(255, 255, 255, 0.18) 0,
+      transparent 60%);
   mix-blend-mode: soft-light;
-  animation: artist-hero-vignette-rotate 40s linear infinite;
+  animation: artist-hero-vignette-rotate 22s linear infinite;
 }
 
 @keyframes artist-hero-pulse {
   0% {
     transform: scale(1);
-    opacity: 0.4;
+    opacity: 0.1;
   }
+
   50% {
     transform: scale(1.06);
     opacity: 0.9;
   }
+
   100% {
     transform: scale(1);
-    opacity: 0.4;
+    opacity: 0.1;
   }
 }
 
@@ -316,5 +326,3 @@ const toggleBio = () => {
   mix-blend-mode: screen;
 }
 </style>
-
-

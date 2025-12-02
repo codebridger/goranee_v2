@@ -123,7 +123,7 @@ useHead({
 
 		<div v-else-if="artist">
 			<ArtistHero :artist="artist" :songs-count="songsCount" :total-plays="totalPlays" :artist-image="artistImage"
-				:gradient-class="gradientClass" :bio="mockBio" motion-variant="dust" />
+				:gradient-class="gradientClass" :bio="mockBio" motion-variant="vignette" />
 
 			<div class="container mx-auto px-4 py-12 space-y-16">
 
