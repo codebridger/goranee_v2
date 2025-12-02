@@ -3,22 +3,28 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Play, Share2, Music, Mic2, ChevronDown, ChevronUp } from 'lucide-vue-next'
 import type { Artist } from '~/types/song.type'
-import Button from '~/components/base/Button.vue'
+import IconButton from '~/components/base/IconButton.vue'
 
-const props = withDefaults(defineProps<{
-  artist: Artist | null
-  songsCount: number
-  totalPlays: number
-  artistImage?: string
-  gradientClass: string
-  bio: string
-  motionVariant?: 'wave' | 'sweep' | 'dust' | 'vignette' | 'pulse'
-}>(), {
-  motionVariant: 'wave',
-})
+const props = withDefaults(
+  defineProps<{
+    artist: Artist | null
+    songsCount: number
+    totalPlays: number
+    artistImage?: string
+    gradientClass: string
+    motionVariant?: 'wave' | 'sweep' | 'dust' | 'vignette' | 'pulse'
+  }>(),
+  {
+    motionVariant: 'wave',
+  }
+)
 
 const showFullBio = ref(false)
 const { t } = useI18n()
+
+const hasBio = computed(
+  () => !!props.artist?.bio && props.artist.bio.trim().length > 0
+)
 
 const bioToggleText = computed(() =>
   showFullBio.value ? t('common.showLess') : t('common.readMore')
@@ -100,39 +106,30 @@ const toggleBio = () => {
           class="artist-hero-bio flex-1 flex flex-col items-center lg:items-start text-center lg:text-start w-full lg:w-auto">
           <!-- Name & Stats -->
           <h1
-            class="text-4xl lg:text-6xl font-black mb-4 tracking-tight text-transparent bg-clip-text bg-linear-to-r from-text-primary to-text-secondary leading-tight">
+            class="text-4xl lg:text-6xl font-black mb-8 tracking-tight text-transparent bg-clip-text bg-linear-to-r from-text-primary to-text-secondary leading-tight">
             {{ props.artist?.name }}
           </h1>
 
-          <div
-            class="flex items-center gap-6 text-text-secondary text-base font-medium mb-8 bg-surface-card/60 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
-            <div class="flex items-center gap-2">
-              <Music class="w-5 h-5 text-brand-primary" />
-              <span>{{ props.songsCount }} {{ t('common.songs') }}</span>
+          <div class="flex items-center gap-4 text-text-secondary text-base font-medium mb-8">
+            <div
+              class="flex items-center gap-6 bg-surface-card/60 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
+              <div class="flex items-center gap-2">
+                <Music class="w-5 h-5 text-brand-primary" />
+                <span>{{ props.songsCount }} {{ t('common.songs') }}</span>
+              </div>
+              <div class="w-px h-4 bg-border-subtle"></div>
+              <div class="flex items-center gap-2">
+                <Play class="w-5 h-5 text-text-accent" />
+                <span>{{ props.totalPlays }} {{ t('common.plays') }}</span>
+              </div>
             </div>
-            <div class="w-px h-4 bg-border-subtle"></div>
-            <div class="flex items-center gap-2">
-              <Play class="w-5 h-5 text-text-accent" />
-              <span>{{ props.totalPlays }} {{ t('common.plays') }}</span>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-4 mb-8">
-            <Button variant="primary" size="lg"
-              class="rounded-full px-10 shadow-xl hover:shadow-2xl hover:shadow-brand-primary/25">
-              {{ t('common.follow') }}
-            </Button>
-            <button
-              class="p-4 rounded-full bg-surface-card border border-border-subtle hover:bg-surface-hover hover:border-text-accent/30 transition-all duration-300 text-text-secondary hover:text-text-primary shadow-sm hover:shadow-lg">
-              <Share2 class="w-6 h-6" />
-            </button>
+            <IconButton variant="secondary" size="md" :icon="Share2" ariaLabel="Share artist" />
           </div>
 
           <!-- Bio -->
-          <div class="max-w-xl text-text-secondary leading-relaxed relative text-lg">
+          <div v-if="hasBio" class="max-w-xl text-text-secondary leading-relaxed relative text-lg">
             <div :class="{ 'line-clamp-3': !showFullBio }" class="transition-all duration-300">
-              <p>{{ props.bio }}</p>
+              <p>{{ props.artist?.bio }}</p>
             </div>
             <button @click="toggleBio"
               class="mt-3 text-brand-primary text-sm font-bold flex items-center gap-1 hover:underline focus:outline-none">

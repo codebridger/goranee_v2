@@ -55,6 +55,7 @@ export interface Artist {
   name_seo?: string
   chords?: number
   image?: FileReference
+  bio?: string
 }
 
 export interface SongChords {

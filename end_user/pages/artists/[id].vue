@@ -21,9 +21,6 @@ const songs = ref<SongWithPopulatedRefs[]>([]);
 const relatedArtists = ref<Artist[]>([]);
 const isLoading = ref(true);
 
-// Mock Bio Text
-const mockBio = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. \n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.";
-
 const loadData = async () => {
 	isLoading.value = true;
 	try {
@@ -123,7 +120,7 @@ useHead({
 
 		<div v-else-if="artist">
 			<ArtistHero :artist="artist" :songs-count="songsCount" :total-plays="totalPlays" :artist-image="artistImage"
-				:gradient-class="gradientClass" :bio="mockBio" motion-variant="vignette" />
+				:gradient-class="gradientClass" motion-variant="vignette" />
 
 			<div class="container mx-auto px-4 py-12 space-y-16">
 
