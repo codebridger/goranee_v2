@@ -211,6 +211,63 @@ export const useTabService = () => {
     }
   }
 
+  const fetchArtist = async (id: string): Promise<Artist | null> => {
+    try {
+      const artists = await dataProvider.find<Artist>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.ARTIST,
+        query: { _id: id },
+        options: { limit: 1 },
+      })
+
+      const artist = artists && artists.length > 0 ? artists[0] : null
+
+      if (artist) {
+        // Mock color for gradient border
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(artist as any)._mockColor = getRandomElement([
+          'from-pink-500 to-rose-500',
+          'from-purple-500 to-indigo-500',
+          'from-blue-500 to-cyan-500',
+          'from-orange-500 to-red-500',
+          'from-emerald-500 to-teal-500',
+        ])
+      }
+
+      return artist
+    } catch (error) {
+      console.error('Failed to fetch artist:', error)
+      return null
+    }
+  }
+
+  const fetchSongsByArtist = async (artistId: string): Promise<SongWithPopulatedRefs[]> => {
+    try {
+      const songs = await dataProvider.find<Song>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.SONG,
+        query: {
+          artists: artistId,
+        },
+        options: {
+          populate: ['artists'],
+          projection: {
+            title: 1,
+            rhythm: 1,
+            image: 1,
+            artists: 1,
+            'chords.keySignature': 1,
+            'chords.list.title': 1,
+          },
+        },
+      })
+      return _processSongs(songs || [])
+    } catch (error) {
+      console.error('Failed to fetch songs by artist:', error)
+      return []
+    }
+  }
+
   return {
     fetchSongs,
     fetchSongwithPagination,
@@ -218,6 +275,8 @@ export const useTabService = () => {
     fetchGenres,
     searchSongs,
     getImageUrl,
+    fetchArtist,
+    fetchSongsByArtist,
   }
 }
 

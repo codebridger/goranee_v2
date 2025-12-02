@@ -137,7 +137,8 @@ onMounted(async () => {
           </template>
           <template v-else>
             <div v-for="artist in featuredArtists" :key="artist._id"
-              class="flex flex-col items-center shrink-0 group cursor-pointer snap-center">
+              class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
+              @click="$router.push(`/artists/${artist._id}`)">
               <ArtistCard :name="artist.name" :song-count="artist.chords || 0" :songs-label="t('home.artists.songs')"
                 :gradient-border="(artist as any)._mockColor" />
             </div>
