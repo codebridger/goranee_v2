@@ -214,37 +214,43 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                 'md:hidden'
             ]">
                 <!-- Layer A: Search (Top) -->
-                <div class="w-full mb-4 relative z-40 shrink-0 px-8">
-                    <Input v-model="searchQuery" @input="performSearch" @keydown.enter="handleSearchSubmit"
-                        :placeholder="t('navbar.searchPlaceholder')" :icon="Search" />
+                <div class="w-full mb-4 relative z-40 shrink-0 px-8 group">
+                    <div class="relative">
+                        <div
+                            class="absolute start-4 top-1/2 -translate-y-1/2 text-white/60 group-focus-within:text-white transition-colors pointer-events-none">
+                            <Search class="w-5 h-5" />
+                        </div>
+                        <input type="text" v-model="searchQuery" @input="performSearch"
+                            @keydown.enter="handleSearchSubmit" :placeholder="t('navbar.searchPlaceholder')"
+                            class="w-full bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/40 focus:ring-2 focus:ring-white/20 rounded-full py-3 px-6 ps-12 text-white placeholder-white/50 outline-none transition-all duration-300" />
+                    </div>
 
                     <!-- Search Dropdown -->
                     <div v-if="showResults && searchQuery.length >= 2"
-                        class="absolute top-full mt-2 left-0 right-0 bg-surface-card border border-border-subtle rounded-xl shadow-xl overflow-hidden z-50 max-h-60 overflow-y-auto">
-                        <div v-if="isSearching" class="p-4 flex justify-center text-text-secondary">
+                        class="absolute top-full mt-2 left-0 right-0 bg-[#1F121D] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 max-h-60 overflow-y-auto">
+                        <div v-if="isSearching" class="p-4 flex justify-center text-gray-400">
                             <Loader2 class="w-6 h-6 animate-spin" />
                         </div>
                         <div v-else-if="searchResults.length > 0">
                             <div v-for="song in searchResults" :key="song._id" @click="song._id && goToSong(song._id)"
-                                class="p-3 hover:bg-surface-base cursor-pointer border-b border-border-subtle last:border-0 flex items-center gap-3">
-                                <div
-                                    class="w-10 h-10 rounded bg-surface-base flex items-center justify-center shrink-0">
-                                    <Music v-if="!song.image" class="w-5 h-5 text-text-secondary" />
+                                class="p-3 hover:bg-white/5 cursor-pointer border-b border-white/10 last:border-0 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded bg-white/10 flex items-center justify-center shrink-0">
+                                    <Music v-if="!song.image" class="w-5 h-5 text-gray-400" />
                                     <img v-else :src="getImageUrl(song.image)"
                                         class="w-full h-full object-cover rounded" />
                                 </div>
                                 <div>
-                                    <div class="font-bold text-sm text-text-primary text-left">{{ song.title }}</div>
-                                    <div class="text-xs text-text-secondary text-left">{{ song.artists?.[0]?.name }}
+                                    <div class="font-bold text-sm text-white text-left">{{ song.title }}</div>
+                                    <div class="text-xs text-gray-400 text-left">{{ song.artists?.[0]?.name }}
                                     </div>
                                 </div>
                             </div>
                             <div @click="handleSearchSubmit"
-                                class="p-3 text-center text-xs font-bold text-text-accent cursor-pointer hover:bg-surface-base">
+                                class="p-3 text-center text-xs font-bold text-primary cursor-pointer hover:bg-white/5">
                                 {{ t('navbar.viewAllResults') }}
                             </div>
                         </div>
-                        <div v-else class="p-4 text-center text-text-secondary text-sm">
+                        <div v-else class="p-4 text-center text-gray-400 text-sm">
                             {{ t('navbar.noResults', { query: searchQuery }) }}
                         </div>
                     </div>
@@ -333,7 +339,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                             <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                                 class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                                 <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                                }}]</span>
+                                                    }}]</span>
                                                 <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                             </div>
                                         </template>
@@ -431,7 +437,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
+                                        }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
@@ -539,7 +545,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
+                                        }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
