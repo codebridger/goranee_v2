@@ -72,27 +72,27 @@ const props = withDefaults(
 			<div>
 				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">{{ discoverTitle }}</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
-					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.newArrivals }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.trendingCharts }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.featuredArtists }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ discoverLinks.songRequests }}</li>
+					<li><NuxtLink to="/discovery?sort=new" class="hover:text-white cursor-pointer transition">{{ discoverLinks.newArrivals }}</NuxtLink></li>
+					<li><NuxtLink to="/discovery?sort=trending" class="hover:text-white cursor-pointer transition">{{ discoverLinks.trendingCharts }}</NuxtLink></li>
+					<li><NuxtLink to="/artists" class="hover:text-white cursor-pointer transition">{{ discoverLinks.featuredArtists }}</NuxtLink></li>
+					<li><NuxtLink to="/community?tag=requests" class="hover:text-white cursor-pointer transition">{{ discoverLinks.songRequests }}</NuxtLink></li>
 				</ul>
 			</div>
 			<div>
 				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">{{ communityTitle }}</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
-					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.signUpLogin }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.submitChord }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.topContributors }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ communityLinks.discordServer }}</li>
+					<li><NuxtLink to="/login" class="hover:text-white cursor-pointer transition">{{ communityLinks.signUpLogin }}</NuxtLink></li>
+					<li><NuxtLink to="/upload" class="hover:text-white cursor-pointer transition">{{ communityLinks.submitChord }}</NuxtLink></li>
+					<li><NuxtLink to="/community?tag=top" class="hover:text-white cursor-pointer transition">{{ communityLinks.topContributors }}</NuxtLink></li>
+					<li><a href="#" class="hover:text-white cursor-pointer transition">{{ communityLinks.discordServer }}</a></li>
 				</ul>
 			</div>
 			<div>
 				<h5 class="font-bold mb-4 text-text-accent uppercase text-xs tracking-wider">{{ legalTitle }}</h5>
 				<ul class="space-y-2 text-sm text-gray-300">
-					<li class="hover:text-white cursor-pointer transition">{{ legalLinks.privacyPolicy }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ legalLinks.termsOfService }}</li>
-					<li class="hover:text-white cursor-pointer transition">{{ legalLinks.dmcaGuidelines }}</li>
+					<li><NuxtLink to="/legal/privacy" class="hover:text-white cursor-pointer transition">{{ legalLinks.privacyPolicy }}</NuxtLink></li>
+					<li><NuxtLink to="/legal/terms" class="hover:text-white cursor-pointer transition">{{ legalLinks.termsOfService }}</NuxtLink></li>
+					<li><NuxtLink to="/legal/dmca" class="hover:text-white cursor-pointer transition">{{ legalLinks.dmcaGuidelines }}</NuxtLink></li>
 				</ul>
 			</div>
 		</div>

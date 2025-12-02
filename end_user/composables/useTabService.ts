@@ -1,6 +1,6 @@
 import { dataProvider, fileProvider } from '@modular-rest/client'
 import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
-import type { SongWithPopulatedRefs, Artist, Song } from '~/types/song.type'
+import type { SongWithPopulatedRefs, Artist, Song, Genre } from '~/types/song.type'
 
 // Mock constants for fallbacks (only for filling gaps in real data)
 const MOCK_RHYTHMS = ['Slow 6/8', 'Kurdish 7/8', '4/4 Pop', 'Georgina', 'Waz Waz', 'Garyan']
@@ -20,7 +20,11 @@ export const useTabService = () => {
     limit: number = 8,
     skip: number = 0,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    projection: any = {}
+    projection: any = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: any = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sort: any = {}
   ): Promise<SongWithPopulatedRefs[]> => {
     try {
       const defaultProjection = {
@@ -35,13 +39,14 @@ export const useTabService = () => {
       const songs = await dataProvider.find<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
-        query: {},
+        query: query,
         options: {
           limit,
           skip,
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists'],
           projection: { ...defaultProjection, ...projection },
+          sort: sort
         },
       })
 
@@ -120,6 +125,24 @@ export const useTabService = () => {
     }
   }
 
+  const fetchGenres = async (): Promise<Genre[]> => {
+    try {
+      const genres = await dataProvider.find<Genre>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.GENRE,
+        query: {},
+        options: {
+          limit: 50,
+          sort: { title: 1 },
+        },
+      })
+      return genres || []
+    } catch (error) {
+      console.error('Failed to fetch genres:', error)
+      return []
+    }
+  }
+
   const getImageUrl = (file: any) => {
     return fileProvider.getFileLink(file)
   }
@@ -155,10 +178,45 @@ export const useTabService = () => {
     })
   }
 
+  const searchSongs = async (
+    query: string,
+    limit: number = 5
+  ): Promise<SongWithPopulatedRefs[]> => {
+    try {
+      if (!query || query.trim().length === 0) return []
+
+      const songs = await dataProvider.find<Song>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.SONG,
+        query: {
+          title: { $regex: query, $options: 'i' }
+        },
+        options: {
+          limit,
+          populate: ['artists'],
+          projection: {
+            title: 1,
+            rhythm: 1,
+            image: 1,
+            artists: 1,
+            'chords.keySignature': 1
+          },
+        },
+      })
+
+      return _processSongs(songs || [])
+    } catch (error) {
+      console.error('Failed to search songs:', error)
+      return []
+    }
+  }
+
   return {
     fetchSongs,
     fetchSongwithPagination,
     fetchFeaturedArtists,
+    fetchGenres,
+    searchSongs,
     getImageUrl,
   }
 }

@@ -8,7 +8,26 @@
       "community": "Community"
     },
     "login": "Log In",
-    "explore": "Explore"
+    "explore": "Explore",
+    "viewAllResults": "View all results",
+    "noResults": "No results found for \"{query}\"",
+    "loading": "Loading..."
+  },
+  "pages": {
+    "discovery": {
+      "title": "Discovery",
+      "subtitle": "Find your favorite songs and artists.",
+      "searchResults": "Search Results for:",
+      "placeholder": "Use the search bar or browse categories."
+    },
+    "artists": {
+      "title": "Artists",
+      "subtitle": "Browse all artists."
+    },
+    "community": {
+      "title": "Community",
+      "subtitle": "Join the conversation."
+    }
   },
   "hero": {
     "badge": "The #1 Kurdish Chords Platform",

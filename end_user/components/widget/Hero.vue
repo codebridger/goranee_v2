@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Play, ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { Play, ChevronRight, ChevronLeft, Search, Music, Loader2 } from 'lucide-vue-next'
 import Button from '../base/Button.vue'
+import Input from '../base/Input.vue'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
 import { useTabService } from '~/composables/useTabService'
 
@@ -10,9 +13,52 @@ const props = defineProps<{
     isLoading?: boolean
 }>()
 
-const { getImageUrl } = useTabService()
+const router = useRouter()
+const { t } = useI18n()
+const { getImageUrl, searchSongs } = useTabService()
 const activeIndex = ref(0)
 const timer = ref<ReturnType<typeof setInterval> | null>(null)
+
+// Search State
+const searchQuery = ref('')
+const searchResults = ref<SongWithPopulatedRefs[]>([])
+const isSearching = ref(false)
+const showResults = ref(false)
+
+// Search Logic
+let searchTimeout: ReturnType<typeof setTimeout>
+const performSearch = () => {
+    clearTimeout(searchTimeout)
+    if (searchQuery.value.length < 2) {
+        searchResults.value = []
+        showResults.value = false
+        return
+    }
+
+    searchTimeout = setTimeout(async () => {
+        isSearching.value = true
+        showResults.value = true
+        try {
+            searchResults.value = await searchSongs(searchQuery.value)
+        } catch (error) {
+            console.error('Search error:', error)
+        } finally {
+            isSearching.value = false
+        }
+    }, 300)
+}
+
+const handleSearchSubmit = () => {
+    if (searchQuery.value) {
+        router.push(`/discovery?q=${encodeURIComponent(searchQuery.value)}`)
+        showResults.value = false
+    }
+}
+
+const goToSong = (id: string) => {
+    router.push(`/songs/${id}`)
+    showResults.value = false
+}
 
 const activeSong = computed(() => props.songs[activeIndex.value])
 const nextIndex = computed(() => {
@@ -96,9 +142,9 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
     Solution: Use explicit RTL/LTR variants to control positioning
   -->
     <div :class="[
-        'relative w-full overflow-hidden text-white font-sans',
-        'pt-20 h-[80dvh]',
-        'md:pt-0 md:h-[80dvh]',
+        'relative w-full overflow-hidden text-white font-sans flex flex-col',
+        'pt-20 min-h-[max(80dvh,680px)] h-auto',
+        'md:pt-0 md:h-[80dvh] md:min-h-0 md:max-h-[1080px] md:block',
         'lg:h-dvh'
     ]">
 
@@ -164,133 +210,181 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
             <!-- Mobile Content Wrapper (flex column for mobile, removed on desktop) -->
             <div :class="[
-                'flex flex-col justify-center h-full',
+                'flex-1 flex flex-col w-full pt-4 px-4 pb-16',
                 'md:hidden'
             ]">
-                <!-- Artist Image - Mobile: stacked above text -->
-                <div :class="[
-                    'z-10 flex items-center justify-center pointer-events-none px-4',
-                    'relative w-full mb-3',
-                    'h-48 sm:h-56 md:h-64'
-                ]">
-                    <div :class="[
-                        'relative w-full flex items-center justify-center overflow-hidden',
-                        'h-full'
-                    ]">
-                        <Transition name="fade" mode="out-in">
-                            <img v-if="getArtistImage(activeSong)" :src="getArtistImage(activeSong)!"
-                                :alt="getArtistName(activeSong)" :class="[
-                                    'rounded-md',
-                                    'h-auto w-auto max-h-full max-w-[90%] object-contain drop-shadow-[0_0_40px_rgba(0,0,0,0.8)] transition-all duration-500 ease-out'
-                                ]" :key="activeSong._id" />
-                            <!-- Fallback silhouette when no image -->
-                            <div v-else :class="[
-                                'bg-linear-to-t from-gray-800/50 to-gray-700/30 rounded-t-full opacity-40',
-                                'h-48 w-48'
-                            ]" :key="'fallback-' + activeSong._id">
+                <!-- Layer A: Search (Top) -->
+                <div class="w-full mb-4 relative z-40 shrink-0 px-8 group">
+                    <div class="relative">
+                        <div
+                            class="absolute start-4 top-1/2 -translate-y-1/2 text-white/60 group-focus-within:text-white transition-colors pointer-events-none">
+                            <Search class="w-5 h-5" />
+                        </div>
+                        <input type="text" v-model="searchQuery" @input="performSearch"
+                            @keydown.enter="handleSearchSubmit" :placeholder="t('navbar.searchPlaceholder')"
+                            class="w-full bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/40 focus:ring-2 focus:ring-white/20 rounded-full py-3 px-6 ps-12 text-white placeholder-white/50 outline-none transition-all duration-300" />
+                    </div>
+
+                    <!-- Search Dropdown -->
+                    <div v-if="showResults && searchQuery.length >= 2"
+                        class="absolute top-full mt-2 left-0 right-0 bg-[#1F121D] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 max-h-60 overflow-y-auto">
+                        <div v-if="isSearching" class="p-4 flex justify-center text-gray-400">
+                            <Loader2 class="w-6 h-6 animate-spin" />
+                        </div>
+                        <div v-else-if="searchResults.length > 0">
+                            <div v-for="song in searchResults" :key="song._id" @click="song._id && goToSong(song._id)"
+                                class="p-3 hover:bg-white/5 cursor-pointer border-b border-white/10 last:border-0 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded bg-white/10 flex items-center justify-center shrink-0">
+                                    <Music v-if="!song.image" class="w-5 h-5 text-gray-400" />
+                                    <img v-else :src="getImageUrl(song.image)"
+                                        class="w-full h-full object-cover rounded" />
+                                </div>
+                                <div>
+                                    <div class="font-bold text-sm text-white text-left">{{ song.title }}</div>
+                                    <div class="text-xs text-gray-400 text-left">{{ song.artists?.[0]?.name }}
+                                    </div>
+                                </div>
                             </div>
-                        </Transition>
+                            <div @click="handleSearchSubmit"
+                                class="p-3 text-center text-xs font-bold text-primary cursor-pointer hover:bg-white/5">
+                                {{ t('navbar.viewAllResults') }}
+                            </div>
+                        </div>
+                        <div v-else class="p-4 text-center text-gray-400 text-sm">
+                            {{ t('navbar.noResults', { query: searchQuery }) }}
+                        </div>
                     </div>
                 </div>
 
-                <!-- Content Container - Mobile: stacked below image -->
-                <div :class="[
-                    'z-20 flex items-center',
-                    'relative w-full px-4 py-4',
-                    'sm:px-6 sm:py-6',
-                    'text-center'
-                ]">
+                <!-- Layer B: Artist Stage (Middle) -->
+                <div class="flex-1 flex flex-col justify-center min-h-0 gap-6">
+                    <!-- Artist Image -->
                     <div :class="[
-                        'w-full',
-                        'space-y-3 sm:space-y-4',
-                        'max-w-lg mx-auto'
+                        'z-10 flex items-center justify-center pointer-events-none px-4',
+                        'relative w-full shrink-0',
+                        'h-40 sm:h-56'
                     ]">
+                        <div :class="[
+                            'relative w-full flex items-center justify-center overflow-hidden',
+                            'h-full'
+                        ]">
+                            <Transition name="fade" mode="out-in">
+                                <img v-if="getArtistImage(activeSong)" :src="getArtistImage(activeSong)!"
+                                    :alt="getArtistName(activeSong)" :class="[
+                                        'rounded-md',
+                                        'h-auto w-auto max-h-full max-w-[90%] object-contain drop-shadow-[0_0_40px_rgba(0,0,0,0.8)] transition-all duration-500 ease-out'
+                                    ]" :key="activeSong._id" />
+                                <!-- Fallback silhouette when no image -->
+                                <div v-else :class="[
+                                    'bg-linear-to-t from-gray-800/50 to-gray-700/30 rounded-t-full opacity-40',
+                                    'h-40 w-40'
+                                ]" :key="'fallback-' + activeSong._id">
+                                </div>
+                            </Transition>
+                        </div>
+                    </div>
+
+                    <!-- Song Info & Chords -->
+                    <div :class="[
+                        'z-20 flex items-center shrink-0',
+                        'relative w-full px-2',
+                        'text-center'
+                    ]">
+                        <div :class="[
+                            'w-full',
+                            'space-y-2',
+                            'max-w-lg mx-auto'
+                        ]">
+                            <Transition name="slide-fade" mode="out-in">
+                                <div :key="activeSong._id" :class="[
+                                    'space-y-2'
+                                ]">
+                                    <!-- Title (Large, Bold, White) -->
+                                    <h1 :class="[
+                                        'font-black text-white leading-[1.1] tracking-tight animate-fade-in-up',
+                                        'text-2xl sm:text-3xl'
+                                    ]">
+                                        {{ activeSong.title }}
+                                    </h1>
+
+                                    <!-- Artist Info & Badges -->
+                                    <div :class="[
+                                        'flex items-center gap-2 flex-wrap animate-fade-in-up delay-50',
+                                        'justify-center'
+                                    ]">
+                                        <span :class="[
+                                            'text-gray-300 font-medium',
+                                            'text-sm'
+                                        ]">
+                                            {{ getArtistName(activeSong) }}
+                                        </span>
+                                        <!-- Badges - Pink filled style -->
+                                        <span v-if="activeSong.chords?.keySignature"
+                                            class="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
+                                            {{ activeSong.chords.keySignature }}
+                                        </span>
+                                        <span v-if="activeSong.rhythm"
+                                            class="px-3 py-1 rounded-full bg-gray-700 text-gray-200 text-xs font-medium border border-gray-600">
+                                            {{ activeSong.rhythm }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Chord Preview Block -->
+                                    <div :class="[
+                                        'font-mono space-y-1 text-gray-200 animate-fade-in-up delay-100',
+                                        'text-sm',
+                                        'bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/5 mt-2'
+                                    ]">
+                                        <template v-if="getChordPreview(activeSong).length > 0">
+                                            <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
+                                                class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
+                                                <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
+                                                    }}]</span>
+                                                <span class="text-gray-100 ms-1">{{ line.text }}</span>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class="text-gray-200">
+                                                <span class="text-base font-bold">[Cm]</span>
+                                                <span class="text-basems-1">Ewa disan baran bari...</span>
+                                            </div>
+                                            <div class="text-gray-200">
+                                                <span class="text-base font-bold">[Gm]</span>
+                                                <span class="text-basems-1">Firmesk la chawm...</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </Transition>
+                        </div>
+                    </div>
+
+                    <!-- Layer C: Action Buttons (Bottom) -->
+                    <div class="shrink-0 z-30">
                         <Transition name="slide-fade" mode="out-in">
                             <div :key="activeSong._id" :class="[
-                                'space-y-3 sm:space-y-4'
+                                'flex items-center gap-3 animate-fade-in-up delay-150',
+                                'justify-center'
                             ]">
-                                <!-- Title (Large, Bold, White) -->
-                                <h1 :class="[
-                                    'font-black text-white leading-[1.1] tracking-tight animate-fade-in-up',
-                                    'text-2xl sm:text-3xl md:text-4xl'
+                                <Button variant="secondary" size="md" to="/discovery" :class="[
+                                    'rounded-full', 'px-4 py-2',
+                                    'border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm',
+                                    'transition-all hover:scale-105',
+                                    'flex items-center justify-center font-bold'
                                 ]">
-                                    {{ activeSong.title }}
-                                </h1>
+                                    <span>{{ t('navbar.explore') }}</span>
+                                </Button>
 
-                                <!-- Artist Info & Badges -->
-                                <div :class="[
-                                    'flex items-center gap-2 sm:gap-3 flex-wrap animate-fade-in-up delay-50',
-                                    'justify-center'
+                                <Button variant="primary" size="md" :class="[
+                                    'rounded-full', 'px-4 py-2',
+                                    'shadow-lg shadow-primary/30 hover:shadow-primary/50',
+                                    'transition-all hover:scale-105',
+                                    'bg-linear-to-r! from-primary! to-pink-600!',
+                                    'flex items-center space-x-1 font-bold'
                                 ]">
-                                    <span :class="[
-                                        'text-gray-300 font-medium',
-                                        'text-sm sm:text-base'
-                                    ]">
-                                        {{ getArtistName(activeSong) }}
-                                    </span>
-                                    <!-- Badges - Pink filled style -->
-                                    <span v-if="activeSong.chords?.keySignature"
-                                        class="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
-                                        {{ activeSong.chords.keySignature }}
-                                    </span>
-                                    <span v-if="activeSong.rhythm"
-                                        class="px-3 py-1 rounded-full bg-gray-700 text-gray-200 text-xs font-medium border border-gray-600">
-                                        {{ activeSong.rhythm }}
-                                    </span>
-                                </div>
-
-                                <!-- Chord Preview Block -->
-                                <div :class="[
-                                    'font-mono space-y-1 text-gray-200 animate-fade-in-up delay-100',
-                                    'text-sm sm:text-base md:text-lg',
-                                    'bg-white/5 rounded-xl p-4 backdrop-blur-sm border border-white/5'
-                                ]">
-                                    <template v-if="getChordPreview(activeSong).length > 0">
-                                        <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
-                                            class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
-                                            <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                                }}]</span>
-                                            <span class="text-gray-100 ms-1">{{ line.text }}</span>
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <div class="text-gray-200">
-                                            <span class="text-base font-bold">[Cm]</span>
-                                            <span class="text-basems-1">Ewa disan baran bari...</span>
-                                        </div>
-                                        <div class="text-gray-200">
-                                            <span class="text-base font-bold">[Gm]</span>
-                                            <span class="text-basems-1">Firmesk la chawm...</span>
-                                        </div>
-                                    </template>
-                                </div>
-
-                                <!-- Actions - Matching reference style -->
-                                <div :class="[
-                                    'flex items-center gap-3 scale-70 pt-14 animate-fade-in-up delay-150',
-                                    'justify-center',
-                                    'sm:pt-5 sm:scale-100'
-                                ]">
-                                    <Button variant="primary" size="lg" :class="[
-                                        // shape & spacing
-                                        'rounded-full', 'px-4 py-2 sm:px-6 sm:py-3',
-
-                                        // shadow & hover shadow
-                                        'shadow-lg', 'shadow-primary/30', 'hover:shadow-primary/50',
-
-                                        // transform & transition
-                                        'transition-all', 'hover:scale-105',
-
-                                        // gradients
-                                        'bg-linear-to-r!', 'from-primary!', 'to-pink-600!',
-
-                                        // layout
-                                        'flex space-x-1'
-                                    ]">
-                                        <span>{{ $t('hero.startPlaying') }}</span>
-                                        <Play class="w-4 h-4 me-2 fill-current rtl:rotate-180" />
-                                    </Button>
-                                </div>
+                                    <span>{{ $t('hero.startPlaying') }}</span>
+                                    <Play class="w-3 h-3 me-2 fill-current rtl:rotate-180" />
+                                </Button>
                             </div>
                         </Transition>
                     </div>
@@ -498,21 +592,37 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                 </div>
             </div>
 
-            <!-- Navigation Arrow -->
-            <!-- RTL: arrow on RIGHT side (next to image), LTR: arrow on LEFT side (next to image) -->
+            <!-- Navigation Arrows (Desktop) -->
+
+            <!-- Previous Slide Button (Start Side) -->
             <button :class="[
-                'absolute top-1/2 -translate-y-1/2 z-30 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:scale-110 hover:bg-white/20 transition-all duration-300 shadow-xl cursor-pointer',
-                'h-10 w-10 start-2',
-                'md:h-14 md:w-14 md:start-8'
-            ]" @click="nextSlide" aria-label="Next slide">
-                <!-- Arrow direction: RTL shows >, LTR shows < -->
+                'absolute top-1/2 -translate-y-1/2 z-30 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 items-center justify-center hover:scale-110 hover:bg-white/20 transition-all duration-300 shadow-xl cursor-pointer',
+                'hidden md:flex h-14 w-14 start-8'
+            ]" @click="prevSlide" aria-label="Previous slide">
+                <!-- Icon: LTR show < (Left), RTL show > (Right) -->
                 <ChevronRight :class="[
                     'text-white rtl:block ltr:hidden',
-                    'w-5 h-5 md:w-7 md:h-7'
+                    'w-7 h-7'
                 ]" />
                 <ChevronLeft :class="[
                     'text-white ltr:block rtl:hidden',
-                    'w-5 h-5 md:w-7 md:h-7'
+                    'w-7 h-7'
+                ]" />
+            </button>
+
+            <!-- Next Slide Button (End Side) -->
+            <button :class="[
+                'absolute top-1/2 -translate-y-1/2 z-30 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 items-center justify-center hover:scale-110 hover:bg-white/20 transition-all duration-300 shadow-xl cursor-pointer',
+                'hidden md:flex h-14 w-14 end-8'
+            ]" @click="nextSlide" aria-label="Next slide">
+                <!-- Icon: LTR show > (Right), RTL show < (Left) -->
+                <ChevronLeft :class="[
+                    'text-white rtl:block ltr:hidden',
+                    'w-7 h-7'
+                ]" />
+                <ChevronRight :class="[
+                    'text-white ltr:block rtl:hidden',
+                    'w-7 h-7'
                 ]" />
             </button>
 
