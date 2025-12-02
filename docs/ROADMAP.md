@@ -8,19 +8,19 @@ The goal is to have a browsable, usable site where users can find and play songs
 
 ### 1. Homepage Completion (PG-001)
 *Refining the entry point to be responsive, interactive, and connected.*
-- [ ] **Navbar Interactions & State**:
-    - Implement scroll-aware background (transparent at top, frosted glass after 50px scroll).
-    - Manage mobile menu toggle state and animations.
-    - Ensure "Active Route" styling for navigation links.
-- [ ] **Global Search Integration**:
-    - Connect the Navbar search input to the `useTabService` or a dedicated search store.
-    - Implement a dropdown "Quick Results" preview and direct navigation to `/discovery?q=...` on submit.
-    - Handle mobile-specific search UI (expandable input or separate full-screen search overlay).
-- [ ] **Artist Reel & Skeleton Loading**:
-    - Implement proper loading states (Shimmer/Skeleton) for the `ArtistCard` carousel.
-    - Handle empty states and API errors gracefully (toast notifications).
-- [ ] **Routing & Navigation**:
-    - Wire up all "View All" and CTA links to their respective placeholder or real routes (`/artists`, `/discovery`, `/community`).
+- [x] **Navbar Interactions & State**:
+    - [x] Implement scroll-aware background (transparent at top, frosted glass after 50px scroll).
+    - [x] Manage mobile menu toggle state and animations.
+    - [x] Ensure "Active Route" styling for navigation links.
+- [~] **Global Search Integration**:
+    - [x] Connect the Navbar search input to the `useTabService` or a dedicated search store.
+    - [x] Implement a dropdown "Quick Results" preview and direct navigation to `/discovery?q=...` on submit.
+    - [ ] Handle mobile-specific search UI (expandable input or separate full-screen search overlay).
+- [x] **Artist Reel & Skeleton Loading**:
+    - [x] Implement proper loading states (Shimmer/Skeleton) for the `ArtistCard` carousel.
+    - [x] Handle empty states and API errors gracefully (toast notifications).
+- [x] **Routing & Navigation**:
+    - [x] Wire up all "View All" and CTA links to their respective placeholder or real routes (`/artists`, `/discovery`, `/community`).
 
 ### 2. Chord View "Workstation" (PG-002)
 *The core product experience: A distraction-free, feature-rich player for musicians.*
