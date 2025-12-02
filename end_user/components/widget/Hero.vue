@@ -210,7 +210,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
             <!-- Mobile Content Wrapper (flex column for mobile, removed on desktop) -->
             <div :class="[
-                'flex flex-col h-full pt-24 px-4 pb-4',
+                'flex flex-col h-full pt-4 px-4 pb-16',
                 'md:hidden'
             ]">
                 <!-- Layer A: Search (Top) -->
@@ -333,7 +333,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                             <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                                 class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                                 <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                                }}]</span>
+                                                    }}]</span>
                                                 <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                             </div>
                                         </template>
@@ -361,8 +361,8 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                             'flex items-center gap-3 animate-fade-in-up delay-150',
                             'justify-center'
                         ]">
-                            <Button variant="secondary" size="lg" to="/discovery" :class="[
-                                'rounded-full', 'px-6 py-3',
+                            <Button variant="secondary" size="md" to="/discovery" :class="[
+                                'rounded-full', 'px-4 py-2',
                                 'border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm',
                                 'transition-all hover:scale-105',
                                 'flex items-center justify-center font-bold'
@@ -370,15 +370,15 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 <span>{{ t('navbar.explore') }}</span>
                             </Button>
 
-                            <Button variant="primary" size="lg" :class="[
-                                'rounded-full', 'px-6 py-3',
+                            <Button variant="primary" size="md" :class="[
+                                'rounded-full', 'px-4 py-2',
                                 'shadow-lg shadow-primary/30 hover:shadow-primary/50',
                                 'transition-all hover:scale-105',
                                 'bg-linear-to-r! from-primary! to-pink-600!',
                                 'flex items-center space-x-1 font-bold'
                             ]">
                                 <span>{{ $t('hero.startPlaying') }}</span>
-                                <Play class="w-4 h-4 me-2 fill-current rtl:rotate-180" />
+                                <Play class="w-3 h-3 me-2 fill-current rtl:rotate-180" />
                             </Button>
                         </div>
                     </Transition>
@@ -431,7 +431,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
+                                        }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
@@ -539,7 +539,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
+                                        }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
@@ -586,21 +586,37 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                 </div>
             </div>
 
-            <!-- Navigation Arrow -->
-            <!-- RTL: arrow on RIGHT side (next to image), LTR: arrow on LEFT side (next to image) -->
+            <!-- Navigation Arrows (Desktop) -->
+
+            <!-- Previous Slide Button (Start Side) -->
             <button :class="[
-                'absolute top-1/2 -translate-y-1/2 z-30 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:scale-110 hover:bg-white/20 transition-all duration-300 shadow-xl cursor-pointer',
-                'h-10 w-10 start-2',
-                'md:h-14 md:w-14 md:start-8'
-            ]" @click="nextSlide" aria-label="Next slide">
-                <!-- Arrow direction: RTL shows >, LTR shows < -->
+                'absolute top-1/2 -translate-y-1/2 z-30 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 items-center justify-center hover:scale-110 hover:bg-white/20 transition-all duration-300 shadow-xl cursor-pointer',
+                'hidden md:flex h-14 w-14 start-8'
+            ]" @click="prevSlide" aria-label="Previous slide">
+                <!-- Icon: LTR show < (Left), RTL show > (Right) -->
                 <ChevronRight :class="[
                     'text-white rtl:block ltr:hidden',
-                    'w-5 h-5 md:w-7 md:h-7'
+                    'w-7 h-7'
                 ]" />
                 <ChevronLeft :class="[
                     'text-white ltr:block rtl:hidden',
-                    'w-5 h-5 md:w-7 md:h-7'
+                    'w-7 h-7'
+                ]" />
+            </button>
+
+            <!-- Next Slide Button (End Side) -->
+            <button :class="[
+                'absolute top-1/2 -translate-y-1/2 z-30 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 items-center justify-center hover:scale-110 hover:bg-white/20 transition-all duration-300 shadow-xl cursor-pointer',
+                'hidden md:flex h-14 w-14 end-8'
+            ]" @click="nextSlide" aria-label="Next slide">
+                <!-- Icon: LTR show > (Right), RTL show < (Left) -->
+                <ChevronLeft :class="[
+                    'text-white rtl:block ltr:hidden',
+                    'w-7 h-7'
+                ]" />
+                <ChevronRight :class="[
+                    'text-white ltr:block rtl:hidden',
+                    'w-7 h-7'
                 ]" />
             </button>
 
