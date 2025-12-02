@@ -46,17 +46,16 @@ The goal is to have a browsable, usable site where users can find and play songs
 
 ### 3. Artist Profile (PG-003)
 *A hub for artist discovery and discography exploration.*
-- [ ] **Artist Route (`pages/artists/[id].vue`)**:
+- [x] **Artist Route (`pages/artists/[id].vue`)**:
     - Fetch Artist profile data (bio, image, stats) and full song catalog.
-- [ ] **Hero & Bio Section**:
+- [x] **Hero & Bio Section**:
     - "Halo" Avatar styling with gradient borders.
     - Key stats display (Total Songs, Total Plays).
     - Collapsible "About" text for long bios.
-    - use a mock test for bio info.
-- [ ] **Discography & Catalog Grid**:
+- [x] **Discography & Catalog Grid**:
     - **Popularity List**: A stylized "Top 5" list with numbering (1-5) for their biggest hits.
     - **Full Catalog Filter**: A searchable, sortable grid of all songs (Sort by: Date, Popularity, Key).
-- [ ] **"Fans Also Like"**:
+- [x] **"Fans Also Like"**:
     - A horizontal reel of related artists (based on genre/era) to keep users browsing.
 
 ### 4. Discovery & Search Engine
