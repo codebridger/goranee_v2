@@ -176,7 +176,10 @@ const isActive = (path: string) => {
         :class="['hidden md:block text-sm font-semibold hover:text-text-accent transition cursor-pointer', isTransparent ? 'text-white' : 'text-text-primary']">
         {{ loginText }}
       </NuxtLink>
-      <Button variant="primary" size="sm" to="/discovery">{{ exploreText }}</Button>
+      <div class="hidden md:block">
+        <Button variant="primary" size="sm" to="/discovery">{{ exploreText }}</Button>
+      </div>
+      <!-- Mobile Menu Button (Right) -->
       <button :class="['md:hidden cursor-pointer', isTransparent ? 'text-white' : 'text-text-primary']"
         @click="isMenuOpen = !isMenuOpen">
         <Menu class="w-6 h-6" />
@@ -207,32 +210,6 @@ const isActive = (path: string) => {
             <button @click="isMenuOpen = false" class="text-text-secondary hover:text-text-primary">
               <X class="w-6 h-6" />
             </button>
-          </div>
-
-          <!-- Mobile Search -->
-          <div class="mb-8 relative">
-            <Input v-model="searchQuery" @input="performSearch" @keydown.enter="handleSearchSubmit"
-              :placeholder="searchPlaceholder" :icon="Search" />
-            <!-- Mobile Search Results -->
-            <div v-if="showResults && searchQuery.length >= 2"
-              class="absolute top-full mt-2 left-0 right-0 bg-surface-base border border-border-subtle rounded-xl shadow-xl overflow-hidden z-50 max-h-60 overflow-y-auto">
-              <div v-if="isSearching" class="p-4 flex justify-center text-text-secondary">
-                <Loader2 class="w-5 h-5 animate-spin" />
-              </div>
-              <div v-else-if="searchResults.length > 0">
-                <div v-for="song in searchResults" :key="song._id" @click="song._id && goToSong(song._id)"
-                  class="p-3 hover:bg-surface-card cursor-pointer border-b border-border-subtle last:border-0 text-sm font-medium text-text-primary">
-                  {{ song.title }}
-                </div>
-                <div @click="handleSearchSubmit"
-                  class="p-3 text-center text-xs font-bold text-text-accent cursor-pointer hover:bg-surface-card">
-                  {{ t('navbar.viewAllResults') }}
-                </div>
-              </div>
-              <div v-else class="p-4 text-center text-text-secondary text-sm">
-                {{ t('navbar.noResults', { query: searchQuery }) }}
-              </div>
-            </div>
           </div>
 
           <div class="flex flex-col gap-4">
