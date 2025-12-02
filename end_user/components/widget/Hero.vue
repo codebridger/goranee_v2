@@ -96,7 +96,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
     Solution: Use explicit RTL/LTR variants to control positioning
   -->
     <div :class="[
-        'relative w-full overflow-hidden text-white font-sans',
+        'relative w-full overflow-hidden text-white font-sans max-h-[1080px]',
         'pt-20 h-[80dvh]',
         'md:pt-0 md:h-[80dvh]',
         'lg:h-dvh'
