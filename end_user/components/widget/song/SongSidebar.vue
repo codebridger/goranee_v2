@@ -40,10 +40,10 @@ defineProps<Props>()
 		</div>
 
 		<!-- Ad Space Placeholder -->
-		<div
+		<!-- <div
 			class="bg-surface-muted rounded-xl h-64 flex items-center justify-center border border-dashed border-border-subtle">
 			<span class="text-xs font-bold text-text-muted uppercase">Ad Space</span>
-		</div>
+		</div> -->
 
 		<!-- Similar Vibe (Mock) -->
 		<div v-if="similarSongs && similarSongs.length > 0"

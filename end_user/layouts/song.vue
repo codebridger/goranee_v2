@@ -31,6 +31,6 @@ const isDevLoading = ref(false)
 		</div>
 
 		<!-- Dev Mode Floating Widget -->
-		<DevFloatingWidget v-model:is-loading="isDevLoading" />
+		<!-- <DevFloatingWidget v-model:is-loading="isDevLoading" /> -->
 	</div>
 </template>
