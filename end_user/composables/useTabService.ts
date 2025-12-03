@@ -268,6 +268,30 @@ export const useTabService = () => {
     }
   }
 
+  const fetchSongById = async (id: string): Promise<SongWithPopulatedRefs | null> => {
+    try {
+      const songs = await dataProvider.find<Song>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.SONG,
+        query: { _id: id },
+        options: {
+          populate: ['artists', 'genres'],
+          limit: 1,
+        },
+      })
+
+      if (!songs || songs.length === 0) {
+        return null
+      }
+
+      const processedSongs = _processSongs(songs)
+      return processedSongs[0]
+    } catch (error) {
+      console.error('Failed to fetch song by id:', error)
+      return null
+    }
+  }
+
   return {
     fetchSongs,
     fetchSongwithPagination,
@@ -277,6 +301,7 @@ export const useTabService = () => {
     getImageUrl,
     fetchArtist,
     fetchSongsByArtist,
+    fetchSongById,
   }
 }
 
