@@ -7,6 +7,7 @@ import Button from '../base/Button.vue'
 import Input from '../base/Input.vue'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
 import { useTabService } from '~/composables/useTabService'
+import { ROUTES } from '~/constants/routes'
 
 const props = defineProps<{
     songs: SongWithPopulatedRefs[]
@@ -56,7 +57,7 @@ const handleSearchSubmit = () => {
 }
 
 const goToSong = (id: string) => {
-    router.push(`/songs/${id}`)
+    router.push(ROUTES.TAB.DETAIL(id))
     showResults.value = false
 }
 
@@ -339,7 +340,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                             <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                                 class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                                 <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                                    }}]</span>
+                                                }}]</span>
                                                 <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                             </div>
                                         </template>
@@ -375,7 +376,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <span>{{ t('navbar.explore') }}</span>
                                 </Button>
 
-                                <Button variant="primary" size="md" :class="[
+                                <Button variant="primary" size="md" :to="ROUTES.TAB.DETAIL(activeSong._id)" :class="[
                                     'rounded-full', 'px-4 py-2',
                                     'shadow-lg shadow-primary/30 hover:shadow-primary/50',
                                     'transition-all hover:scale-105',
@@ -437,7 +438,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                        }}]</span>
+                                            }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
@@ -456,7 +457,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
                         <!-- Bottom Row: Play Button -->
                         <div class="w-full flex justify-end pt-10">
-                            <Button variant="primary" size="lg" :class="[
+                            <Button variant="primary" size="lg" :to="ROUTES.TAB.DETAIL(activeSong._id)" :class="[
                                 'rounded-full', 'px-10 py-4',
                                 'shadow-lg', 'shadow-primary/30', 'hover:shadow-primary/50',
                                 'transition-all', 'hover:scale-105',
@@ -545,7 +546,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                     <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
                                         class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                                         <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                        }}]</span>
+                                            }}]</span>
                                         <span class="text-gray-100 ms-1">{{ line.text }}</span>
                                     </div>
                                 </template>
@@ -566,7 +567,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 'flex items-center gap-3 pt-10 animate-fade-in-up delay-150',
                                 'justify-center md:justify-end'
                             ]">
-                                <Button variant="primary" size="lg" :class="[
+                                <Button variant="primary" size="lg" :to="ROUTES.TAB.DETAIL(activeSong._id)" :class="[
                                     // shape & spacing
                                     'rounded-full', 'px-6', 'py-3',
 

@@ -4,6 +4,7 @@ import { ArrowRight, Music } from 'lucide-vue-next'
 
 import { useTabService } from '~/composables/useTabService'
 import type { SongWithPopulatedRefs, Artist, Genre } from '~/types/song.type'
+import { ROUTES } from '~/constants/routes'
 
 const { t } = useI18n()
 const tabService = useTabService()
@@ -95,7 +96,7 @@ onMounted(async () => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-            }}</Typography>
+          }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>
@@ -105,7 +106,9 @@ onMounted(async () => {
           <SkeletonCard v-for="i in 4" :key="i" />
         </template>
         <template v-else-if="trendingSongs.length > 0">
-          <SongCard v-for="song in trendingSongs" :key="song._id" :song="song" />
+          <NuxtLink v-for="song in trendingSongs" :key="song._id" :to="ROUTES.TAB.DETAIL(song._id)" class="block">
+            <SongCard :song="song" />
+          </NuxtLink>
         </template>
         <template v-else>
           <div class="col-span-full flex flex-col items-center justify-center py-12 text-text-secondary">
@@ -123,7 +126,8 @@ onMounted(async () => {
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center mb-8">
           <Typography variant="h2" class="font-bold">{{ t('home.artists.title') }}</Typography>
-          <NuxtLink to="/artists" class="text-text-accent font-bold text-sm flex items-center hover:underline group">
+          <NuxtLink :to="ROUTES.ARTIST.INDEX"
+            class="text-text-accent font-bold text-sm flex items-center hover:underline group">
             {{ t('home.artists.viewAll') }}
             <ArrowRight
               class="w-4 h-4 ms-1 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition rtl:rotate-180" />
@@ -138,7 +142,7 @@ onMounted(async () => {
           <template v-else>
             <div v-for="artist in featuredArtists" :key="artist._id"
               class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
-              @click="$router.push(`/artists/${artist._id}`)">
+              @click="artist._id && $router.push(ROUTES.ARTIST.DETAIL(artist._id))">
               <ArtistCard :name="artist.name" :song-count="artist.chords || 0" :songs-label="t('home.artists.songs')"
                 :gradient-border="(artist as any)._mockColor" />
             </div>

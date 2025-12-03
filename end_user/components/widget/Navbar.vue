@@ -7,6 +7,7 @@ import Button from '../base/Button.vue'
 import Input from '../base/Input.vue'
 import { useTabService } from '~/composables/useTabService'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
+import { ROUTES } from '~/constants/routes'
 
 export interface NavLink {
   label: string
@@ -86,7 +87,7 @@ const handleSearchSubmit = () => {
 }
 
 const goToSong = (id: string) => {
-  router.push(`/songs/${id}`)
+  router.push(ROUTES.TAB.DETAIL(id))
   showResults.value = false
   isMenuOpen.value = false
 }

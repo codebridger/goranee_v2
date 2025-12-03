@@ -10,6 +10,7 @@ import SongCard from '~/components/widget/SongCard.vue';
 import ArtistCard from '~/components/widget/ArtistCard.vue';
 import Button from '~/components/base/Button.vue';
 import ArtistHero from '~/components/widget/ArtistHero.vue';
+import { ROUTES } from '~/constants/routes';
 
 const route = useRoute();
 const { t } = useI18n();
@@ -90,18 +91,18 @@ const getRelatedArtistSongCount = (related: Artist) => {
 
 const navigateToSong = (songId?: string) => {
 	if (songId) {
-		return navigateTo(`/songs/${songId}`);
+		return navigateTo(ROUTES.TAB.DETAIL(songId));
 	}
 };
 
 const navigateToArtist = (artistId?: string) => {
 	if (artistId) {
-		return navigateTo(`/artists/${artistId}`);
+		return navigateTo(ROUTES.ARTIST.DETAIL(artistId));
 	}
 };
 
 const navigateToHome = () => {
-	return navigateTo('/');
+	return navigateTo(ROUTES.HOME);
 };
 
 // SEO

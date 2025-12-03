@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Navbar from '~/components/widget/Navbar.vue'
 import MiniFooter from '~/components/widget/MiniFooter.vue'
+import { ROUTES } from '~/constants/routes'
 
 const { t } = useI18n()
 const isDevLoading = ref(false)
@@ -13,9 +14,9 @@ const isDevLoading = ref(false)
 		<!-- Navbar (Sticky) -->
 		<div class="sticky top-0 left-0 right-0 z-50 w-full">
 			<Navbar :logo="t('navbar.logo')" :search-placeholder="t('navbar.searchPlaceholder')" :links="[
-				{ label: t('navbar.links.discovery'), to: '/discovery' },
-				{ label: t('navbar.links.artists'), to: '/artists' },
-				{ label: t('navbar.links.community'), to: '/community' },
+				{ label: t('navbar.links.discovery'), to: ROUTES.DISCOVERY },
+				{ label: t('navbar.links.artists'), to: ROUTES.ARTIST.INDEX },
+				{ label: t('navbar.links.community'), to: ROUTES.COMMUNITY },
 			]" :login-text="t('navbar.login')" :explore-text="t('navbar.explore')" :is-transparent="false" />
 		</div>
 

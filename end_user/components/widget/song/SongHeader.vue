@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Artist } from '~/types/song.type';
+import { ROUTES } from '~/constants/routes';
 
 interface Props {
   title: string
@@ -38,7 +39,7 @@ const getArtistImage = (artist?: Artist) => {
       
       <NuxtLink 
         v-if="artist" 
-        :to="`/artist/${artist._id}`"
+        :to="ROUTES.ARTIST.DETAIL(artist._id)"
         class="text-xl md:text-2xl text-gray-200 hover:text-primary transition-colors mb-6 inline-block"
       >
         {{ artist.name }}

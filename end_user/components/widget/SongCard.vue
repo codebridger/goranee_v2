@@ -17,8 +17,8 @@ const { t } = useI18n();
 const title = computed(() => props.song.title);
 
 const artist = computed(() => {
-	return props.song.artists && props.song.artists[0] 
-		? props.song.artists[0].name 
+	return props.song.artists && props.song.artists[0]
+		? props.song.artists[0].name
 		: t('common.unknownArtist');
 });
 
@@ -34,7 +34,7 @@ const tempo = computed(() => props.song.rhythm);
 
 const gradientClass = computed(() => {
 	const mockColor = (props.song as any)._mockColor;
-	return mockColor 
+	return mockColor
 		? `from-${mockColor}-400 to-${mockColor}-600`
 		: 'from-indigo-500 to-purple-600';
 });
@@ -55,8 +55,8 @@ const imageStyle = computed(() => {
 	<div class="group relative bg-surface-card rounded-3xl p-4 shadow-md hover:shadow-hover hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-border-subtle"
 		@click="emit('click')">
 		<!-- Image Thumbnail -->
-		<div class="h-48 rounded-2xl bg-linear-to-br mb-4 relative overflow-hidden shadow-inner"
-			:class="gradientClass" :style="imageStyle">
+		<div class="h-48 rounded-2xl bg-linear-to-br mb-4 relative overflow-hidden shadow-inner" :class="gradientClass"
+			:style="imageStyle">
 			<!-- Hover Overlay with Play Button -->
 			<div
 				class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20 backdrop-blur-sm">
@@ -82,7 +82,7 @@ const imageStyle = computed(() => {
 				</div>
 				<div v-if="musicalKey"
 					class="px-2 py-1 rounded-md text-xs font-bold border text-center bg-surface-base border-border-subtle text-text-secondary whitespace-nowrap">
-					{{ chordLabels.join(' ') || musicalKey }}
+					{{ chordLabels.slice(0, 3).join(', ') || musicalKey }}
 				</div>
 			</div>
 		</div>

@@ -65,7 +65,7 @@ export interface SongChords {
 }
 
 export interface Song {
-  _id?: string
+  _id: string
   title: string // required
   title_seo?: string
   rhythm?: string

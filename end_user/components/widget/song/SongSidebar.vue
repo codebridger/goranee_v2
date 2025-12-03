@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SongWithPopulatedRefs } from '~/types/song.type';
+import { ROUTES } from '~/constants/routes';
 
 interface Props {
 	artistName?: string
@@ -19,7 +20,7 @@ defineProps<Props>()
 				More by {{ artistName || 'Artist' }}
 			</h3>
 			<div class="space-y-4">
-				<NuxtLink v-for="song in artistSongs.slice(0, 5)" :key="song._id" :to="`/tab/${song._id}`"
+				<NuxtLink v-for="song in artistSongs.slice(0, 5)" :key="song._id" :to="ROUTES.TAB.DETAIL(song._id)"
 					class="flex items-center gap-3 group">
 					<div
 						class="w-10 h-10 rounded bg-surface-muted flex items-center justify-center text-xs text-text-muted group-hover:text-primary transition-colors">
@@ -51,7 +52,7 @@ defineProps<Props>()
 				Similar Vibe
 			</h3>
 			<div class="space-y-4">
-				<NuxtLink v-for="song in similarSongs.slice(0, 5)" :key="song._id" :to="`/tab/${song._id}`"
+				<NuxtLink v-for="song in similarSongs.slice(0, 5)" :key="song._id" :to="ROUTES.TAB.DETAIL(song._id)"
 					class="flex items-center gap-3 group">
 					<div
 						class="w-10 h-10 rounded bg-surface-muted flex items-center justify-center text-xs text-text-muted group-hover:text-secondary transition-colors">

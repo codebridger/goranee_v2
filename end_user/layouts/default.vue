@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Navbar from '~/components/widget/Navbar.vue'
 import Footer from '~/components/widget/Footer.vue'
+import { ROUTES } from '~/constants/routes'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -38,9 +39,9 @@ onUnmounted(() => {
 			isHome ? 'fixed top-0 left-0 right-0' : 'sticky top-0'
 		]">
 			<Navbar :logo="t('navbar.logo')" :search-placeholder="t('navbar.searchPlaceholder')" :links="[
-				{ label: t('navbar.links.discovery'), to: '/discovery' },
-				{ label: t('navbar.links.artists'), to: '/artists' },
-				{ label: t('navbar.links.community'), to: '/community' },
+				{ label: t('navbar.links.discovery'), to: ROUTES.DISCOVERY },
+				{ label: t('navbar.links.artists'), to: ROUTES.ARTIST.INDEX },
+				{ label: t('navbar.links.community'), to: ROUTES.COMMUNITY },
 			]" :login-text="t('navbar.login')" :explore-text="t('navbar.explore')" :is-transparent="isTransparent" />
 		</div>
 

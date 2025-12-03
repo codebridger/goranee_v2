@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Share2, Mic } from 'lucide-vue-next';
+import { ROUTES } from '~/constants/routes';
 
 const props = withDefaults(
   defineProps<{
@@ -74,7 +75,7 @@ const props = withDefaults(
 				<ul class="space-y-2 text-sm text-gray-300">
 					<li><NuxtLink to="/discovery?sort=new" class="hover:text-white cursor-pointer transition">{{ discoverLinks.newArrivals }}</NuxtLink></li>
 					<li><NuxtLink to="/discovery?sort=trending" class="hover:text-white cursor-pointer transition">{{ discoverLinks.trendingCharts }}</NuxtLink></li>
-					<li><NuxtLink to="/artists" class="hover:text-white cursor-pointer transition">{{ discoverLinks.featuredArtists }}</NuxtLink></li>
+					<li><NuxtLink :to="ROUTES.ARTIST.INDEX" class="hover:text-white cursor-pointer transition">{{ discoverLinks.featuredArtists }}</NuxtLink></li>
 					<li><NuxtLink to="/community?tag=requests" class="hover:text-white cursor-pointer transition">{{ discoverLinks.songRequests }}</NuxtLink></li>
 				</ul>
 			</div>
