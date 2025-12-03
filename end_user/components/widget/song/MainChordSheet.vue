@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick, watch, type ComponentPublicInstance } from 'vue'
 import { useTranspose } from '~/composables/useTranspose'
+import { useI18nRtl } from '~/composables/useI18nRtl'
 import type { SongSection } from '~/types/song.type'
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 
 const props = defineProps<Props>()
 const { transposeChord } = useTranspose()
+const { isRtl } = useI18nRtl()
+const dir = computed(() => isRtl.value ? 'rtl' : 'ltr')
 
 const lineRefs = ref<(HTMLElement | null)[]>([])
 const globalSectionWidth = ref<string>('fit-content')
@@ -103,7 +106,7 @@ const sectionWidthStyle = computed(() => ({
 
 <template>
   <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6 md:p-10 min-h-[600px] flex flex-col items-center"
-    dir="rtl">
+    :dir="dir">
     <div v-for="(section, sIdx) in processedSections" :key="sIdx" class="mb-8">
       <h3 v-if="section.title" class="text-xs font-bold uppercase text-gray-400 mb-4 tracking-wider">
         {{ section.title }}
