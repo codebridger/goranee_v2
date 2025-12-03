@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Music, Play, Pause, Zap } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Music, Play, Pause, Zap, Minus, Plus } from 'lucide-vue-next'
 import { useTranspose } from '~/composables/useTranspose'
+import IconButton from '~/components/base/IconButton.vue'
+
+const { t } = useI18n()
 
 interface Props {
   rootNote?: string
@@ -57,50 +61,53 @@ const closeDrawer = () => {
     <div class="hidden lg:flex flex-col gap-6 sticky top-24">
       <!-- Transpose Card -->
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">Transpose</div>
+        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.transpose') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-2">
-          <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors"
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer"
             @click="emit('update:transpose', props.transposeSteps - 1)">
             -
           </button>
           <span class="font-mono font-bold text-lg">{{ currentKey }}</span>
-          <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors"
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer"
             @click="emit('update:transpose', props.transposeSteps + 1)">
             +
           </button>
         </div>
         <div class="text-center text-xs text-text-muted">
-          Original: {{ originalKey }}
+          {{ t('toolbox.original') }}: {{ originalKey }}
         </div>
       </div>
 
       <!-- Auto Scroll Card -->
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">Auto Scroll</div>
-        <button class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3"
-          :class="props.isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-[#FF2E93] text-white hover:bg-[#ff5ca6]'"
+        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.autoScroll') }}</div>
+        <button
+          class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
+          :class="props.isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:bg-[#ff5ca6]'"
           @click="emit('toggleScroll')">
-          {{ props.isScrolling ? 'Stop' : 'Start' }}
+          {{ props.isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
         </button>
 
         <div class="flex items-center gap-2">
-          <span class="text-xs text-text-muted">Speed</span>
+          <span class="text-xs text-text-muted">{{ t('toolbox.speed') }}</span>
           <input type="range" min="1" max="10" :value="props.scrollSpeed"
             @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
-            class="w-full accent-[#FF2E93]">
+            class="w-full accent-text-accent">
         </div>
       </div>
 
       <!-- Font Size Card -->
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">Font Size</div>
+        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.fontSize') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
-          <button class="flex-1 py-1 text-sm font-bold hover:bg-surface-base rounded"
+          <button class="flex-1 py-1 text-sm font-bold hover:bg-surface-base rounded cursor-pointer"
             @click="emit('update:fontSize', Math.max(0.8, props.fontSize - 0.1))">
             A-
           </button>
           <span class="w-px h-4 bg-border-subtle"></span>
-          <button class="flex-1 py-1 text-lg font-bold hover:bg-surface-base rounded"
+          <button class="flex-1 py-1 text-lg font-bold hover:bg-surface-base rounded cursor-pointer"
             @click="emit('update:fontSize', Math.min(2.0, props.fontSize + 0.1))">
             A+
           </button>
@@ -111,7 +118,8 @@ const closeDrawer = () => {
     <!-- MOBILE VIEW (Fixed Bottom Bar) -->
     <div
       class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-base border-t border-border-subtle px-4 py-3 z-50 grid grid-cols-3 items-center shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
-      <button class="flex flex-col items-center gap-1 text-text-muted active:text-[#FF2E93] justify-self-start"
+      <button
+        class="flex flex-col items-center gap-1 text-text-muted active:text-text-accent justify-self-start cursor-pointer"
         @click="openDrawer('transpose')">
         <Music class="w-5 h-5" />
         <div class="flex items-baseline gap-1.5">
@@ -121,14 +129,12 @@ const closeDrawer = () => {
         </div>
       </button>
 
-      <button
-        class="w-12 h-12 rounded-full bg-[#FF2E93] text-white flex items-center justify-center shadow-lg -mt-6 justify-self-center"
-        @click="emit('toggleScroll')">
-        <Pause v-if="props.isScrolling" class="w-5 h-5 fill-current" />
-        <Play v-else class="w-5 h-5 fill-current ml-0.5" />
-      </button>
+      <IconButton :icon="props.isScrolling ? Pause : Play" variant="primary" size="md"
+        :ariaLabel="props.isScrolling ? t('toolbox.ariaLabels.stopScrolling') : t('toolbox.ariaLabels.startScrolling')"
+        @click="emit('toggleScroll')" class="-mt-6! justify-self-center shadow-lg" />
 
-      <button class="flex flex-col items-center gap-1 text-text-muted active:text-[#FF2E93] justify-self-end"
+      <button
+        class="flex flex-col items-center gap-1 text-text-muted active:text-text-accent justify-self-end cursor-pointer"
         @click="openDrawer('scroll')">
         <Zap class="w-5 h-5" />
         <span class="text-[10px] font-bold">{{ props.scrollSpeed }}x</span>
@@ -136,7 +142,7 @@ const closeDrawer = () => {
     </div>
 
     <!-- MOBILE DRAWER (Overlay) -->
-    <div v-if="showMobileDrawer" class="lg:hidden fixed inset-0 z-[60]">
+    <div v-if="showMobileDrawer" class="lg:hidden fixed inset-0 z-60">
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeDrawer"></div>
 
       <div class="absolute bottom-0 left-0 right-0 bg-surface-base rounded-t-2xl p-6 animate-slide-up">
@@ -144,70 +150,66 @@ const closeDrawer = () => {
 
         <!-- Transpose Tab -->
         <div v-if="activeTab === 'transpose'" class="space-y-6">
-          <h3 class="text-lg font-bold text-center">Transpose Key</h3>
+          <h3 class="text-lg font-bold text-center">{{ t('toolbox.transposeKey') }}</h3>
 
           <div class="flex items-center justify-center gap-6">
-            <button class="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center text-2xl"
-              @click="emit('update:transpose', props.transposeSteps - 1)">
-              -
-            </button>
+            <IconButton :icon="Minus" variant="secondary" size="sm"
+              :ariaLabel="t('toolbox.ariaLabels.decreaseTranspose')"
+              @click="emit('update:transpose', props.transposeSteps - 1)" />
 
             <div class="text-center">
-              <div class="text-4xl font-bold font-mono text-[#FF2E93]">{{ currentKey }}</div>
-              <div class="text-sm text-text-muted mt-1">Original: {{ originalKey }}</div>
+              <div class="text-4xl font-bold font-mono text-text-accent">{{ currentKey }}</div>
+              <div class="text-sm text-text-muted mt-1">{{ t('toolbox.original') }}: {{ originalKey }}</div>
             </div>
 
-            <button class="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center text-2xl"
-              @click="emit('update:transpose', props.transposeSteps + 1)">
-              +
-            </button>
+            <IconButton :icon="Plus" variant="secondary" size="sm"
+              :ariaLabel="t('toolbox.ariaLabels.increaseTranspose')"
+              @click="emit('update:transpose', props.transposeSteps + 1)" />
           </div>
 
           <div class="bg-surface-muted rounded-xl p-4 text-center">
-            <div class="text-sm text-text-muted mb-1">Recommended Capo</div>
+            <div class="text-sm text-text-muted mb-1">{{ t('toolbox.recommendedCapo') }}</div>
             <!-- Simple capo logic: if negative transposition, maybe capo? Just placeholder for now -->
-            <div class="font-bold">None</div>
+            <div class="font-bold">{{ t('toolbox.none') }}</div>
           </div>
         </div>
 
         <!-- Scroll/Speed Tab -->
         <div v-else-if="activeTab === 'scroll'" class="space-y-6">
-          <h3 class="text-lg font-bold text-center">Auto Scroll Speed</h3>
+          <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
 
           <div class="text-center mb-4">
-            <div class="text-4xl font-bold text-[#FF2E93]">{{ props.scrollSpeed }}x</div>
+            <div class="text-4xl font-bold text-text-accent">{{ props.scrollSpeed }}x</div>
           </div>
 
           <div class="px-4">
             <input type="range" min="1" max="10" :value="props.scrollSpeed"
               @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
-              class="w-full accent-[#FF2E93] h-2 bg-surface-muted rounded-lg cursor-pointer">
+              class="w-full accent-text-accent h-2 bg-surface-muted rounded-lg cursor-pointer">
             <div class="flex justify-between text-xs text-text-muted mt-2">
-              <span>Slow</span>
-              <span>Fast</span>
+              <span>{{ t('toolbox.slow') }}</span>
+              <span>{{ t('toolbox.fast') }}</span>
             </div>
           </div>
 
           <div class="flex items-center justify-between bg-surface-muted rounded-xl p-4">
-            <span class="text-sm font-bold">Font Size</span>
+            <span class="text-sm font-bold">{{ t('toolbox.fontSize') }}</span>
             <div class="flex items-center gap-4">
-              <button class="w-8 h-8 rounded bg-surface-base shadow text-sm"
-                @click="emit('update:fontSize', Math.max(0.8, props.fontSize - 0.1))">
-                A-
-              </button>
+              <IconButton :icon="Minus" variant="secondary" size="sm"
+                :ariaLabel="t('toolbox.ariaLabels.decreaseFontSize')"
+                @click="emit('update:fontSize', Math.max(0.8, props.fontSize - 0.1))" />
               <span class="text-sm">{{ Math.round(props.fontSize * 100) }}%</span>
-              <button class="w-8 h-8 rounded bg-surface-base shadow text-lg"
-                @click="emit('update:fontSize', Math.min(2.0, props.fontSize + 0.1))">
-                A+
-              </button>
+              <IconButton :icon="Plus" variant="secondary" size="sm"
+                :ariaLabel="t('toolbox.ariaLabels.increaseFontSize')"
+                @click="emit('update:fontSize', Math.min(2.0, props.fontSize + 0.1))" />
             </div>
           </div>
         </div>
 
         <button
-          class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center hover:bg-surface-muted text-text-muted mt-6 py-4"
+          class="w-full px-4 py-4 rounded-lg font-bold transition-colors flex items-center justify-center hover:bg-surface-muted text-text-muted mt-6 cursor-pointer"
           @click="closeDrawer">
-          Close
+          {{ t('toolbox.close') }}
         </button>
       </div>
     </div>

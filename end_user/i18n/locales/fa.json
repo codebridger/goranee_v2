@@ -213,5 +213,29 @@
       "rhythm": "ریتم",
       "difficulty": "سختی"
     }
+  },
+  "toolbox": {
+    "transpose": "ترنسپوز",
+    "original": "اصلی",
+    "autoScroll": "اسکرول خودکار",
+    "stop": "توقف",
+    "start": "شروع",
+    "speed": "سرعت",
+    "fontSize": "اندازه فونت",
+    "transposeKey": "ترنسپوز کلید",
+    "recommendedCapo": "کاپو پیشنهادی",
+    "none": "هیچ",
+    "autoScrollSpeed": "سرعت اسکرول خودکار",
+    "slow": "آهسته",
+    "fast": "سریع",
+    "close": "بستن",
+    "ariaLabels": {
+      "decreaseTranspose": "کاهش ترنسپوز",
+      "increaseTranspose": "افزایش ترنسپوز",
+      "stopScrolling": "توقف اسکرول",
+      "startScrolling": "شروع اسکرول",
+      "decreaseFontSize": "کاهش اندازه فونت",
+      "increaseFontSize": "افزایش اندازه فونت"
+    }
   }
 }

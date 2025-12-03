@@ -213,5 +213,29 @@
       "rhythm": "Rhythm",
       "difficulty": "Difficulty"
     }
+  },
+  "toolbox": {
+    "transpose": "Transpose",
+    "original": "Original",
+    "autoScroll": "Auto Scroll",
+    "stop": "Stop",
+    "start": "Start",
+    "speed": "Speed",
+    "fontSize": "Font Size",
+    "transposeKey": "Transpose Key",
+    "recommendedCapo": "Recommended Capo",
+    "none": "None",
+    "autoScrollSpeed": "Auto Scroll Speed",
+    "slow": "Slow",
+    "fast": "Fast",
+    "close": "Close",
+    "ariaLabels": {
+      "decreaseTranspose": "Decrease transpose",
+      "increaseTranspose": "Increase transpose",
+      "stopScrolling": "Stop scrolling",
+      "startScrolling": "Start scrolling",
+      "decreaseFontSize": "Decrease font size",
+      "increaseFontSize": "Increase font size"
+    }
   }
 }
