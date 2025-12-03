@@ -206,5 +206,12 @@
     "minutes": "m",
     "days": "d",
     "unknownArtist": "Unknown Artist"
+  },
+  "song": {
+    "metadata": {
+      "key": "Key",
+      "rhythm": "Rhythm",
+      "difficulty": "Difficulty"
+    }
   }
 }

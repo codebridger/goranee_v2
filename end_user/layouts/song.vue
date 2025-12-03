@@ -26,7 +26,7 @@ const isDevLoading = ref(false)
 		</main>
 
 		<!-- Simple Footer -->
-		<div class="container mx-auto px-4 py-8">
+		<div class="container mx-auto px-4 pt-4 pb-[88px] lg:py-8 lg:pb-8">
 			<MiniFooter :copyright="t('footer.copyright')" />
 		</div>
 

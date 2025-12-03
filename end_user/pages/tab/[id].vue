@@ -103,9 +103,9 @@ const rootNote = computed(() => getRootNote())
 </script>
 
 <template>
-	<div v-if="song" class="min-h-screen bg-surface-base pb-24 lg:pb-0">
+	<div v-if="song" class="min-h-screen bg-surface-base pb-0">
 
-		<div class="container mx-auto px-4 py-4 lg:py-8">
+		<div class="container mx-auto px-4 py-4">
 			<!-- MOBILE HEADER (Compact) -->
 			<div class="lg:hidden mb-4">
 				<SongInfoCard variant="mobile" :title="song.title" :artist="getArtistObj()" :rhythm="song.rhythm"
@@ -141,7 +141,7 @@ const rootNote = computed(() => getRootNote())
 				</div>
 
 				<!-- Mobile Recommendations (Bottom) -->
-				<div class="lg:hidden">
+				<div class="lg:hidden mt-4">
 					<SongSidebar :artist-name="getArtistName()" :artist-songs="artistSongs"
 						:similar-songs="similarSongs" />
 				</div>

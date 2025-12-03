@@ -12,7 +12,7 @@ defineProps<Props>()
 </script>
 
 <template>
-	<div class="space-y-8">
+	<div class="space-y-6 lg:space-y-8">
 		<!-- Artist Top Songs -->
 		<div v-if="artistSongs && artistSongs.length > 0"
 			class="bg-surface-base rounded-xl p-6 border border-border-subtle">

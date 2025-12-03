@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Play, Heart } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import type { Artist } from '~/types/song.type'
-import { ROUTES } from '~/constants/routes'
 
 interface Props {
 	variant?: 'desktop' | 'mobile'
@@ -17,6 +16,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 	variant: 'desktop'
 })
+
+const { t } = useI18n()
 
 // Helper for safe image URL
 const getArtistImage = (artist?: Artist) => {
@@ -34,24 +35,27 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 			<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
 				:style="{ backgroundImage: `url(${bgImage})` }"></div>
 			<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-
-			<!-- Top Actions -->
-			<div class="absolute top-4 right-4">
-				<button
-					class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors">
-					<Heart class="w-5 h-5" />
-				</button>
-			</div>
 		</div>
 
 		<!-- Content -->
 		<div class="p-6 -mt-12 relative z-10">
-			<!-- Play Button (Floating) -->
-			<div class="flex justify-end mb-4">
-				<button
-					class="w-14 h-14 rounded-full bg-[#FF2E93] text-white shadow-lg hover:bg-[#ff5ca6] hover:scale-105 active:scale-95 transition-all flex items-center justify-center">
-					<Play class="w-6 h-6 fill-current ml-1" />
-				</button>
+			<!-- Metadata Tags (Moved to top right) -->
+			<div class="flex justify-end flex-wrap gap-2 mb-4">
+				<span v-if="rhythm"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-card border border-border-subtle shadow-sm">
+					<span class="text-xs font-medium text-text-secondary">{{ t('song.metadata.rhythm') }}:</span>
+					<span class="text-xs font-bold font-mono text-text-primary">{{ rhythm }}</span>
+				</span>
+				<span v-if="originalKey"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-card border border-border-subtle shadow-sm">
+					<span class="text-xs font-medium text-text-secondary">{{ t('song.metadata.key') }}:</span>
+					<span class="text-xs font-bold font-mono text-text-primary">{{ originalKey }}</span>
+				</span>
+				<span v-if="difficulty"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-card border border-border-subtle shadow-sm">
+					<span class="text-xs font-medium text-text-secondary">{{ t('song.metadata.difficulty') }}:</span>
+					<span class="text-xs font-bold text-text-primary">{{ difficulty }}</span>
+				</span>
 			</div>
 
 			<!-- Text Info -->
@@ -60,26 +64,6 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 					<h1 class="text-2xl font-bold text-text-primary leading-tight mb-1">
 						{{ title }}
 					</h1>
-					<NuxtLink v-if="artist" :to="ROUTES.ARTIST.DETAIL(artist._id)"
-						class="text-lg text-text-secondary hover:text-text-accent transition-colors">
-						{{ artist.name }}
-					</NuxtLink>
-				</div>
-
-				<!-- Metadata Tags -->
-				<div class="flex flex-wrap gap-2">
-					<span v-if="rhythm"
-						class="px-3 py-1 rounded-full bg-surface-muted text-xs font-medium text-text-secondary border border-border-subtle">
-						{{ rhythm }}
-					</span>
-					<span v-if="originalKey"
-						class="px-3 py-1 rounded-full bg-surface-muted text-xs font-medium text-text-secondary border border-border-subtle">
-						Key: {{ originalKey }}
-					</span>
-					<span v-if="difficulty"
-						class="px-3 py-1 rounded-full bg-surface-muted text-xs font-medium text-text-secondary border border-border-subtle">
-						{{ difficulty }}
-					</span>
 				</div>
 			</div>
 		</div>
@@ -104,26 +88,27 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 				<h1 class="text-lg font-bold text-text-primary truncate leading-tight">
 					{{ title }}
 				</h1>
-				<NuxtLink v-if="artist" :to="ROUTES.ARTIST.DETAIL(artist._id)"
-					class="text-sm text-text-secondary hover:text-text-accent truncate block">
-					{{ artist.name }}
-				</NuxtLink>
-
-				<div class="flex items-center gap-2 mt-1.5 text-xs text-text-muted">
-					<span v-if="originalKey" class="font-mono font-bold bg-surface-card/50 px-1.5 rounded">
-						{{ originalKey }}
-					</span>
-					<span v-if="rhythm" class="truncate">
-						{{ rhythm }}
-					</span>
-				</div>
 			</div>
 
-			<!-- Play Action -->
-			<button
-				class="w-10 h-10 rounded-full bg-[#FF2E93] text-white shadow-md flex items-center justify-center shrink-0 active:scale-95 transition-transform">
-				<Play class="w-4 h-4 fill-current ml-0.5" />
-			</button>
+			<!-- Metadata Tags (Moved to right side) -->
+			<div class="flex flex-col items-end gap-1.5 shrink-0">
+				<span v-if="originalKey"
+					class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-card shadow-sm">
+					<span class="text-xs font-medium text-text-secondary">{{ t('song.metadata.key') }}:</span>
+					<span class="text-xs font-mono text-text-primary">{{ originalKey }}</span>
+				</span>
+				<span v-if="rhythm"
+					class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-card shadow-sm">
+					<span class="text-xs font-medium text-text-secondary">{{ t('song.metadata.rhythm') }}:</span>
+					<span class="text-xs font-mono text-text-primary">{{ rhythm }}</span>
+				</span>
+				<span v-if="difficulty"
+					class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-card shadow-sm">
+					<span class="text-xs font-medium text-text-secondary">{{ t('song.metadata.difficulty')
+					}}:</span>
+					<span class="text-xs text-text-primary">{{ difficulty }}</span>
+				</span>
+			</div>
 		</div>
 	</div>
 </template>

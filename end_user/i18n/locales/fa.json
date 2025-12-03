@@ -206,5 +206,12 @@
     "minutes": "د",
     "days": "ر",
     "unknownArtist": "هنرمند ناشناس"
+  },
+  "song": {
+    "metadata": {
+      "key": "کلید",
+      "rhythm": "ریتم",
+      "difficulty": "سختی"
+    }
   }
 }

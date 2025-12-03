@@ -11,7 +11,7 @@ const dir = computed(() => isRtl.value ? 'rtl' : 'ltr')
 
 <template>
   <div
-    class="p-8 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-4 bg-[#2A1B28] text-white dark:bg-[#0a0509] dark:text-gray-400">
+    class="p-4 lg:p-8 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-4 bg-[#2A1B28] text-white dark:bg-[#0a0509] dark:text-gray-400">
     <div class="flex items-center gap-2">
       <div class="w-6 h-6 rounded-full bg-grad-primary flex items-center justify-center text-white text-xs font-bold">
         G
