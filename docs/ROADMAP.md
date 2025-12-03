@@ -24,7 +24,7 @@ The goal is to have a browsable, usable site where users can find and play songs
 
 ### 2. Chord View "Workstation" (PG-002)
 *The core product experience: A distraction-free, feature-rich player for musicians.*
-- [ ] **Dynamic Route & Data Layer (`pages/songs/[id].vue`)**:
+- [ ] **Dynamic Route & Data Layer (`pages/tab/[id].vue`)**:
     - Create the dynamic route to handle song IDs/slugs.
     - Implement `useSong(id)` composable to fetch full song details, including `sections`, `lines`, and `artists` population.
     - Handle 404s and loading states for the entire page view.
@@ -46,7 +46,7 @@ The goal is to have a browsable, usable site where users can find and play songs
 
 ### 3. Artist Profile (PG-003)
 *A hub for artist discovery and discography exploration.*
-- [x] **Artist Route (`pages/artists/[id].vue`)**:
+- [x] **Artist Route (`pages/artist/[id].vue`)**:
     - Fetch Artist profile data (bio, image, stats) and full song catalog.
 - [x] **Hero & Bio Section**:
     - "Halo" Avatar styling with gradient borders.
