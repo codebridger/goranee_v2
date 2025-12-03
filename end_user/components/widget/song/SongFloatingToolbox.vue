@@ -110,8 +110,8 @@ const closeDrawer = () => {
 
     <!-- MOBILE VIEW (Fixed Bottom Bar) -->
     <div
-      class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-base border-t border-border-subtle px-4 py-3 z-50 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
-      <button class="flex flex-col items-center gap-1 text-text-muted active:text-[#FF2E93]"
+      class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-base border-t border-border-subtle px-4 py-3 z-50 grid grid-cols-3 items-center shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+      <button class="flex flex-col items-center gap-1 text-text-muted active:text-[#FF2E93] justify-self-start"
         @click="openDrawer('transpose')">
         <Music class="w-5 h-5" />
         <div class="flex items-baseline gap-1.5">
@@ -121,13 +121,14 @@ const closeDrawer = () => {
         </div>
       </button>
 
-      <button class="w-12 h-12 rounded-full bg-[#FF2E93] text-white flex items-center justify-center shadow-lg -mt-6"
+      <button
+        class="w-12 h-12 rounded-full bg-[#FF2E93] text-white flex items-center justify-center shadow-lg -mt-6 justify-self-center"
         @click="emit('toggleScroll')">
         <Pause v-if="props.isScrolling" class="w-5 h-5 fill-current" />
         <Play v-else class="w-5 h-5 fill-current ml-0.5" />
       </button>
 
-      <button class="flex flex-col items-center gap-1 text-text-muted active:text-[#FF2E93]"
+      <button class="flex flex-col items-center gap-1 text-text-muted active:text-[#FF2E93] justify-self-end"
         @click="openDrawer('scroll')">
         <Zap class="w-5 h-5" />
         <span class="text-[10px] font-bold">{{ props.scrollSpeed }}x</span>
@@ -173,10 +174,14 @@ const closeDrawer = () => {
         <div v-else-if="activeTab === 'scroll'" class="space-y-6">
           <h3 class="text-lg font-bold text-center">Auto Scroll Speed</h3>
 
+          <div class="text-center mb-4">
+            <div class="text-4xl font-bold text-[#FF2E93]">{{ props.scrollSpeed }}x</div>
+          </div>
+
           <div class="px-4">
             <input type="range" min="1" max="10" :value="props.scrollSpeed"
               @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
-              class="w-full accent-[#FF2E93] h-2 bg-surface-muted rounded-lg appearance-none cursor-pointer">
+              class="w-full accent-[#FF2E93] h-2 bg-surface-muted rounded-lg cursor-pointer">
             <div class="flex justify-between text-xs text-text-muted mt-2">
               <span>Slow</span>
               <span>Fast</span>
