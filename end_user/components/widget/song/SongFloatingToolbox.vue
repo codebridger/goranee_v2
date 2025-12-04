@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Music, Play, Pause, Zap, Minus, Plus } from 'lucide-vue-next'
+import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useTranspose } from '~/composables/useTranspose'
 import IconButton from '~/components/base/IconButton.vue'
 
 const { t } = useI18n()
 
 interface Props {
-  rootNote?: string
+  currentTableIndex: number
+  originalTableIndex: number
   keyQuality?: 'major' | 'minor'
-  transposeSteps: number
   isScrolling: boolean
   scrollSpeed: number
   fontSize: number
@@ -19,26 +19,73 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  (e: 'update:transpose', value: number): void
+  (e: 'update:tableIndex', value: number): void
   (e: 'toggleScroll'): void
   (e: 'update:speed', value: number): void
   (e: 'update:fontSize', value: number): void
 }>()
 
-const { transposeNote } = useTranspose()
+const { keySignatures, getKeyDisplayName } = useTranspose()
 
-// Helper to show current key
-const currentKey = computed(() => {
-  if (!props.rootNote) return props.keyQuality || '?'
-  const transposedNote = transposeNote(props.rootNote, props.transposeSteps)
-  return props.keyQuality ? `${transposedNote} ${props.keyQuality}` : transposedNote
+// Carousel refs
+const carouselRef = ref<HTMLElement | null>(null)
+const mobileCarouselRef = ref<HTMLElement | null>(null)
+
+// Helper to show current key name
+const currentKeyName = computed(() => {
+  return getKeyDisplayName(props.currentTableIndex, props.keyQuality)
 })
 
 // Original key display
-const originalKey = computed(() => {
-  if (!props.rootNote) return props.keyQuality || '?'
-  return props.keyQuality ? `${props.rootNote} ${props.keyQuality}` : props.rootNote
+const originalKeyName = computed(() => {
+  return getKeyDisplayName(props.originalTableIndex, props.keyQuality)
 })
+
+// Check if current key is different from original
+const isTransposed = computed(() => {
+  return props.currentTableIndex !== props.originalTableIndex
+})
+
+// Step to next/previous key (wrapping around)
+const stepKey = (direction: -1 | 1) => {
+  let newIndex = props.currentTableIndex + direction
+  if (newIndex < 0) newIndex = 11
+  if (newIndex > 11) newIndex = 0
+  emit('update:tableIndex', newIndex)
+}
+
+// Select a specific key
+const selectKey = (index: number) => {
+  emit('update:tableIndex', index)
+}
+
+// Scroll carousel to center the selected key
+const scrollToKey = (carouselEl: HTMLElement | null, index: number) => {
+  if (!carouselEl) return
+  const keyButton = carouselEl.querySelector(`[data-key-index="${index}"]`) as HTMLElement
+  if (keyButton) {
+    const containerWidth = carouselEl.offsetWidth
+    const buttonLeft = keyButton.offsetLeft
+    const buttonWidth = keyButton.offsetWidth
+    const scrollPosition = buttonLeft - (containerWidth / 2) + (buttonWidth / 2)
+    carouselEl.scrollTo({ left: scrollPosition, behavior: 'smooth' })
+  }
+}
+
+// Watch for index changes to scroll carousel
+watch(() => props.currentTableIndex, (newIndex) => {
+  nextTick(() => {
+    scrollToKey(carouselRef.value, newIndex)
+    scrollToKey(mobileCarouselRef.value, newIndex)
+  })
+})
+
+// Carousel navigation
+const scrollCarousel = (carouselEl: HTMLElement | null, direction: -1 | 1) => {
+  if (!carouselEl) return
+  const scrollAmount = 120 * direction
+  carouselEl.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+}
 
 // Mobile drawer state
 const showMobileDrawer = ref(false)
@@ -47,12 +94,17 @@ const activeTab = ref<'transpose' | 'scroll' | 'font'>('transpose')
 const openDrawer = (tab: 'transpose' | 'scroll' | 'font') => {
   activeTab.value = tab
   showMobileDrawer.value = true
+  // Scroll to current key when opening drawer
+  if (tab === 'transpose') {
+    nextTick(() => {
+      scrollToKey(mobileCarouselRef.value, props.currentTableIndex)
+    })
+  }
 }
 
 const closeDrawer = () => {
   showMobileDrawer.value = false
 }
-
 </script>
 
 <template>
@@ -62,21 +114,57 @@ const closeDrawer = () => {
       <!-- Transpose Card -->
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.transpose') }}</div>
-        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-2">
+
+        <!-- +/- Controls -->
+        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-3">
           <button
             class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer"
-            @click="emit('update:transpose', props.transposeSteps - 1)">
-            -
+            @click="stepKey(-1)" :aria-label="t('toolbox.ariaLabels.decreaseTranspose')">
+            <Minus class="w-4 h-4" />
           </button>
-          <span class="font-mono font-bold text-lg">{{ currentKey }}</span>
+          <span class="font-mono font-bold text-lg">{{ currentKeyName }}</span>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer"
-            @click="emit('update:transpose', props.transposeSteps + 1)">
-            +
+            @click="stepKey(1)" :aria-label="t('toolbox.ariaLabels.increaseTranspose')">
+            <Plus class="w-4 h-4" />
           </button>
         </div>
+
+        <!-- Key Carousel -->
+        <div class="relative mb-3">
+          <!-- Left Arrow -->
+          <button
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/80 rounded-full shadow-sm hover:bg-surface-muted transition-colors cursor-pointer"
+            @click="scrollCarousel(carouselRef, -1)">
+            <ChevronLeft class="w-4 h-4" />
+          </button>
+
+          <!-- Carousel Container -->
+          <div ref="carouselRef" class="flex gap-1 overflow-x-auto scrollbar-hide scroll-smooth px-7 py-1"
+            style="scrollbar-width: none; -ms-overflow-style: none;">
+            <button v-for="key in keySignatures" :key="key.index" :data-key-index="key.index"
+              class="flex-shrink-0 w-9 h-9 rounded-lg font-mono text-sm font-bold transition-all cursor-pointer" :class="[
+                key.index === currentTableIndex
+                  ? 'bg-text-accent text-white shadow-md scale-105'
+                  : 'bg-surface-muted hover:bg-surface-base text-text-primary',
+                key.index === originalTableIndex && key.index !== currentTableIndex
+                  ? 'ring-2 ring-text-accent/30'
+                  : ''
+              ]" @click="selectKey(key.index)">
+              {{ keyQuality === 'minor' ? key.minor : key.major }}
+            </button>
+          </div>
+
+          <!-- Right Arrow -->
+          <button
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/80 rounded-full shadow-sm hover:bg-surface-muted transition-colors cursor-pointer"
+            @click="scrollCarousel(carouselRef, 1)">
+            <ChevronRight class="w-4 h-4" />
+          </button>
+        </div>
+
         <div class="text-center text-xs text-text-muted">
-          {{ t('toolbox.original') }}: {{ originalKey }}
+          {{ t('toolbox.original') }}: {{ originalKeyName }}
         </div>
       </div>
 
@@ -85,14 +173,14 @@ const closeDrawer = () => {
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.autoScroll') }}</div>
         <button
           class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
-          :class="props.isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:bg-[#ff5ca6]'"
+          :class="isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:bg-[#ff5ca6]'"
           @click="emit('toggleScroll')">
-          {{ props.isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
+          {{ isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
         </button>
 
         <div class="flex items-center gap-2">
           <span class="text-xs text-text-muted">{{ t('toolbox.speed') }}</span>
-          <input type="range" min="1" max="10" :value="props.scrollSpeed"
+          <input type="range" min="1" max="10" :value="scrollSpeed"
             @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
             class="w-full accent-text-accent">
         </div>
@@ -103,12 +191,12 @@ const closeDrawer = () => {
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.fontSize') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
           <button class="flex-1 py-1 text-sm font-bold hover:bg-surface-base rounded cursor-pointer"
-            @click="emit('update:fontSize', Math.max(0.8, props.fontSize - 0.1))">
+            @click="emit('update:fontSize', Math.max(0.8, fontSize - 0.1))">
             A-
           </button>
           <span class="w-px h-4 bg-border-subtle"></span>
           <button class="flex-1 py-1 text-lg font-bold hover:bg-surface-base rounded cursor-pointer"
-            @click="emit('update:fontSize', Math.min(2.0, props.fontSize + 0.1))">
+            @click="emit('update:fontSize', Math.min(2.0, fontSize + 0.1))">
             A+
           </button>
         </div>
@@ -123,21 +211,23 @@ const closeDrawer = () => {
         @click="openDrawer('transpose')">
         <Music class="w-5 h-5" />
         <div class="flex items-baseline gap-1.5">
-          <span v-if="originalKey" class="font-mono text-[10px] opacity-70 leading-none">{{ originalKey }}</span>
-          <span v-if="originalKey && props.transposeSteps !== 0" class="text-[8px] opacity-50">→</span>
-          <span class="font-mono font-bold text-xs leading-none">{{ currentKey }}</span>
+          <span v-if="originalKeyName" class="font-mono text-[10px] opacity-70 leading-none">{{ originalKeyName
+            }}</span>
+          <span v-if="isTransposed" class="text-[8px] opacity-50">→</span>
+          <span class="font-mono font-bold text-xs leading-none" :class="{ 'text-text-accent': isTransposed }">{{
+            currentKeyName }}</span>
         </div>
       </button>
 
-      <IconButton :icon="props.isScrolling ? Pause : Play" variant="primary" size="md"
-        :ariaLabel="props.isScrolling ? t('toolbox.ariaLabels.stopScrolling') : t('toolbox.ariaLabels.startScrolling')"
+      <IconButton :icon="isScrolling ? Pause : Play" variant="primary" size="md"
+        :ariaLabel="isScrolling ? t('toolbox.ariaLabels.stopScrolling') : t('toolbox.ariaLabels.startScrolling')"
         @click="emit('toggleScroll')" class="-mt-6! justify-self-center shadow-lg" />
 
       <button
         class="flex flex-col items-center gap-1 text-text-muted active:text-text-accent justify-self-end cursor-pointer"
         @click="openDrawer('scroll')">
         <Zap class="w-5 h-5" />
-        <span class="text-[10px] font-bold">{{ props.scrollSpeed }}x</span>
+        <span class="text-[10px] font-bold">{{ scrollSpeed }}x</span>
       </button>
     </div>
 
@@ -152,24 +242,56 @@ const closeDrawer = () => {
         <div v-if="activeTab === 'transpose'" class="space-y-6">
           <h3 class="text-lg font-bold text-center">{{ t('toolbox.transposeKey') }}</h3>
 
+          <!-- +/- Controls with Current Key -->
           <div class="flex items-center justify-center gap-6">
             <IconButton :icon="Minus" variant="secondary" size="sm"
-              :ariaLabel="t('toolbox.ariaLabels.decreaseTranspose')"
-              @click="emit('update:transpose', props.transposeSteps - 1)" />
+              :ariaLabel="t('toolbox.ariaLabels.decreaseTranspose')" @click="stepKey(-1)" />
 
             <div class="text-center">
-              <div class="text-4xl font-bold font-mono text-text-accent">{{ currentKey }}</div>
-              <div class="text-sm text-text-muted mt-1">{{ t('toolbox.original') }}: {{ originalKey }}</div>
+              <div class="text-4xl font-bold font-mono text-text-accent">{{ currentKeyName }}</div>
+              <div class="text-sm text-text-muted mt-1">{{ t('toolbox.original') }}: {{ originalKeyName }}</div>
             </div>
 
             <IconButton :icon="Plus" variant="secondary" size="sm"
-              :ariaLabel="t('toolbox.ariaLabels.increaseTranspose')"
-              @click="emit('update:transpose', props.transposeSteps + 1)" />
+              :ariaLabel="t('toolbox.ariaLabels.increaseTranspose')" @click="stepKey(1)" />
+          </div>
+
+          <!-- Key Carousel (Mobile) -->
+          <div class="relative">
+            <!-- Left Arrow -->
+            <button
+              class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-muted rounded-full shadow-sm hover:bg-surface-base transition-colors cursor-pointer"
+              @click="scrollCarousel(mobileCarouselRef, -1)">
+              <ChevronLeft class="w-5 h-5" />
+            </button>
+
+            <!-- Carousel Container -->
+            <div ref="mobileCarouselRef" class="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-10 py-2"
+              style="scrollbar-width: none; -ms-overflow-style: none;">
+              <button v-for="key in keySignatures" :key="key.index" :data-key-index="key.index"
+                class="flex-shrink-0 w-12 h-12 rounded-xl font-mono text-base font-bold transition-all cursor-pointer"
+                :class="[
+                  key.index === currentTableIndex
+                    ? 'bg-text-accent text-white shadow-lg scale-110'
+                    : 'bg-surface-muted hover:bg-surface-base text-text-primary',
+                  key.index === originalTableIndex && key.index !== currentTableIndex
+                    ? 'ring-2 ring-text-accent/30'
+                    : ''
+                ]" @click="selectKey(key.index)">
+                {{ keyQuality === 'minor' ? key.minor : key.major }}
+              </button>
+            </div>
+
+            <!-- Right Arrow -->
+            <button
+              class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-muted rounded-full shadow-sm hover:bg-surface-base transition-colors cursor-pointer"
+              @click="scrollCarousel(mobileCarouselRef, 1)">
+              <ChevronRight class="w-5 h-5" />
+            </button>
           </div>
 
           <div class="bg-surface-muted rounded-xl p-4 text-center">
             <div class="text-sm text-text-muted mb-1">{{ t('toolbox.recommendedCapo') }}</div>
-            <!-- Simple capo logic: if negative transposition, maybe capo? Just placeholder for now -->
             <div class="font-bold">{{ t('toolbox.none') }}</div>
           </div>
         </div>
@@ -179,11 +301,11 @@ const closeDrawer = () => {
           <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
 
           <div class="text-center mb-4">
-            <div class="text-4xl font-bold text-text-accent">{{ props.scrollSpeed }}x</div>
+            <div class="text-4xl font-bold text-text-accent">{{ scrollSpeed }}x</div>
           </div>
 
           <div class="px-4">
-            <input type="range" min="1" max="10" :value="props.scrollSpeed"
+            <input type="range" min="1" max="10" :value="scrollSpeed"
               @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
               class="w-full accent-text-accent h-2 bg-surface-muted rounded-lg cursor-pointer">
             <div class="flex justify-between text-xs text-text-muted mt-2">
@@ -197,11 +319,11 @@ const closeDrawer = () => {
             <div class="flex items-center gap-4">
               <IconButton :icon="Minus" variant="secondary" size="sm"
                 :ariaLabel="t('toolbox.ariaLabels.decreaseFontSize')"
-                @click="emit('update:fontSize', Math.max(0.8, props.fontSize - 0.1))" />
-              <span class="text-sm">{{ Math.round(props.fontSize * 100) }}%</span>
+                @click="emit('update:fontSize', Math.max(0.8, fontSize - 0.1))" />
+              <span class="text-sm">{{ Math.round(fontSize * 100) }}%</span>
               <IconButton :icon="Plus" variant="secondary" size="sm"
                 :ariaLabel="t('toolbox.ariaLabels.increaseFontSize')"
-                @click="emit('update:fontSize', Math.min(2.0, props.fontSize + 0.1))" />
+                @click="emit('update:fontSize', Math.min(2.0, fontSize + 0.1))" />
             </div>
           </div>
         </div>
@@ -229,5 +351,10 @@ const closeDrawer = () => {
   to {
     transform: translateY(0);
   }
+}
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

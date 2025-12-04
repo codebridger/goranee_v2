@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
+import { useTranspose } from '~/composables/useTranspose'
 import SongInfoCard from '~/components/widget/song/SongInfoCard.vue'
 import MainChordSheet from '~/components/widget/song/MainChordSheet.vue'
 import SongFloatingToolbox from '~/components/widget/song/SongFloatingToolbox.vue'
@@ -16,37 +17,47 @@ definePageMeta({
 const route = useRoute()
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
 const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
+const { getOriginalTableIndex, fetchTables } = useTranspose()
 
 const song = ref<SongWithPopulatedRefs | null>(null)
 const artistSongs = ref<SongWithPopulatedRefs[]>([])
 const similarSongs = ref<SongWithPopulatedRefs[]>([]) // Placeholder for now
 
-// UI State
-const transposeSteps = ref(0)
+// UI State - Table-based transposition
+const currentTableIndex = ref(0)
+const originalTableIndex = ref(0)
 const fontSize = ref(1.0)
 
-// Fetch Data
+// Fetch chord tables and song data on mount
 onMounted(async () => {
+	// Fetch chord transposition tables (cached after first load)
+	await fetchTables()
+
+	// Fetch song data
 	const id = route.params.id as string
 	song.value = await fetchSongById(id)
 
-	if (song.value && song.value.artists && song.value.artists.length > 0) {
-		// Fetch more by first artist
-		const artistId = typeof song.value.artists[0] === 'string' ? song.value.artists[0] : song.value.artists[0]?._id
-		if (artistId) {
-			artistSongs.value = await fetchSongsByArtist(artistId)
+	if (song.value) {
+		// Determine original table index from song's first chord
+		const originalIdx = getOriginalTableIndex(song.value.chords)
+		originalTableIndex.value = originalIdx
+		currentTableIndex.value = originalIdx // Start at original key
+
+		// Fetch more songs by first artist
+		if (song.value.artists && song.value.artists.length > 0) {
+			const artistId = typeof song.value.artists[0] === 'string'
+				? song.value.artists[0]
+				: song.value.artists[0]?._id
+			if (artistId) {
+				artistSongs.value = await fetchSongsByArtist(artistId)
+			}
 		}
 	}
 })
 
-// Watch for scroll speed changes from toolbox
-watch(speed, (newSpeed) => {
-	// Already handled by useAutoScroll internal state, 
-	// but we might need to ensure the component updates
-})
-
-const handleTranspose = (steps: number) => {
-	transposeSteps.value = steps
+// Handle table index change from toolbox
+const handleTableIndexChange = (index: number) => {
+	currentTableIndex.value = index
 }
 
 const handleFontSize = (size: number) => {
@@ -65,41 +76,10 @@ const getArtistObj = () => {
 	return typeof artist === 'string' ? undefined : artist
 }
 
-// Extract root note from first chord or use vocalNote
-const getRootNote = () => {
-	if (!song.value) return undefined
-
-	// First try vocalNote
-	if (song.value.chords?.vocalNote?.note) {
-		return song.value.chords.vocalNote.note
-	}
-
-	// Otherwise, extract from first chord in sections
-	if (song.value.sections && song.value.sections.length > 0) {
-		for (const section of song.value.sections) {
-			if (section.lines && section.lines.length > 0) {
-				for (const line of section.lines) {
-					if (line.chords) {
-						// Extract first chord from the chords string
-						const firstChord = line.chords.trim().split(/\s+/)[0]
-						if (firstChord) {
-							// Match note pattern (e.g., "C", "C#", "Db", "Am", "Cm7")
-							const match = firstChord.match(/^([A-G][#b]?)/)
-							if (match) {
-								return match[1]
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return undefined
-}
-
-const rootNote = computed(() => getRootNote())
-
+// Get key quality from song chords
+const keyQuality = computed(() => {
+	return song.value?.chords?.keySignature as 'major' | 'minor' | undefined
+})
 </script>
 
 <template>
@@ -117,15 +97,16 @@ const rootNote = computed(() => getRootNote())
 
 				<!-- 1. LEFT SIDEBAR (Toolbox - Desktop) -->
 				<div class="hidden lg:block lg:col-span-3">
-					<SongFloatingToolbox :root-note="rootNote" :key-quality="song.chords?.keySignature"
-						:transpose-steps="transposeSteps" :is-scrolling="isScrolling" :scroll-speed="speed"
-						:font-size="fontSize" @update:transpose="handleTranspose" @toggle-scroll="toggleScroll"
-						@update:speed="setSpeed" @update:font-size="handleFontSize" />
+					<SongFloatingToolbox :current-table-index="currentTableIndex"
+						:original-table-index="originalTableIndex" :key-quality="keyQuality" :is-scrolling="isScrolling"
+						:scroll-speed="speed" :font-size="fontSize" @update:table-index="handleTableIndexChange"
+						@toggle-scroll="toggleScroll" @update:speed="setSpeed" @update:font-size="handleFontSize" />
 				</div>
 
 				<!-- 2. CENTER (Chord Sheet) -->
 				<div class="lg:col-span-6">
-					<MainChordSheet :sections="song.sections || []" :transpose-steps="transposeSteps"
+					<MainChordSheet :sections="song.sections || []" :song-chords="song.chords"
+						:current-table-index="currentTableIndex" :original-table-index="originalTableIndex"
 						:font-size="fontSize" />
 				</div>
 
@@ -151,10 +132,10 @@ const rootNote = computed(() => getRootNote())
 
 		<!-- MOBILE FLOATING TOOLBOX -->
 		<div class="lg:hidden">
-			<SongFloatingToolbox :root-note="rootNote" :key-quality="song.chords?.keySignature"
-				:transpose-steps="transposeSteps" :is-scrolling="isScrolling" :scroll-speed="speed"
-				:font-size="fontSize" @update:transpose="handleTranspose" @toggle-scroll="toggleScroll"
-				@update:speed="setSpeed" @update:font-size="handleFontSize" />
+			<SongFloatingToolbox :current-table-index="currentTableIndex" :original-table-index="originalTableIndex"
+				:key-quality="keyQuality" :is-scrolling="isScrolling" :scroll-speed="speed" :font-size="fontSize"
+				@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll" @update:speed="setSpeed"
+				@update:font-size="handleFontSize" />
 		</div>
 
 	</div>

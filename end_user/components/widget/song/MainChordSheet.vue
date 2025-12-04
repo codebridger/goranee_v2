@@ -2,52 +2,52 @@
 import { computed, ref, onMounted, nextTick, watch, type ComponentPublicInstance } from 'vue'
 import { useTranspose } from '~/composables/useTranspose'
 import { useI18nRtl } from '~/composables/useI18nRtl'
-import type { SongSection } from '~/types/song.type'
+import type { SongSection, SongChords } from '~/types/song.type'
 
 interface Props {
   sections: SongSection[]
-  transposeSteps: number
+  songChords?: SongChords
+  currentTableIndex: number
+  originalTableIndex: number
   fontSize: number // scale factor, e.g., 1 (base) -> 1.5
 }
 
 const props = defineProps<Props>()
-const { transposeChord } = useTranspose()
+const { transposeAll, isReady } = useTranspose()
 const { isRtl } = useI18nRtl()
 const dir = computed(() => isRtl.value ? 'rtl' : 'ltr')
 
 const lineRefs = ref<(HTMLElement | null)[]>([])
 const globalSectionWidth = ref<string>('fit-content')
 
+// Process sections with table-based transposition
 const processedSections = computed(() => {
-  return props.sections.map(section => ({
-    ...section,
-    lines: section.lines?.map(line => {
-      // Transpose chords in the 'chords' string
-      // Assuming chords are separated by spaces or are just a string of chords
-      // Logic: Split by space, transpose each part if it looks like a chord, join back
-      // This is a simple approximation. Ideally we parse positionally.
-
-      const originalChords = line.chords || ''
-      const transposedChords = originalChords.split(/(\s+)/).map(part => {
-        // If part is whitespace, return as is
-        if (!part.trim()) return part
-        // Try to transpose
-        return transposeChord(part, props.transposeSteps)
-      }).join('')
-
-      return {
+  // If no transposition needed (same index) or tables not ready, return original
+  if (props.currentTableIndex === props.originalTableIndex || !isReady.value) {
+    return props.sections.map(section => ({
+      ...section,
+      lines: section.lines?.map(line => ({
         ...line,
-        transposedChords
-      }
-    })
-  }))
-})
+        transposedChords: line.chords || ''
+      }))
+    }))
+  }
 
-const fontSizeClass = computed(() => {
-  // This is a simplified mapping. In real world we might use dynamic style or specific classes
-  if (props.fontSize <= 0.8) return 'text-sm'
-  if (props.fontSize >= 1.2) return 'text-xl'
-  return 'text-base'
+  // Use table-based transposition with spacing algorithms
+  const { sections: transposedSections } = transposeAll(
+    props.sections,
+    props.songChords,
+    props.currentTableIndex
+  )
+
+  // Map to include transposedChords property for template
+  return transposedSections.map(section => ({
+    ...section,
+    lines: section.lines?.map(line => ({
+      ...line,
+      transposedChords: line.chords || ''
+    }))
+  }))
 })
 
 const fontSizeStyle = computed(() => ({
@@ -93,44 +93,62 @@ onMounted(() => {
   measureLongestLine()
 })
 
-// Re-measure when sections, transpose, or fontSize changes
-watch([() => props.sections, () => props.transposeSteps, () => props.fontSize], () => {
+// Re-measure when sections, table index, or fontSize changes
+watch([() => props.sections, () => props.currentTableIndex, () => props.fontSize], () => {
   measureLongestLine()
 }, { deep: true })
 
 const sectionWidthStyle = computed(() => ({
   width: globalSectionWidth.value
 }))
-
 </script>
 
 <template>
-  <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6 md:p-10 min-h-[600px] flex flex-col items-center"
-    :dir="dir">
-    <div v-for="(section, sIdx) in processedSections" :key="sIdx" class="mb-8">
-      <h3 v-if="section.title" class="text-xs font-bold uppercase text-gray-400 mb-4 tracking-wider">
-        {{ section.title }}
-      </h3>
+  <div class="chord-sheet bg-white dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6 md:p-10 min-h-[600px]">
+    <!-- Match original Tabview.vue structure -->
+    <div class="tab-content" v-if="processedSections.length > 0">
+      <div v-for="(section, sIdx) in processedSections" :key="sIdx" class="mb-4 section">
 
-      <div class="space-y-4 font-mono leading-loose mx-auto" :style="sectionWidthStyle">
-        <div v-for="(line, lIdx) in section.lines" :key="lIdx" class="group">
-          <!-- Chords Line -->
-          <div v-if="line.transposedChords" :ref="setLineRef" class="font-bold text-text-accent whitespace-pre-wrap"
-            :style="fontSizeStyle">
-            {{ line.transposedChords }}
-          </div>
+        <h3 v-if="section.title" class="my-2 text-xs font-bold uppercase text-gray-400 tracking-wider"
+          :dir="section.direction">
+          {{ section.title }}
+        </h3>
 
-          <!-- Lyrics Line -->
-          <div v-if="line.text" :ref="setLineRef" class="text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-sans"
-            :style="fontSizeStyle">
-            {{ line.text }}
-          </div>
+        <!-- Match original TabviewSectionLines.vue EXACTLY -->
+        <div class="lines whitespace-pre-wrap" :style="[fontSizeStyle, { fontFamily: 'dana, sans-serif' }]">
+          <p v-for="(line, lIdx) in section.lines" :key="lIdx" :style="{
+            textAlign: section.direction === 'rtl' ? 'right' : 'left',
+            fontFamily: 'dana, sans-serif'
+          }">
+            <!-- Chord line: display:block makes it full-width so trailing spaces work with text-align -->
+            <span class="chord" dir="ltr" :style="{
+              display: 'block',
+              fontFamily: 'dana, sans-serif',
+              color: 'red',
+              fontWeight: 400
+            }">{{ line.transposedChords }}</span>
+            <!-- Lyrics line: display:block for consistent width with chords -->
+            <span :dir="section.direction || 'ltr'" :style="{
+              display: 'block',
+              fontFamily: 'dana, sans-serif'
+            }">{{ line.text }}</span>
+          </p>
         </div>
       </div>
     </div>
 
-    <div v-if="sections.length === 0" class="text-center text-gray-500 py-20">
+    <div v-else class="text-center text-gray-500 py-20">
       No chords available for this song.
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 
+ * Chord/lyric alignment styles
+ * Critical font-family is applied via inline styles to ensure it reaches all elements
+ */
+.lines p {
+  margin-bottom: 1.5rem;
+}
+</style>

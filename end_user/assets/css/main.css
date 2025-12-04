@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+/* Dana Font - Required for chord/lyric alignment */
+@font-face {
+  font-family: dana;
+  font-weight: 400;
+  src: url('./../fonts/dana/woff2/dana-regular.woff2') format('woff2'),
+       url('./../fonts/dana/woff/dana-regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: dana;
+  font-weight: 700;
+  src: url('./../fonts/dana/woff2/dana-bold.woff2') format('woff2'),
+       url('./../fonts/dana/woff/dana-bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: dana;
+  font-weight: 500;
+  src: url('./../fonts/dana/woff2/dana-medium.woff2') format('woff2'),
+       url('./../fonts/dana/woff/dana-medium.woff') format('woff');
+}
+
 @theme {
   --color-surface-base: var(--surface-base);
   --color-surface-card: var(--surface-card);
