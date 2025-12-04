@@ -23,10 +23,14 @@ const song = ref<SongWithPopulatedRefs | null>(null)
 const artistSongs = ref<SongWithPopulatedRefs[]>([])
 const similarSongs = ref<SongWithPopulatedRefs[]>([]) // Placeholder for now
 
+type GridColumns = 2 | 3 | 'auto'
+
 // UI State - Table-based transposition
 const currentTableIndex = ref(0)
 const originalTableIndex = ref(0)
 const fontSize = ref(1.0)
+const gridMode = ref(false)
+const gridColumns = ref<GridColumns>(2)
 
 // Fetch chord tables and song data on mount
 onMounted(async () => {
@@ -64,6 +68,14 @@ const handleFontSize = (size: number) => {
 	fontSize.value = size
 }
 
+const handleGridMode = (mode: boolean) => {
+	gridMode.value = mode
+}
+
+const handleGridColumns = (columns: GridColumns) => {
+	gridColumns.value = columns
+}
+
 const getArtistName = () => {
 	if (!song.value?.artists || song.value.artists.length === 0) return 'Unknown Artist'
 	const artist = song.value.artists[0]
@@ -99,15 +111,17 @@ const keyQuality = computed(() => {
 				<div class="hidden lg:block lg:col-span-3">
 					<SongFloatingToolbox :current-table-index="currentTableIndex"
 						:original-table-index="originalTableIndex" :key-quality="keyQuality" :is-scrolling="isScrolling"
-						:scroll-speed="speed" :font-size="fontSize" @update:table-index="handleTableIndexChange"
-						@toggle-scroll="toggleScroll" @update:speed="setSpeed" @update:font-size="handleFontSize" />
+						:scroll-speed="speed" :font-size="fontSize" :grid-mode="gridMode" :grid-columns="gridColumns"
+						@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll"
+						@update:speed="setSpeed" @update:font-size="handleFontSize" @update:grid-mode="handleGridMode"
+						@update:grid-columns="handleGridColumns" />
 				</div>
 
 				<!-- 2. CENTER (Chord Sheet) -->
 				<div class="lg:col-span-6">
 					<MainChordSheet :sections="song.sections || []" :song-chords="song.chords"
 						:current-table-index="currentTableIndex" :original-table-index="originalTableIndex"
-						:font-size="fontSize" />
+						:font-size="fontSize" :grid-mode="gridMode" :grid-columns="gridColumns" />
 				</div>
 
 				<!-- 3. RIGHT SIDEBAR (Info + Recommendations) -->
@@ -134,8 +148,9 @@ const keyQuality = computed(() => {
 		<div class="lg:hidden">
 			<SongFloatingToolbox :current-table-index="currentTableIndex" :original-table-index="originalTableIndex"
 				:key-quality="keyQuality" :is-scrolling="isScrolling" :scroll-speed="speed" :font-size="fontSize"
-				@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll" @update:speed="setSpeed"
-				@update:font-size="handleFontSize" />
+				:grid-mode="gridMode" :grid-columns="gridColumns" @update:table-index="handleTableIndexChange"
+				@toggle-scroll="toggleScroll" @update:speed="setSpeed" @update:font-size="handleFontSize"
+				@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns" />
 		</div>
 
 	</div>

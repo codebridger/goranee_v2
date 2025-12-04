@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight, LayoutGrid, AlignJustify } from 'lucide-vue-next'
 import { useTranspose } from '~/composables/useTranspose'
 import IconButton from '~/components/base/IconButton.vue'
 
 const { t } = useI18n()
+
+type GridColumns = 2 | 3 | 'auto'
 
 interface Props {
   currentTableIndex: number
@@ -14,6 +16,8 @@ interface Props {
   isScrolling: boolean
   scrollSpeed: number
   fontSize: number
+  gridMode?: boolean
+  gridColumns?: GridColumns
 }
 
 const props = defineProps<Props>()
@@ -23,7 +27,16 @@ const emit = defineEmits<{
   (e: 'toggleScroll'): void
   (e: 'update:speed', value: number): void
   (e: 'update:fontSize', value: number): void
+  (e: 'update:gridMode', value: boolean): void
+  (e: 'update:gridColumns', value: GridColumns): void
 }>()
+
+// Column options for grid
+const columnOptions: { value: GridColumns; label: string }[] = [
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 'auto', label: 'Auto' }
+]
 
 const { keySignatures, getKeyDisplayName } = useTranspose()
 
@@ -201,6 +214,45 @@ const closeDrawer = () => {
           </button>
         </div>
       </div>
+
+      <!-- Layout Card (Grid Toggle) -->
+      <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
+        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.layout') }}</div>
+        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-3">
+          <button 
+            class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
+            :class="!gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
+            @click="emit('update:gridMode', false)"
+          >
+            <AlignJustify class="w-4 h-4" />
+            <span class="text-xs font-medium">{{ t('toolbox.list') }}</span>
+          </button>
+          <button 
+            class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
+            :class="gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
+            @click="emit('update:gridMode', true)"
+          >
+            <LayoutGrid class="w-4 h-4" />
+            <span class="text-xs font-medium">{{ t('toolbox.grid') }}</span>
+          </button>
+        </div>
+
+        <!-- Column selector (only visible when grid mode is on) -->
+        <div v-if="gridMode" class="flex items-center justify-between">
+          <span class="text-xs text-text-muted">{{ t('toolbox.columns') }}</span>
+          <div class="flex items-center bg-surface-muted rounded-lg p-0.5">
+            <button 
+              v-for="option in columnOptions" 
+              :key="option.value"
+              class="px-2.5 py-1 text-xs font-medium rounded cursor-pointer transition-colors"
+              :class="gridColumns === option.value ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50 text-text-muted'"
+              @click="emit('update:gridColumns', option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- MOBILE VIEW (Fixed Bottom Bar) -->
@@ -324,6 +376,47 @@ const closeDrawer = () => {
               <IconButton :icon="Plus" variant="secondary" size="sm"
                 :ariaLabel="t('toolbox.ariaLabels.increaseFontSize')"
                 @click="emit('update:fontSize', Math.min(2.0, fontSize + 0.1))" />
+            </div>
+          </div>
+
+          <!-- Grid Layout & Columns Combined (Mobile) -->
+          <div class="bg-surface-muted rounded-xl p-4 space-y-3">
+            <!-- Layout Toggle Row -->
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
+              <div class="flex items-center bg-surface-base rounded-lg p-1">
+                <button 
+                  class="p-2 rounded cursor-pointer transition-colors"
+                  :class="!gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
+                  @click="emit('update:gridMode', false)"
+                >
+                  <AlignJustify class="w-5 h-5" />
+                </button>
+                <button 
+                  class="p-2 rounded cursor-pointer transition-colors"
+                  :class="gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
+                  @click="emit('update:gridMode', true)"
+                >
+                  <LayoutGrid class="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Columns Row (always visible, disabled when not in grid mode) -->
+            <div class="flex items-center justify-between transition-opacity" :class="{ 'opacity-40 pointer-events-none': !gridMode }">
+              <span class="text-sm font-bold">{{ t('toolbox.columns') }}</span>
+              <div class="flex items-center bg-surface-base rounded-lg p-1">
+                <button 
+                  v-for="option in columnOptions" 
+                  :key="option.value"
+                  class="px-3 py-1.5 text-sm font-medium rounded cursor-pointer transition-colors"
+                  :class="gridColumns === option.value ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
+                  @click="emit('update:gridColumns', option.value)"
+                  :disabled="!gridMode"
+                >
+                  {{ option.label }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
