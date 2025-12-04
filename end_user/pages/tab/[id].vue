@@ -107,14 +107,18 @@ const keyQuality = computed(() => {
 
 			<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-				<!-- 1. LEFT SIDEBAR (Toolbox - Desktop) -->
-				<div class="hidden lg:block lg:col-span-3">
-					<SongFloatingToolbox :current-table-index="currentTableIndex"
-						:original-table-index="originalTableIndex" :key-quality="keyQuality" :is-scrolling="isScrolling"
-						:scroll-speed="speed" :font-size="fontSize" :grid-mode="gridMode" :grid-columns="gridColumns"
-						@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll"
-						@update:speed="setSpeed" @update:font-size="handleFontSize" @update:grid-mode="handleGridMode"
-						@update:grid-columns="handleGridColumns" />
+				<!-- 1. LEFT SIDEBAR (Toolbox - Desktop) - Fixed positioning -->
+				<div class="hidden lg:block lg:col-span-3 relative">
+					<div
+						class="fixed top-24 z-40 w-[calc((100vw-2rem)/12*3-2rem)] max-w-[calc((1024px-2rem)/12*3-2rem)] xl:max-w-[calc((1280px-2rem)/12*3-2rem)] 2xl:max-w-[calc((1536px-2rem)/12*3-2rem)]">
+						<SongFloatingToolbox :current-table-index="currentTableIndex"
+							:original-table-index="originalTableIndex" :key-quality="keyQuality"
+							:is-scrolling="isScrolling" :scroll-speed="speed" :font-size="fontSize"
+							:grid-mode="gridMode" :grid-columns="gridColumns"
+							@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll"
+							@update:speed="setSpeed" @update:font-size="handleFontSize"
+							@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns" />
+					</div>
 				</div>
 
 				<!-- 2. CENTER (Chord Sheet) -->

@@ -219,19 +219,15 @@ const closeDrawer = () => {
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.layout') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-3">
-          <button 
-            class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
+          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
             :class="!gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
-            @click="emit('update:gridMode', false)"
-          >
+            @click="emit('update:gridMode', false)">
             <AlignJustify class="w-4 h-4" />
             <span class="text-xs font-medium">{{ t('toolbox.list') }}</span>
           </button>
-          <button 
-            class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
+          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
             :class="gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
-            @click="emit('update:gridMode', true)"
-          >
+            @click="emit('update:gridMode', true)">
             <LayoutGrid class="w-4 h-4" />
             <span class="text-xs font-medium">{{ t('toolbox.grid') }}</span>
           </button>
@@ -241,13 +237,10 @@ const closeDrawer = () => {
         <div v-if="gridMode" class="flex items-center justify-between">
           <span class="text-xs text-text-muted">{{ t('toolbox.columns') }}</span>
           <div class="flex items-center bg-surface-muted rounded-lg p-0.5">
-            <button 
-              v-for="option in columnOptions" 
-              :key="option.value"
+            <button v-for="option in columnOptions" :key="option.value"
               class="px-2.5 py-1 text-xs font-medium rounded cursor-pointer transition-colors"
               :class="gridColumns === option.value ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50 text-text-muted'"
-              @click="emit('update:gridColumns', option.value)"
-            >
+              @click="emit('update:gridColumns', option.value)">
               {{ option.label }}
             </button>
           </div>
@@ -264,7 +257,7 @@ const closeDrawer = () => {
         <Music class="w-5 h-5" />
         <div class="flex items-baseline gap-1.5">
           <span v-if="originalKeyName" class="font-mono text-[10px] opacity-70 leading-none">{{ originalKeyName
-            }}</span>
+          }}</span>
           <span v-if="isTransposed" class="text-[8px] opacity-50">→</span>
           <span class="font-mono font-bold text-xs leading-none" :class="{ 'text-text-accent': isTransposed }">{{
             currentKeyName }}</span>
@@ -385,35 +378,28 @@ const closeDrawer = () => {
             <div class="flex items-center justify-between">
               <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
               <div class="flex items-center bg-surface-base rounded-lg p-1">
-                <button 
-                  class="p-2 rounded cursor-pointer transition-colors"
+                <button class="p-2 rounded cursor-pointer transition-colors"
                   :class="!gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
-                  @click="emit('update:gridMode', false)"
-                >
+                  @click="emit('update:gridMode', false)">
                   <AlignJustify class="w-5 h-5" />
                 </button>
-                <button 
-                  class="p-2 rounded cursor-pointer transition-colors"
+                <button class="p-2 rounded cursor-pointer transition-colors"
                   :class="gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
-                  @click="emit('update:gridMode', true)"
-                >
+                  @click="emit('update:gridMode', true)">
                   <LayoutGrid class="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             <!-- Columns Row (always visible, disabled when not in grid mode) -->
-            <div class="flex items-center justify-between transition-opacity" :class="{ 'opacity-40 pointer-events-none': !gridMode }">
+            <div class="flex items-center justify-between transition-opacity"
+              :class="{ 'opacity-40 pointer-events-none': !gridMode }">
               <span class="text-sm font-bold">{{ t('toolbox.columns') }}</span>
               <div class="flex items-center bg-surface-base rounded-lg p-1">
-                <button 
-                  v-for="option in columnOptions" 
-                  :key="option.value"
+                <button v-for="option in columnOptions" :key="option.value"
                   class="px-3 py-1.5 text-sm font-medium rounded cursor-pointer transition-colors"
                   :class="gridColumns === option.value ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
-                  @click="emit('update:gridColumns', option.value)"
-                  :disabled="!gridMode"
-                >
+                  @click="emit('update:gridColumns', option.value)" :disabled="!gridMode">
                   {{ option.label }}
                 </button>
               </div>
