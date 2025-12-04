@@ -421,7 +421,7 @@ export const useTabService = () => {
 
   const fetchSongsByArtist = async (artistId: string): Promise<SongWithPopulatedRefs[]> => {
     try {
-      const songs = await dataProvider.find<Song>({
+      const songs = await dataProvider.find<SongWithPopulatedRefs>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         populates: ['artists'],
@@ -448,22 +448,22 @@ export const useTabService = () => {
 
   const fetchSongById = async (id: string): Promise<SongWithPopulatedRefs | null> => {
     try {
-      const songs = await dataProvider.find<SongWithPopulatedRefs>({
+      const song = await dataProvider.findOne<SongWithPopulatedRefs>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         // @ts-expect-error: populate is not in the strict type definition but supported by backend
-        populate: ['artists', 'genres'],
+        populates: ['artists', 'genres'],
         query: { _id: id },
         options: {
           limit: 1,
         },
       })
 
-      if (!songs || songs.length === 0) {
+      if (!song) {
         return null
       }
 
-      const processedSongs = _processSongs(songs)
+      const processedSongs = _processSongs([song])
       return processedSongs[0] || null
     } catch (error) {
       console.error('Failed to fetch song by id:', error)
