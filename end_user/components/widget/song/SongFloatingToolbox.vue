@@ -167,9 +167,9 @@ const closeDrawer = () => {
         <div class="relative mb-3">
           <!-- Left Arrow -->
           <button
-            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/80 rounded-full shadow-sm hover:bg-surface-muted transition-colors cursor-pointer"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
             @click="scrollCarousel(carouselRef, -1)">
-            <ChevronLeft class="w-4 h-4" />
+            <ChevronLeft class="w-4 h-4 text-text-primary/60 group-hover:text-text-primary transition-colors" />
           </button>
 
           <!-- Carousel Container -->
@@ -190,9 +190,9 @@ const closeDrawer = () => {
 
           <!-- Right Arrow -->
           <button
-            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/80 rounded-full shadow-sm hover:bg-surface-muted transition-colors cursor-pointer"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
             @click="scrollCarousel(carouselRef, 1)">
-            <ChevronRight class="w-4 h-4" />
+            <ChevronRight class="w-4 h-4 text-text-primary/60 group-hover:text-text-primary transition-colors" />
           </button>
         </div>
 
@@ -213,7 +213,7 @@ const closeDrawer = () => {
           </button>
           <!-- Tooltip -->
           <div
-            class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-muted text-text-muted text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-muted text-text-muted text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
             {{ t('toolbox.spacebarHint') }}
           </div>
         </div>
@@ -238,12 +238,12 @@ const closeDrawer = () => {
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.fontSize') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
-          <button class="flex-1 py-1 text-sm font-bold hover:bg-surface-base rounded cursor-pointer"
+          <button class="flex-1 py-1 text-sm font-bold hover:bg-surface-base rounded-md cursor-pointer"
             @click="emit('update:fontSize', Math.max(0.8, fontSize - 0.1))">
             A-
           </button>
           <span class="w-px h-4 bg-border-subtle"></span>
-          <button class="flex-1 py-1 text-lg font-bold hover:bg-surface-base rounded cursor-pointer"
+          <button class="flex-1 py-1 text-lg font-bold hover:bg-surface-base rounded-md cursor-pointer"
             @click="emit('update:fontSize', Math.min(2.0, fontSize + 0.1))">
             A+
           </button>
@@ -254,13 +254,13 @@ const closeDrawer = () => {
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.layout') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-3">
-          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
+          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded-md cursor-pointer transition-colors"
             :class="!gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
             @click="emit('update:gridMode', false)">
             <AlignJustify class="w-4 h-4" />
             <span class="text-xs font-medium">{{ t('toolbox.list') }}</span>
           </button>
-          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded cursor-pointer transition-colors"
+          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded-md cursor-pointer transition-colors"
             :class="gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
             @click="emit('update:gridMode', true)">
             <LayoutGrid class="w-4 h-4" />
@@ -273,7 +273,7 @@ const closeDrawer = () => {
           <span class="text-xs text-text-muted">{{ t('toolbox.columns') }}</span>
           <div class="flex items-center bg-surface-muted rounded-lg p-0.5">
             <button v-for="option in columnOptions" :key="option.value"
-              class="px-2.5 py-1 text-xs font-medium rounded cursor-pointer transition-colors"
+              class="px-2.5 py-1 text-xs font-medium rounded-md cursor-pointer transition-colors"
               :class="gridColumns === option.value ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50 text-text-muted'"
               @click="emit('update:gridColumns', option.value)">
               {{ option.label }}
@@ -305,7 +305,7 @@ const closeDrawer = () => {
           :title="t('toolbox.spacebarHint')" @click="emit('toggleScroll')" class="-mt-6! shadow-lg" />
         <!-- Mobile Tooltip -->
         <div
-          class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-muted text-text-muted text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-muted text-text-muted text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
           {{ t('toolbox.spacebarHint') }}
         </div>
       </div>
@@ -347,9 +347,9 @@ const closeDrawer = () => {
           <div class="relative">
             <!-- Left Arrow -->
             <button
-              class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-muted rounded-full shadow-sm hover:bg-surface-base transition-colors cursor-pointer"
+              class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
               @click="scrollCarousel(mobileCarouselRef, -1)">
-              <ChevronLeft class="w-5 h-5" />
+              <ChevronLeft class="w-5 h-5 text-text-primary/60 group-hover:text-text-primary transition-colors" />
             </button>
 
             <!-- Carousel Container -->
@@ -371,9 +371,9 @@ const closeDrawer = () => {
 
             <!-- Right Arrow -->
             <button
-              class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-muted rounded-full shadow-sm hover:bg-surface-base transition-colors cursor-pointer"
+              class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
               @click="scrollCarousel(mobileCarouselRef, 1)">
-              <ChevronRight class="w-5 h-5" />
+              <ChevronRight class="w-5 h-5 text-text-primary/60 group-hover:text-text-primary transition-colors" />
             </button>
           </div>
 
@@ -418,12 +418,12 @@ const closeDrawer = () => {
             <div class="flex items-center justify-between">
               <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
               <div class="flex items-center bg-surface-base rounded-lg p-1">
-                <button class="p-2 rounded cursor-pointer transition-colors"
+                <button class="p-2 rounded-md cursor-pointer transition-colors"
                   :class="!gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
                   @click="emit('update:gridMode', false)">
                   <AlignJustify class="w-5 h-5" />
                 </button>
-                <button class="p-2 rounded cursor-pointer transition-colors"
+                <button class="p-2 rounded-md cursor-pointer transition-colors"
                   :class="gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
                   @click="emit('update:gridMode', true)">
                   <LayoutGrid class="w-5 h-5" />
@@ -437,7 +437,7 @@ const closeDrawer = () => {
               <span class="text-sm font-bold">{{ t('toolbox.columns') }}</span>
               <div class="flex items-center bg-surface-base rounded-lg p-1">
                 <button v-for="option in columnOptions" :key="option.value"
-                  class="px-3 py-1.5 text-sm font-medium rounded cursor-pointer transition-colors"
+                  class="px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer transition-colors"
                   :class="gridColumns === option.value ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
                   @click="emit('update:gridColumns', option.value)" :disabled="!gridMode">
                   {{ option.label }}
