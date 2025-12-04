@@ -23,12 +23,12 @@ defineProps<Props>()
 				<NuxtLink v-for="song in artistSongs.slice(0, 5)" :key="song._id" :to="ROUTES.TAB.DETAIL(song._id)"
 					class="flex items-center gap-3 group">
 					<div
-						class="w-10 h-10 rounded bg-surface-muted flex items-center justify-center text-xs text-text-muted group-hover:text-primary transition-colors">
+						class="w-10 h-10 rounded bg-surface-muted flex items-center justify-center text-xs text-text-muted group-hover:text-text-accent transition-colors">
 						♪
 					</div>
 					<div class="flex-1 min-w-0">
 						<div
-							class="text-sm font-bold text-text-primary truncate group-hover:text-primary transition-colors">
+							class="text-sm font-bold text-text-primary truncate group-hover:text-text-accent transition-colors">
 							{{ song.title }}
 						</div>
 						<div class="text-xs text-text-muted truncate">
@@ -55,12 +55,12 @@ defineProps<Props>()
 				<NuxtLink v-for="song in similarSongs.slice(0, 5)" :key="song._id" :to="ROUTES.TAB.DETAIL(song._id)"
 					class="flex items-center gap-3 group">
 					<div
-						class="w-10 h-10 rounded bg-surface-muted flex items-center justify-center text-xs text-text-muted group-hover:text-secondary transition-colors">
+						class="w-10 h-10 rounded bg-surface-muted flex items-center justify-center text-xs text-text-muted group-hover:text-text-accent transition-colors">
 						⚡
 					</div>
 					<div class="flex-1 min-w-0">
 						<div
-							class="text-sm font-bold text-text-primary truncate group-hover:text-secondary transition-colors">
+							class="text-sm font-bold text-text-primary truncate group-hover:text-text-accent transition-colors">
 							{{ song.title }}
 						</div>
 						<div class="text-xs text-text-muted truncate">

@@ -228,7 +228,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
 
                     <!-- Search Dropdown -->
                     <div v-if="showResults && searchQuery.length >= 2"
-                        class="absolute top-full mt-2 left-0 right-0 bg-[#1F121D] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 max-h-60 overflow-y-auto">
+                        class="absolute top-full mt-2 left-0 right-0 bg-surface-card border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 max-h-60 overflow-y-auto">
                         <div v-if="isSearching" class="p-4 flex justify-center text-gray-400">
                             <Loader2 class="w-6 h-6 animate-spin" />
                         </div>
@@ -247,7 +247,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 </div>
                             </div>
                             <div @click="handleSearchSubmit"
-                                class="p-3 text-center text-xs font-bold text-primary cursor-pointer hover:bg-white/5">
+                                class="p-3 text-center text-xs font-bold text-text-accent cursor-pointer hover:bg-white/5">
                                 {{ t('navbar.viewAllResults') }}
                             </div>
                         </div>
@@ -321,7 +321,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                         </span>
                                         <!-- Badges - Pink filled style -->
                                         <span v-if="activeSong.chords?.keySignature"
-                                            class="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
+                                            class="px-3 py-1 rounded-full bg-text-accent text-white text-xs font-bold">
                                             {{ activeSong.chords.keySignature }}
                                         </span>
                                         <span v-if="activeSong.rhythm"
@@ -411,7 +411,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                         {{ getArtistName(activeSong) }}
                                     </span>
                                     <span v-if="activeSong.chords?.keySignature"
-                                        class="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
+                                        class="px-3 py-1 rounded-full bg-text-accent text-white text-xs font-bold">
                                         {{ activeSong.chords.keySignature }}
                                     </span>
                                 </div>
@@ -527,7 +527,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 </span>
                                 <!-- Badges - Pink filled style -->
                                 <span v-if="activeSong.chords?.keySignature"
-                                    class="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
+                                    class="px-3 py-1 rounded-full bg-text-accent text-white text-xs font-bold">
                                     {{ activeSong.chords.keySignature }}
                                 </span>
                                 <span v-if="activeSong.rhythm"

@@ -125,7 +125,7 @@ const gridClass = computed(() => {
 </script>
 
 <template>
-  <div class="chord-sheet bg-white dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6 md:p-10 min-h-[600px]">
+  <div class="chord-sheet bg-surface-card rounded-2xl shadow-lg p-6 md:p-10 min-h-[600px]">
     <!-- Match original Tabview.vue structure -->
     <div v-if="processedSections.length > 0" class="tab-content" :class="gridClass" :style="gridStyle">
       <div v-for="(section, sIdx) in processedSections" :key="sIdx" class="section"
@@ -133,7 +133,7 @@ const gridClass = computed(() => {
         <!-- Section number badge (subtle, top-left corner) -->
         <span v-if="gridMode" class="section-number">{{ sIdx + 1 }}</span>
 
-        <h3 v-if="section.title" class="my-2 text-xs font-bold uppercase text-gray-400 tracking-wider"
+        <h3 v-if="section.title" class="my-2 text-xs font-bold uppercase text-text-muted tracking-wider"
           :dir="section.direction">
           {{ section.title }}
         </h3>
@@ -145,10 +145,9 @@ const gridClass = computed(() => {
             fontFamily: 'dana, sans-serif'
           }">
             <!-- Chord line: display:block makes it full-width so trailing spaces work with text-align -->
-            <span class="chord" dir="ltr" :style="{
+            <span class="chord text-text-accent" dir="ltr" :style="{
               display: 'block',
               fontFamily: 'dana, sans-serif',
-              color: 'red',
               fontWeight: 400
             }">{{ line.transposedChords }}</span>
             <!-- Lyrics line: display:block for consistent width with chords -->
@@ -161,7 +160,7 @@ const gridClass = computed(() => {
       </div>
     </div>
 
-    <div v-else class="text-center text-gray-500 py-20">
+    <div v-else class="text-center text-text-secondary py-20">
       No chords available for this song.
     </div>
   </div>
@@ -193,8 +192,8 @@ const gridClass = computed(() => {
   position: relative;
   padding: 0.5rem;
   padding-top: 1.25rem;
-  background: var(--color-surface-muted, #f8f8f8);
-  border: 1px solid var(--color-border-subtle, #e5e5e5);
+  background: var(--color-surface-muted, #F5E6E3);
+  border: 1px solid var(--color-border-subtle, #FBCFE8);
   border-radius: 0.5rem;
   /* Flex: grow to fill, shrink if needed, basis auto */
   flex: 1 1 auto;
@@ -240,9 +239,10 @@ const gridClass = computed(() => {
   }
 }
 
-:root.dark .section-card {
-  background: var(--color-surface-muted, #2a2a2a);
-  border-color: var(--color-border-subtle, #3a3a3a);
+:root.dark .section-card,
+html.dark .section-card {
+  background: var(--color-surface-muted, #1A0F18);
+  border-color: var(--color-border-subtle, rgba(255, 255, 255, 0.1));
 }
 
 /* Subtle section number badge */
@@ -257,10 +257,11 @@ const gridClass = computed(() => {
   justify-content: center;
   font-size: 0.6rem;
   font-weight: 600;
-  color: var(--color-text-muted, #888);
-  background: var(--color-surface-base, #fff);
+  color: var(--color-text-secondary, #6B5A68);
+  background: var(--color-surface-card, #FFFFFF);
+  border: 1px solid var(--color-border-subtle, #FBCFE8);
   border-radius: 50%;
-  opacity: 0.7;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 @media (min-width: 768px) {
@@ -273,7 +274,11 @@ const gridClass = computed(() => {
   }
 }
 
-:root.dark .section-number {
-  background: var(--color-surface-base, #1e1e1e);
+:root.dark .section-number,
+html.dark .section-number {
+  color: var(--color-text-secondary, #9CA3AF);
+  background: var(--color-surface-card, #1F121D);
+  border-color: var(--color-border-subtle, rgba(255, 255, 255, 0.1));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 </style>

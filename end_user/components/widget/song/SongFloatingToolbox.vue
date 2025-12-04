@@ -207,7 +207,7 @@ const closeDrawer = () => {
         <div class="relative group">
           <button
             class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
-            :class="isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:bg-[#ff5ca6]'"
+            :class="isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:opacity-90'"
             :title="t('toolbox.spacebarHint')" @click="emit('toggleScroll')">
             {{ isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
           </button>
@@ -292,7 +292,7 @@ const closeDrawer = () => {
         <Music class="w-5 h-5" />
         <div class="flex items-baseline gap-1.5">
           <span v-if="originalKeyName" class="font-mono text-[10px] opacity-70 leading-none">{{ originalKeyName
-          }}</span>
+            }}</span>
           <span v-if="isTransposed" class="text-[8px] opacity-50">→</span>
           <span class="font-mono font-bold text-xs leading-none" :class="{ 'text-text-accent': isTransposed }">{{
             currentKeyName }}</span>

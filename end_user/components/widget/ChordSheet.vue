@@ -9,7 +9,7 @@ const props = defineProps<{
 	chordColor?: string;
 }>();
 
-const chordColorClass = props.chordColor || 'text-[#FF2E93]';
+const chordColorClass = props.chordColor || 'text-text-accent';
 </script>
 
 <template>
