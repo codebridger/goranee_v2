@@ -106,24 +106,15 @@ const sectionWidthStyle = computed(() => ({
   width: globalSectionWidth.value
 }))
 
-// Dynamic grid style based on font size and column setting
-// Base minimum: 140px at fontSize 1.0, scales with font size
+// Grid style (no longer needed for CSS variables, but kept for potential future use)
 const gridStyle = computed(() => {
-  if (!props.gridMode) return {}
-  const baseMinWidth = 140 // px at fontSize 1.0
-  const minWidth = Math.round(baseMinWidth * props.fontSize)
-  const columns = props.gridColumns || 'auto'
-
-  return {
-    '--grid-min-width': `${minWidth}px`,
-    '--grid-max-columns': columns === 'auto' ? 'none' : columns
-  }
+  return {}
 })
 
 // Grid class based on column setting
 const gridClass = computed(() => {
   if (!props.gridMode) return {}
-  const columns = props.gridColumns || 'auto'
+  const columns = props.gridColumns || 2
   return {
     'sections-grid': true,
     'grid-cols-2': columns === 2,
@@ -148,7 +139,7 @@ const gridClass = computed(() => {
         </h3>
 
         <!-- Match original TabviewSectionLines.vue EXACTLY -->
-        <div class="lines whitespace-pre-wrap" :style="[fontSizeStyle, { fontFamily: 'dana, sans-serif' }]">
+        <div class="lines" :style="[fontSizeStyle, { fontFamily: 'dana, sans-serif' }]">
           <p v-for="(line, lIdx) in section.lines" :key="lIdx" :style="{
             textAlign: section.direction === 'rtl' ? 'right' : 'left',
             fontFamily: 'dana, sans-serif'
@@ -179,71 +170,73 @@ const gridClass = computed(() => {
 <style scoped>
 /* 
  * Chord/lyric alignment styles
- * Critical font-family is applied via inline styles to ensure it reaches all elements
+ * Lines should NOT wrap - preserve whitespace and prevent breaking
  */
+.lines {
+  white-space: pre;
+}
+
 .lines p {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-/* Grid layout for sections */
+/* Flexbox layout for sections - per-row flexibility */
 .sections-grid {
-  --grid-min-width: 140px;
-  /* fallback, overridden by inline style */
-  display: grid;
-  gap: 1rem;
-  align-items: start;
-}
-
-/* Auto columns: fit as many as possible */
-.sections-grid.grid-cols-auto {
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width), 1fr));
-}
-
-/* Fixed 2 columns max */
-.sections-grid.grid-cols-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-/* Fixed 3 columns max */
-.sections-grid.grid-cols-3 {
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width), 1fr));
-  max-width: 100%;
-}
-
-/* On larger screens, limit to 3 columns */
-@media (min-width: 640px) {
-  .sections-grid.grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* On small screens, 2-col and 3-col both can collapse to 1 if needed */
-@media (max-width: 400px) {
-
-  .sections-grid.grid-cols-2,
-  .sections-grid.grid-cols-3 {
-    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width), 1fr));
-  }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: stretch;
 }
 
 /* Section card styling in grid mode */
 .section-card {
   position: relative;
-  padding: 0.75rem;
+  padding: 0.5rem;
   padding-top: 1.25rem;
   background: var(--color-surface-muted, #f8f8f8);
   border: 1px solid var(--color-border-subtle, #e5e5e5);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
+  /* Flex: grow to fill, shrink if needed, basis auto */
+  flex: 1 1 auto;
+  /* Respect content width - never shrink smaller than content */
+  min-width: fit-content;
+}
+
+/* Auto mode: sections grow freely, natural content-based sizing */
+.sections-grid.grid-cols-auto .section-card {
+  /* No constraints - fit as many as possible, grow to fill */
+}
+
+/* 2 columns mode: prefer 2 per row, grow to fill when fewer fit */
+.sections-grid.grid-cols-2 .section-card {
+  /* Prefer ~50% width, but grow to fill row when content forces fewer columns */
+  flex: 1 0 calc(50% - 0.25rem);
+  /* No max-width - allows sections to expand when fewer fit per row */
+}
+
+/* 3 columns mode: prefer 3 per row, grow to fill when fewer fit */
+.sections-grid.grid-cols-3 .section-card {
+  /* Prefer ~33% width, but grow to fill row when content forces fewer columns */
+  flex: 1 0 calc(33.333% - 0.35rem);
+  /* No max-width - allows sections to expand when fewer fit per row */
 }
 
 @media (min-width: 768px) {
-  .section-card {
-    padding: 1rem;
-    padding-top: 1.5rem;
+  .sections-grid {
+    gap: 0.75rem;
   }
 
-  .sections-grid {
-    gap: 1.5rem;
+  .section-card {
+    padding: 0.75rem;
+    padding-top: 1.25rem;
+  }
+
+  .sections-grid.grid-cols-2 .section-card {
+    flex: 1 0 calc(50% - 0.375rem);
+  }
+
+  .sections-grid.grid-cols-3 .section-card {
+    flex: 1 0 calc(33.333% - 0.5rem);
   }
 }
 
@@ -255,8 +248,8 @@ const gridClass = computed(() => {
 /* Subtle section number badge */
 .section-number {
   position: absolute;
-  top: 0.35rem;
-  left: 0.35rem;
+  top: 0.25rem;
+  left: 0.25rem;
   width: 1rem;
   height: 1rem;
   display: flex;
@@ -272,11 +265,11 @@ const gridClass = computed(() => {
 
 @media (min-width: 768px) {
   .section-number {
-    top: 0.5rem;
-    left: 0.5rem;
-    width: 1.25rem;
-    height: 1.25rem;
-    font-size: 0.65rem;
+    top: 0.35rem;
+    left: 0.35rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    font-size: 0.6rem;
   }
 }
 
