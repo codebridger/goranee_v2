@@ -204,12 +204,19 @@ const closeDrawer = () => {
       <!-- Auto Scroll Card -->
       <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
         <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.autoScroll') }}</div>
-        <button
-          class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
-          :class="isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:bg-[#ff5ca6]'"
-          @click="emit('toggleScroll')">
-          {{ isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
-        </button>
+        <div class="relative group">
+          <button
+            class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
+            :class="isScrolling ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-text-accent text-white hover:bg-[#ff5ca6]'"
+            :title="t('toolbox.spacebarHint')" @click="emit('toggleScroll')">
+            {{ isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
+          </button>
+          <!-- Tooltip -->
+          <div
+            class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-muted text-text-muted text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            {{ t('toolbox.spacebarHint') }}
+          </div>
+        </div>
 
         <div class="text-xs text-text-muted mb-2">{{ t('toolbox.speed') }}</div>
         <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
@@ -292,9 +299,16 @@ const closeDrawer = () => {
         </div>
       </button>
 
-      <IconButton :icon="isScrolling ? Pause : Play" variant="primary" size="md"
-        :ariaLabel="isScrolling ? t('toolbox.ariaLabels.stopScrolling') : t('toolbox.ariaLabels.startScrolling')"
-        @click="emit('toggleScroll')" class="-mt-6! justify-self-center shadow-lg" />
+      <div class="relative group justify-self-center">
+        <IconButton :icon="isScrolling ? Pause : Play" variant="primary" size="md"
+          :ariaLabel="isScrolling ? t('toolbox.ariaLabels.stopScrolling') : t('toolbox.ariaLabels.startScrolling')"
+          :title="t('toolbox.spacebarHint')" @click="emit('toggleScroll')" class="-mt-6! shadow-lg" />
+        <!-- Mobile Tooltip -->
+        <div
+          class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-muted text-text-muted text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          {{ t('toolbox.spacebarHint') }}
+        </div>
+      </div>
 
       <button
         class="flex flex-col items-center gap-1 text-text-muted active:text-text-accent justify-self-end cursor-pointer"

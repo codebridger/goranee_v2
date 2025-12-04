@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
@@ -84,6 +84,28 @@ onMounted(async () => {
 			}
 		}
 	}
+})
+
+// Keyboard shortcut: Spacebar to toggle auto-scroll
+const handleKeydown = (event: KeyboardEvent) => {
+	// Only trigger if not typing in an input field
+	const target = event.target as HTMLElement
+	if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+		return
+	}
+
+	if (event.code === 'Space') {
+		event.preventDefault() // Prevent page scroll
+		toggleScroll()
+	}
+}
+
+onMounted(() => {
+	window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+	window.removeEventListener('keydown', handleKeydown)
 })
 
 // Save settings to localStorage when they change

@@ -220,6 +220,7 @@
     "autoScroll": "اسکرول خودکار",
     "stop": "توقف",
     "start": "شروع",
+    "spacebarHint": "Space برای شروع/توقف",
     "speed": "سرعت",
     "fontSize": "اندازه فونت",
     "layout": "چیدمان",

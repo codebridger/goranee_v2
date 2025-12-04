@@ -220,6 +220,7 @@
     "autoScroll": "Auto Scroll",
     "stop": "Stop",
     "start": "Start",
+    "spacebarHint": "Press Space to toggle",
     "speed": "Speed",
     "fontSize": "Font Size",
     "layout": "Layout",
