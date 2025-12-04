@@ -175,10 +175,11 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
 
     <!-- Actions -->
     <div class="flex items-center gap-4">
-      <NuxtLink to="/login"
+      <!-- TODO: Uncomment when login is ready -->
+      <!-- <NuxtLink to="/login"
         :class="['hidden md:block text-sm font-semibold hover:text-text-accent transition cursor-pointer', isTransparent ? 'text-white' : 'text-text-primary']">
         {{ loginText }}
-      </NuxtLink>
+      </NuxtLink> -->
       <div class="hidden md:block">
         <Button variant="primary" size="sm" to="/discovery">{{ exploreText }}</Button>
       </div>
@@ -227,9 +228,10 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
 
           <div class="mt-auto pt-8 border-t border-border-subtle">
             <Button variant="primary" block to="/discovery">{{ exploreText }}</Button>
-            <NuxtLink to="/login" class="block text-center mt-4 font-bold text-text-secondary hover:text-text-primary">
+            <!-- TODO: Uncomment when login is ready -->
+            <!-- <NuxtLink to="/login" class="block text-center mt-4 font-bold text-text-secondary hover:text-text-primary">
               {{ loginText }}
-            </NuxtLink>
+            </NuxtLink> -->
           </div>
         </div>
       </Transition>

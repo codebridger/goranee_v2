@@ -154,9 +154,10 @@ onMounted(async () => {
       </div>
     </section>
 
-    <CommunitySection :just-happened-title="t('community.justHappened')" :cta-title="t('community.title')"
+    <!-- TODO: Uncomment when CommunitySection is ready -->
+    <!-- <CommunitySection :just-happened-title="t('community.justHappened')" :cta-title="t('community.title')"
       :cta-description="t('community.description')" :cta-description-highlight="t('community.descriptionHighlight')"
-      :cta-button-text="t('community.button')" />
+      :cta-button-text="t('community.button')" /> -->
 
   </div>
 </template>

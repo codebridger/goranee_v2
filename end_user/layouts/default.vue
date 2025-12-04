@@ -51,22 +51,7 @@ onUnmounted(() => {
 		</main>
 
 		<!-- Footer -->
-		<Footer :description="t('footer.description')" :discover-title="t('footer.sections.discover.title')"
-			:discover-links="{
-				newArrivals: t('footer.sections.discover.newArrivals'),
-				trendingCharts: t('footer.sections.discover.trendingCharts'),
-				featuredArtists: t('footer.sections.discover.featuredArtists'),
-				songRequests: t('footer.sections.discover.songRequests'),
-			}" :community-title="t('footer.sections.community.title')" :community-links="{
-				signUpLogin: t('footer.sections.community.signUpLogin'),
-				submitChord: t('footer.sections.community.submitChord'),
-				topContributors: t('footer.sections.community.topContributors'),
-				discordServer: t('footer.sections.community.discordServer'),
-			}" :legal-title="t('footer.sections.legal.title')" :legal-links="{
-				privacyPolicy: t('footer.sections.legal.privacyPolicy'),
-				termsOfService: t('footer.sections.legal.termsOfService'),
-				dmcaGuidelines: t('footer.sections.legal.dmcaGuidelines'),
-			}" :copyright="t('footer.copyright')" :design-system="t('footer.designSystem')" />
+		<Footer />
 
 		<!-- Dev Mode Floating Widget -->
 		<DevFloatingWidget v-model:is-loading="isDevLoading" />
