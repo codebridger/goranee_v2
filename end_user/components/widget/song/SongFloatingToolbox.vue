@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight, LayoutGrid, AlignJustify } from 'lucide-vue-next'
 import { useTranspose } from '~/composables/useTranspose'
@@ -72,6 +72,19 @@ const selectKey = (index: number) => {
   emit('update:tableIndex', index)
 }
 
+// Speed control constants
+const MIN_SPEED = 0.1
+const MAX_SPEED = 4
+const SPEED_STEP = 0.1
+
+// Step speed up or down
+const stepSpeed = (direction: -1 | 1) => {
+  const newSpeed = Math.round((props.scrollSpeed + direction * SPEED_STEP) * 10) / 10
+  if (newSpeed >= MIN_SPEED && newSpeed <= MAX_SPEED) {
+    emit('update:speed', newSpeed)
+  }
+}
+
 // Scroll carousel to center the selected key
 const scrollToKey = (carouselEl: HTMLElement | null, index: number) => {
   if (!carouselEl) return
@@ -90,6 +103,13 @@ watch(() => props.currentTableIndex, (newIndex) => {
   nextTick(() => {
     scrollToKey(carouselRef.value, newIndex)
     scrollToKey(mobileCarouselRef.value, newIndex)
+  })
+})
+
+// Scroll to current key on mount
+onMounted(() => {
+  nextTick(() => {
+    scrollToKey(carouselRef.value, props.currentTableIndex)
   })
 })
 
@@ -191,11 +211,19 @@ const closeDrawer = () => {
           {{ isScrolling ? t('toolbox.stop') : t('toolbox.start') }}
         </button>
 
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-text-muted">{{ t('toolbox.speed') }}</span>
-          <input type="range" min="1" max="10" :value="scrollSpeed"
-            @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
-            class="w-full accent-text-accent">
+        <div class="text-xs text-text-muted mb-2">{{ t('toolbox.speed') }}</div>
+        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            :disabled="scrollSpeed <= MIN_SPEED" @click="stepSpeed(-1)">
+            <Minus class="w-4 h-4" />
+          </button>
+          <span class="font-mono font-bold text-lg min-w-[3rem] text-center">{{ scrollSpeed }}x</span>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            :disabled="scrollSpeed >= MAX_SPEED" @click="stepSpeed(1)">
+            <Plus class="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -345,18 +373,16 @@ const closeDrawer = () => {
         <div v-else-if="activeTab === 'scroll'" class="space-y-6">
           <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
 
-          <div class="text-center mb-4">
-            <div class="text-4xl font-bold text-text-accent">{{ scrollSpeed }}x</div>
-          </div>
+          <div class="flex items-center justify-center gap-6">
+            <IconButton :icon="Minus" variant="secondary" size="sm" :disabled="scrollSpeed <= MIN_SPEED"
+              :ariaLabel="t('toolbox.ariaLabels.decreaseSpeed')" @click="stepSpeed(-1)" />
 
-          <div class="px-4">
-            <input type="range" min="1" max="10" :value="scrollSpeed"
-              @input="e => emit('update:speed', Number((e.target as HTMLInputElement).value))"
-              class="w-full accent-text-accent h-2 bg-surface-muted rounded-lg cursor-pointer">
-            <div class="flex justify-between text-xs text-text-muted mt-2">
-              <span>{{ t('toolbox.slow') }}</span>
-              <span>{{ t('toolbox.fast') }}</span>
+            <div class="text-center">
+              <div class="text-4xl font-bold font-mono text-text-accent min-w-[5rem]">{{ scrollSpeed }}x</div>
             </div>
+
+            <IconButton :icon="Plus" variant="secondary" size="sm" :disabled="scrollSpeed >= MAX_SPEED"
+              :ariaLabel="t('toolbox.ariaLabels.increaseSpeed')" @click="stepSpeed(1)" />
           </div>
 
           <div class="flex items-center justify-between bg-surface-muted rounded-xl p-4">

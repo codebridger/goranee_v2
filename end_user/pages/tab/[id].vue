@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
 import { useTranspose } from '~/composables/useTranspose'
+import { useSongSettings } from '~/composables/useSongSettings'
 import SongInfoCard from '~/components/widget/song/SongInfoCard.vue'
 import MainChordSheet from '~/components/widget/song/MainChordSheet.vue'
 import SongFloatingToolbox from '~/components/widget/song/SongFloatingToolbox.vue'
@@ -15,6 +16,8 @@ definePageMeta({
 })
 
 const route = useRoute()
+const songId = computed(() => route.params.id as string)
+
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
 const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
 const { getOriginalTableIndex, fetchTables } = useTranspose()
@@ -32,20 +35,44 @@ const fontSize = ref(1.0)
 const gridMode = ref(false)
 const gridColumns = ref<GridColumns>(2)
 
+// Settings will be loaded after song data is fetched
+let settingsLoaded = false
+
 // Fetch chord tables and song data on mount
 onMounted(async () => {
 	// Fetch chord transposition tables (cached after first load)
 	await fetchTables()
 
 	// Fetch song data
-	const id = route.params.id as string
+	const id = songId.value
 	song.value = await fetchSongById(id)
 
 	if (song.value) {
 		// Determine original table index from song's first chord
 		const originalIdx = getOriginalTableIndex(song.value.chords)
 		originalTableIndex.value = originalIdx
-		currentTableIndex.value = originalIdx // Start at original key
+
+		// Load saved settings from localStorage (client-side only)
+		if (typeof window !== 'undefined') {
+			const {
+				tableIndex: savedTableIndex,
+				fontSize: savedFontSize,
+				scrollSpeed: savedScrollSpeed,
+				gridMode: savedGridMode,
+				gridColumns: savedGridColumns
+			} = useSongSettings(id)
+
+			// Apply saved settings or use defaults
+			currentTableIndex.value = savedTableIndex.value !== 0 ? savedTableIndex.value : originalIdx
+			fontSize.value = savedFontSize.value
+			setSpeed(savedScrollSpeed.value)
+			gridMode.value = savedGridMode.value
+			gridColumns.value = savedGridColumns.value
+
+			settingsLoaded = true
+		} else {
+			currentTableIndex.value = originalIdx
+		}
 
 		// Fetch more songs by first artist
 		if (song.value.artists && song.value.artists.length > 0) {
@@ -58,6 +85,29 @@ onMounted(async () => {
 		}
 	}
 })
+
+// Save settings to localStorage when they change
+const saveCurrentSettings = () => {
+	if (!settingsLoaded || typeof window === 'undefined') return
+
+	const storageKey = `goranee_song_settings_${songId.value}`
+	const settings = {
+		tableIndex: currentTableIndex.value,
+		fontSize: fontSize.value,
+		scrollSpeed: speed.value,
+		gridMode: gridMode.value,
+		gridColumns: gridColumns.value
+	}
+
+	try {
+		localStorage.setItem(storageKey, JSON.stringify(settings))
+	} catch (e) {
+		console.warn('Failed to save song settings:', e)
+	}
+}
+
+// Watch for changes and save
+watch([currentTableIndex, fontSize, speed, gridMode, gridColumns], saveCurrentSettings)
 
 // Handle table index change from toolbox
 const handleTableIndexChange = (index: number) => {

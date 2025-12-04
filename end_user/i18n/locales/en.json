@@ -239,7 +239,9 @@
       "stopScrolling": "Stop scrolling",
       "startScrolling": "Start scrolling",
       "decreaseFontSize": "Decrease font size",
-      "increaseFontSize": "Increase font size"
+      "increaseFontSize": "Increase font size",
+      "decreaseSpeed": "Decrease scroll speed",
+      "increaseSpeed": "Increase scroll speed"
     }
   }
 }

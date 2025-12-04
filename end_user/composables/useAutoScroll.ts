@@ -2,7 +2,7 @@ import { ref, onUnmounted } from 'vue'
 
 export const useAutoScroll = () => {
   const isScrolling = ref(false)
-  const speed = ref(1) // 1 (Slow) to 10 (Fast)
+  const speed = ref(0.5) // 0.1 (Slow) to 10 (Fast)
   let scrollInterval: ReturnType<typeof setInterval> | null = null
 
   const startScroll = () => {
@@ -36,12 +36,15 @@ export const useAutoScroll = () => {
     }
 
     // Calculate interval based on speed
-    // Map speed 1-10 to interval 100ms - 10ms
+    // Inverse relationship: Higher speed = Lower interval
+    // Using inverse formula for smooth exponential feel:
+    // Speed 0.1 => 300ms (very slow, ~3px/s)
+    // Speed 0.5 => 60ms (slow, ~17px/s)
+    // Speed 1 => 30ms (moderate, ~33px/s)
+    // Speed 5 => 6ms (fast, ~166px/s)
+    // Speed 10 => 5ms (very fast, 200px/s)
     const calculateInterval = (s: number) => {
-      // Inverse relationship: Higher speed = Lower interval
-      // Speed 1 => 50ms
-      // Speed 10 => 5ms
-      return Math.max(5, 55 - (s * 5))
+      return Math.max(5, 30 / s)
     }
 
     scrollInterval = setInterval(tick, calculateInterval(speed.value))

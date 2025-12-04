@@ -239,7 +239,9 @@
       "stopScrolling": "توقف اسکرول",
       "startScrolling": "شروع اسکرول",
       "decreaseFontSize": "کاهش اندازه فونت",
-      "increaseFontSize": "افزایش اندازه فونت"
+      "increaseFontSize": "افزایش اندازه فونت",
+      "decreaseSpeed": "کاهش سرعت اسکرول",
+      "increaseSpeed": "افزایش سرعت اسکرول"
     }
   }
 }
