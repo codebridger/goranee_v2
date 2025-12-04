@@ -27,9 +27,9 @@ const isSearching = ref(false)
 const showResults = ref(false)
 
 // Search Logic
-let searchTimeout: ReturnType<typeof setTimeout>
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const performSearch = () => {
-    clearTimeout(searchTimeout)
+    if (searchTimeout) clearTimeout(searchTimeout)
     if (searchQuery.value.length < 2) {
         searchResults.value = []
         showResults.value = false
@@ -107,6 +107,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (timer.value) clearInterval(timer.value)
+    if (searchTimeout) clearTimeout(searchTimeout)
 })
 
 // Helper to extract lyrics with chord notation

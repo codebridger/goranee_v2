@@ -29,11 +29,19 @@ const classes = computed(() => {
     lg: 'px-8 py-4 text-lg',
   }
 
+  const isLink = props.to || props.href
+  const disabledClass = props.disabled
+    ? isLink
+      ? 'opacity-50 cursor-not-allowed pointer-events-none'
+      : ''
+    : ''
+
   return `
     ${base}
     ${variants[props.variant || 'primary']}
     ${sizes[props.size || 'md']}
     ${props.block ? 'w-full' : ''}
+    ${disabledClass}
   `
 })
 
@@ -42,10 +50,27 @@ const componentType = computed(() => {
   if (props.href) return 'a'
   return 'button'
 })
+
+const isButton = computed(() => !props.to && !props.href)
+
+const handleClick = (event: Event) => {
+  if (props.disabled && !isButton.value) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+}
 </script>
 
 <template>
-  <component :is="componentType" :to="to" :href="href" :class="classes" :disabled="disabled">
+  <component
+    :is="componentType"
+    :to="to"
+    :href="href"
+    :class="classes"
+    :disabled="isButton ? disabled : undefined"
+    :aria-disabled="!isButton && disabled ? 'true' : undefined"
+    @click="handleClick"
+  >
     <slot />
   </component>
 </template>
