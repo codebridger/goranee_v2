@@ -18,11 +18,43 @@
       "title": "کشف",
       "subtitle": "آهنگ‌ها و هنرمندان مورد علاقه خود را پیدا کنید.",
       "searchResults": "نتایج جستجو برای:",
-      "placeholder": "از نوار جستجو استفاده کنید یا دسته‌بندی‌ها را مرور کنید."
+      "placeholder": "از نوار جستجو استفاده کنید یا دسته‌بندی‌ها را مرور کنید.",
+      "filters": "فیلترها",
+      "genre": "سبک",
+      "allGenres": "همه سبک‌ها",
+      "key": "کلید",
+      "allKeys": "همه کلیدها",
+      "major": "ماژور",
+      "minor": "مینور",
+      "rhythm": "ریتم",
+      "sortBy": "مرتب‌سازی بر اساس",
+      "newest": "جدیدترین",
+      "oldest": "قدیمی‌ترین",
+      "aToZ": "الف-ی",
+      "zToA": "ی-الف",
+      "clearFilters": "پاک کردن فیلترها",
+      "resultsCount": "{count} آهنگ یافت شد",
+      "noResults": "آهنگی یافت نشد",
+      "noResultsDescription": "سعی کنید فیلترها یا عبارت جستجو را تغییر دهید",
+      "requestSong": "درخواست آهنگ",
+      "loading": "در حال بارگذاری نتایج...",
+      "error": "مشکلی پیش آمد",
+      "retry": "تلاش مجدد",
+      "showFilters": "نمایش فیلترها",
+      "hideFilters": "پنهان کردن فیلترها",
+      "previous": "قبلی",
+      "next": "بعدی",
+      "page": "صفحه"
     },
     "artists": {
       "title": "هنرمندان",
-      "subtitle": "مرور تمام هنرمندان."
+      "subtitle": "مرور تمام هنرمندان.",
+      "sortBy": "مرتب‌سازی بر اساس",
+      "name": "نام",
+      "popularity": "محبوبیت",
+      "artistsCount": "{count} هنرمند",
+      "noArtists": "هنرمندی یافت نشد",
+      "searchPlaceholder": "جستجوی هنرمندان..."
     },
     "community": {
       "title": "جامعه",
@@ -205,7 +237,8 @@
     "hours": "س",
     "minutes": "د",
     "days": "ر",
-    "unknownArtist": "هنرمند ناشناس"
+    "unknownArtist": "هنرمند ناشناس",
+    "of": "از"
   },
   "song": {
     "metadata": {

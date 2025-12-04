@@ -18,11 +18,43 @@
       "title": "Discovery",
       "subtitle": "Find your favorite songs and artists.",
       "searchResults": "Search Results for:",
-      "placeholder": "Use the search bar or browse categories."
+      "placeholder": "Use the search bar or browse categories.",
+      "filters": "Filters",
+      "genre": "Genre",
+      "allGenres": "All Genres",
+      "key": "Key",
+      "allKeys": "All Keys",
+      "major": "Major",
+      "minor": "Minor",
+      "rhythm": "Rhythm",
+      "sortBy": "Sort By",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "aToZ": "A-Z",
+      "zToA": "Z-A",
+      "clearFilters": "Clear Filters",
+      "resultsCount": "{count} songs found",
+      "noResults": "No songs found",
+      "noResultsDescription": "Try adjusting your filters or search query",
+      "requestSong": "Request Song",
+      "loading": "Loading results...",
+      "error": "Something went wrong",
+      "retry": "Retry",
+      "showFilters": "Show Filters",
+      "hideFilters": "Hide Filters",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page"
     },
     "artists": {
       "title": "Artists",
-      "subtitle": "Browse all artists."
+      "subtitle": "Browse all artists.",
+      "sortBy": "Sort By",
+      "name": "Name",
+      "popularity": "Popularity",
+      "artistsCount": "{count} artists",
+      "noArtists": "No artists found",
+      "searchPlaceholder": "Search artists..."
     },
     "community": {
       "title": "Community",
@@ -205,7 +237,8 @@
     "hours": "h",
     "minutes": "m",
     "days": "d",
-    "unknownArtist": "Unknown Artist"
+    "unknownArtist": "Unknown Artist",
+    "of": "of"
   },
   "song": {
     "metadata": {

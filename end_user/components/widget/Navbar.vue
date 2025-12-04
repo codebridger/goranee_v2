@@ -96,6 +96,8 @@ const isActive = (path: string) => {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
+
+const isDiscoveryPage = computed(() => route.path === '/discovery')
 </script>
 
 <template>
@@ -116,7 +118,7 @@ const isActive = (path: string) => {
     </NuxtLink>
 
     <!-- Search (Desktop) -->
-    <div class="hidden md:block w-96 relative group">
+    <div v-if="!isDiscoveryPage" class="hidden md:block w-96 relative group">
       <div v-if="isTransparent" class="relative">
         <div
           class="absolute start-4 top-1/2 -translate-y-1/2 text-white/60 group-focus-within:text-white transition-colors pointer-events-none">

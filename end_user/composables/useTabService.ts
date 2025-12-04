@@ -148,7 +148,7 @@ export const useTabService = () => {
   }
 
   // Helper to process songs with mock data
-  const _processSongs = (songs: Song[]): SongWithPopulatedRefs[] => {
+  const _processSongs = (songs: Song[] | SongWithPopulatedRefs[]): SongWithPopulatedRefs[] => {
     if (!songs || songs.length === 0) {
       return []
     }
@@ -188,13 +188,13 @@ export const useTabService = () => {
       const songs = await dataProvider.find<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
+        populates: ['artists'],
         query: {
           title: { $regex: query, $options: 'i' }
         },
         options: {
           limit,
-          populate: ['artists'],
-          projection: {
+          select: {
             title: 1,
             rhythm: 1,
             image: 1,
@@ -207,6 +207,184 @@ export const useTabService = () => {
       return _processSongs(songs || [])
     } catch (error) {
       console.error('Failed to search songs:', error)
+      return []
+    }
+  }
+
+  /**
+   * Advanced search with filters using pagination
+   */
+  const searchSongsAdvanced = (filters: {
+    query?: string
+    genre?: string // genre ID
+    key?: 'major' | 'minor'
+    rhythm?: string
+    sort?: 'newest' | 'oldest' | 'a-z' | 'z-a'
+    limit?: number
+    page?: number,
+  }, onFetched: ((docs: SongWithPopulatedRefs[]) => void)) => {
+    const {
+      query,
+      genre,
+      key,
+      rhythm,
+      sort = 'newest',
+      limit = 12,
+      page = 1,
+    } = filters
+
+    // Build query object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const queryObj: any = {}
+
+    // Text search - search in title and artist names
+    if (query && query.trim().length > 0) {
+      queryObj.$or = [
+        { title: { $regex: query, $options: 'i' } },
+      ]
+    }
+
+    // Genre filter - genres is an array, so we check if it contains the genre ID
+    if (genre) {
+      queryObj.genres = { $in: [genre] }
+    }
+
+    // Key signature filter
+    if (key) {
+      queryObj['chords.keySignature'] = key
+    }
+
+    // Rhythm filter
+    if (rhythm && rhythm.trim().length > 0) {
+      queryObj.rhythm = { $regex: rhythm, $options: 'i' }
+    }
+
+    // Build sort object
+    let sortObj: any = {}
+    switch (sort) {
+      case 'newest':
+        sortObj = { _id: -1 }
+        break
+      case 'oldest':
+        sortObj = { _id: 1 }
+        break
+      case 'a-z':
+        sortObj = { title: 1 }
+        break
+      case 'z-a':
+        sortObj = { title: -1 }
+        break
+      default:
+        sortObj = { _id: -1 }
+    }
+
+    return dataProvider.list<SongWithPopulatedRefs>(
+      {
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.SONG,
+        query: queryObj,
+        populates: ['artists'],
+        options: {
+          select: {
+            title: 1,
+            rhythm: 1,
+            image: 1,
+            artists: 1,
+            'chords.keySignature': 1,
+            'chords.list.title': 1,
+          },
+          sort: sortObj,
+        },
+      },
+      {
+        limit,
+        page,
+        onFetched: (docs) => {
+          docs = _processSongs(docs)
+          onFetched(docs)
+        },
+      }
+    )
+  }
+
+  /**
+   * Fetch all artists with pagination and sorting
+   */
+  const fetchAllArtists = async (options: {
+    limit?: number
+    skip?: number
+    sort?: 'name-asc' | 'name-desc' | 'popularity-desc' | 'popularity-asc'
+    search?: string
+  } = {}): Promise<Artist[]> => {
+    try {
+      const {
+        limit = 24,
+        skip = 0,
+        sort = 'name-asc',
+        search,
+      } = options
+
+      // Build query
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const queryObj: any = {}
+      if (search && search.trim().length > 0) {
+        queryObj.name = { $regex: search, $options: 'i' }
+      }
+
+      // Build sort object
+      let sortObj: any = {}
+      switch (sort) {
+        case 'name-asc':
+          sortObj = { name: 1 }
+          break
+        case 'name-desc':
+          sortObj = { name: -1 }
+          break
+        case 'popularity-desc':
+          sortObj = { chords: -1 }
+          break
+        case 'popularity-asc':
+          sortObj = { chords: 1 }
+          break
+        default:
+          sortObj = { name: 1 }
+      }
+
+      const artists = await dataProvider.find<Artist>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.ARTIST,
+        query: queryObj,
+        options: {
+          limit,
+          skip,
+          sort: sortObj,
+        },
+      })
+
+      if (!artists || artists.length === 0) {
+        return []
+      }
+
+      return artists.map((artist) => {
+        // Mock song count if missing
+        if (artist.chords === undefined || artist.chords === null) {
+          artist.chords = Math.floor(Math.random() * 50) + 1
+        }
+
+        // Mock color for gradient border
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(artist as any)._mockColor = getRandomElement([
+          'from-pink-500 to-rose-500',
+          'from-purple-500 to-indigo-500',
+          'from-blue-500 to-cyan-500',
+          'from-orange-500 to-red-500',
+          'from-emerald-500 to-teal-500',
+        ])
+
+        return artist
+      })
+    } catch (error) {
+      console.error('Failed to fetch all artists:', error)
       return []
     }
   }
@@ -232,9 +410,11 @@ export const useTabService = () => {
           'from-orange-500 to-red-500',
           'from-emerald-500 to-teal-500',
         ])
+
+        return artist as Artist
       }
 
-      return artist
+      return null
     } catch (error) {
       console.error('Failed to fetch artist:', error)
       return null
@@ -246,12 +426,12 @@ export const useTabService = () => {
       const songs = await dataProvider.find<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
+        populates: ['artists'],
         query: {
           artists: artistId,
         },
         options: {
-          populate: ['artists'],
-          projection: {
+          select: {
             title: 1,
             rhythm: 1,
             image: 1,
@@ -270,12 +450,13 @@ export const useTabService = () => {
 
   const fetchSongById = async (id: string): Promise<SongWithPopulatedRefs | null> => {
     try {
-      const songs = await dataProvider.find<Song>({
+      const songs = await dataProvider.find<SongWithPopulatedRefs>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
+        // @ts-expect-error: populate is not in the strict type definition but supported by backend
+        populate: ['artists', 'genres'],
         query: { _id: id },
         options: {
-          populate: ['artists', 'genres'],
           limit: 1,
         },
       })
@@ -285,7 +466,7 @@ export const useTabService = () => {
       }
 
       const processedSongs = _processSongs(songs)
-      return processedSongs[0]
+      return processedSongs[0] || null
     } catch (error) {
       console.error('Failed to fetch song by id:', error)
       return null
@@ -298,10 +479,12 @@ export const useTabService = () => {
     fetchFeaturedArtists,
     fetchGenres,
     searchSongs,
+    searchSongsAdvanced,
     getImageUrl,
     fetchArtist,
     fetchSongsByArtist,
     fetchSongById,
+    fetchAllArtists,
   }
 }
 
