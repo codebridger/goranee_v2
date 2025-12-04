@@ -309,84 +309,82 @@ export const useTabService = () => {
 
   /**
    * Fetch all artists with pagination and sorting
+   * Returns the modular-rest pagination controller
    */
-  const fetchAllArtists = async (options: {
+  const fetchAllArtists = (options: {
     limit?: number
-    skip?: number
+    page?: number
     sort?: 'name-asc' | 'name-desc' | 'popularity-desc' | 'popularity-asc'
     search?: string
-  } = {}): Promise<Artist[]> => {
-    try {
-      const {
-        limit = 24,
-        skip = 0,
-        sort = 'name-asc',
-        search,
-      } = options
+  } = {}, onFetched: ((docs: Artist[]) => void)) => {
+    const {
+      limit = 24,
+      page = 1,
+      sort = 'name-asc',
+      search,
+    } = options
 
-      // Build query
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const queryObj: any = {}
-      if (search && search.trim().length > 0) {
-        queryObj.name = { $regex: search, $options: 'i' }
-      }
+    // Build query
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const queryObj: any = {}
+    if (search && search.trim().length > 0) {
+      queryObj.name = { $regex: search, $options: 'i' }
+    }
 
-      // Build sort object
-      let sortObj: any = {}
-      switch (sort) {
-        case 'name-asc':
-          sortObj = { name: 1 }
-          break
-        case 'name-desc':
-          sortObj = { name: -1 }
-          break
-        case 'popularity-desc':
-          sortObj = { chords: -1 }
-          break
-        case 'popularity-asc':
-          sortObj = { chords: 1 }
-          break
-        default:
-          sortObj = { name: 1 }
-      }
+    // Build sort object
+    let sortObj: any = {}
+    switch (sort) {
+      case 'name-asc':
+        sortObj = { name: 1 }
+        break
+      case 'name-desc':
+        sortObj = { name: -1 }
+        break
+      case 'popularity-desc':
+        sortObj = { chords: -1 }
+        break
+      case 'popularity-asc':
+        sortObj = { chords: 1 }
+        break
+      default:
+        sortObj = { name: 1 }
+    }
 
-      const artists = await dataProvider.find<Artist>({
+    return dataProvider.list<Artist>(
+      {
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.ARTIST,
         query: queryObj,
         options: {
-          limit,
-          skip,
           sort: sortObj,
         },
-      })
+      },
+      {
+        limit,
+        page,
+        onFetched: (docs) => {
+          const processedArtists = docs.map((artist) => {
+            // Mock song count if missing
+            if (artist.chords === undefined || artist.chords === null) {
+              artist.chords = Math.floor(Math.random() * 50) + 1
+            }
 
-      if (!artists || artists.length === 0) {
-        return []
+            // Mock color for gradient border
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(artist as any)._mockColor = getRandomElement([
+              'from-pink-500 to-rose-500',
+              'from-purple-500 to-indigo-500',
+              'from-blue-500 to-cyan-500',
+              'from-orange-500 to-red-500',
+              'from-emerald-500 to-teal-500',
+            ])
+
+            return artist
+          })
+          onFetched(processedArtists)
+        },
       }
-
-      return artists.map((artist) => {
-        // Mock song count if missing
-        if (artist.chords === undefined || artist.chords === null) {
-          artist.chords = Math.floor(Math.random() * 50) + 1
-        }
-
-        // Mock color for gradient border
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(artist as any)._mockColor = getRandomElement([
-          'from-pink-500 to-rose-500',
-          'from-purple-500 to-indigo-500',
-          'from-blue-500 to-cyan-500',
-          'from-orange-500 to-red-500',
-          'from-emerald-500 to-teal-500',
-        ])
-
-        return artist
-      })
-    } catch (error) {
-      console.error('Failed to fetch all artists:', error)
-      return []
-    }
+    )
   }
 
   const fetchArtist = async (id: string): Promise<Artist | null> => {

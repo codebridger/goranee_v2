@@ -10,6 +10,7 @@ import Drawer from '~/components/base/Drawer.vue'
 import SongCard from '~/components/widget/SongCard.vue'
 import SkeletonCard from '~/components/widget/SkeletonCard.vue'
 import CtaCard from '~/components/widget/CtaCard.vue'
+import Pagination from '~/components/widget/Pagination.vue'
 import DiscoveryFilters, { type FilterState } from '~/components/widget/DiscoveryFilters.vue'
 import { useTabService } from '~/composables/useTabService'
 import { useI18nRtl } from '~/composables/useI18nRtl'
@@ -224,44 +225,6 @@ const navigateToSong = (id: string) => {
   router.push(ROUTES.TAB.DETAIL(id))
 }
 
-// Get page numbers for pagination UI
-const getPageNumbers = (): (number | string)[] => {
-  const pages: (number | string)[] = []
-  const maxVisible = 5
-
-  if (totalPages.value <= maxVisible) {
-    // Show all pages if total is less than max visible
-    for (let i = 1; i <= totalPages.value; i++) {
-      pages.push(i)
-    }
-  } else {
-    // Always show first page
-    pages.push(1)
-
-    if (currentPage.value > 3) {
-      pages.push('...')
-    }
-
-    // Show pages around current page
-    const start = Math.max(2, currentPage.value - 1)
-    const end = Math.min(totalPages.value - 1, currentPage.value + 1)
-
-    for (let i = start; i <= end; i++) {
-      if (i !== 1 && i !== totalPages.value) {
-        pages.push(i)
-      }
-    }
-
-    if (currentPage.value < totalPages.value - 2) {
-      pages.push('...')
-    }
-
-    // Always show last page
-    pages.push(totalPages.value)
-  }
-
-  return pages
-}
 </script>
 
 <template>
@@ -350,33 +313,7 @@ const getPageNumbers = (): (number | string)[] => {
           </div>
 
           <!-- Pagination -->
-          <div v-if="hasResults && totalPages > 1" class="mt-8 flex flex-col items-center gap-4">
-            <div class="flex items-center gap-2">
-              <Button variant="secondary" size="sm" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
-                {{ t('pages.discovery.previous') }}
-              </Button>
-
-              <!-- Page Numbers -->
-              <div class="flex items-center gap-1">
-                <button v-for="page in getPageNumbers()" :key="page" :class="[
-                  'px-3 py-1.5 rounded-lg text-sm font-bold transition-colors',
-                  page === currentPage
-                    ? 'bg-text-accent text-white'
-                    : 'bg-surface-card text-text-secondary hover:bg-surface-base hover:text-text-primary'
-                ]" :disabled="page === '...'" @click="typeof page === 'number' && goToPage(page)">
-                  {{ page }}
-                </button>
-              </div>
-
-              <Button variant="secondary" size="sm" :disabled="currentPage >= totalPages"
-                @click="goToPage(currentPage + 1)">
-                {{ t('pages.discovery.next') }}
-              </Button>
-            </div>
-            <Typography variant="caption" class="text-text-secondary">
-              {{ t('pages.discovery.page') }} {{ currentPage }} {{ t('common.of') }} {{ totalPages }}
-            </Typography>
-          </div>
+          <Pagination v-if="hasResults" :current-page="currentPage" :total-pages="totalPages" @page-change="goToPage" />
         </main>
       </div>
     </div>
