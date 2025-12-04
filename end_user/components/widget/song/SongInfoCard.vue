@@ -31,9 +31,9 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 	<div v-if="variant === 'desktop'"
 		class="bg-surface-base rounded-2xl overflow-hidden shadow-lg border border-border-subtle">
 		<!-- Cover Image -->
-		<div class="relative h-64 w-full overflow-hidden group">
+		<div class="relative h-64 w-full overflow-hidden group flex items-center justify-center">
 			<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-				:style="{ backgroundImage: `url(${bgImage})` }"></div>
+				:style="{ backgroundImage: `url(${bgImage})`, backgroundPosition: 'top center' }"></div>
 			<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
 		</div>
 
@@ -64,6 +64,9 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 					<h1 class="text-2xl font-bold text-text-primary leading-tight mb-1">
 						{{ title }}
 					</h1>
+					<p v-if="artist?.name" class="text-sm text-text-secondary">
+						{{ artist.name }}
+					</p>
 				</div>
 			</div>
 		</div>
@@ -74,20 +77,23 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 		<!-- Background Blur -->
 		<div class="absolute inset-0 z-0 opacity-30">
 			<div class="absolute inset-0 bg-cover bg-center blur-xl scale-150"
-				:style="{ backgroundImage: `url(${bgImage})` }"></div>
+				:style="{ backgroundImage: `url(${bgImage})`, backgroundPosition: 'center center' }"></div>
 			<div class="absolute inset-0 bg-surface-base/80 backdrop-blur-sm"></div>
 		</div>
 
 		<div class="relative z-10 p-4 flex items-center gap-4">
 			<!-- Tiny Thumbnail -->
-			<div class="w-16 h-16 rounded-lg bg-cover bg-center shadow-sm shrink-0"
-				:style="{ backgroundImage: `url(${bgImage})` }"></div>
+			<div class="w-16 h-16 rounded-lg bg-cover bg-center shadow-sm shrink-0 flex items-center justify-center"
+				:style="{ backgroundImage: `url(${bgImage})`, backgroundPosition: 'center center' }"></div>
 
 			<!-- Info -->
 			<div class="flex-1 min-w-0">
 				<h1 class="text-lg font-bold text-text-primary truncate leading-tight">
 					{{ title }}
 				</h1>
+				<p v-if="artist?.name" class="text-xs text-text-secondary truncate mt-0.5">
+					{{ artist.name }}
+				</p>
 			</div>
 
 			<!-- Metadata Tags (Moved to right side) -->
