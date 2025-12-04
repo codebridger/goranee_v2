@@ -6,7 +6,6 @@ import { Search, Filter, X, Music, AlertCircle } from 'lucide-vue-next'
 import Typography from '~/components/base/Typography.vue'
 import Input from '~/components/base/Input.vue'
 import Button from '~/components/base/Button.vue'
-import Card from '~/components/base/Card.vue'
 import Drawer from '~/components/base/Drawer.vue'
 import SongCard from '~/components/widget/SongCard.vue'
 import SkeletonCard from '~/components/widget/SkeletonCard.vue'
@@ -16,6 +15,7 @@ import { useTabService } from '~/composables/useTabService'
 import { useI18nRtl } from '~/composables/useI18nRtl'
 import type { SongWithPopulatedRefs, Genre } from '~/types/song.type'
 import { ROUTES } from '~/constants/routes'
+import type { PaginatedResponseType } from '@modular-rest/client/dist/types/data-provider.type'
 
 const route = useRoute()
 const router = useRouter()
@@ -40,7 +40,7 @@ const showFiltersDrawer = ref(false)
 const itemsPerPage = 12
 const totalResults = ref(0)
 const totalPages = ref(0)
-let paginationController: ReturnType<typeof searchSongsAdvanced> | null = null
+const paginationController = ref<PaginatedResponseType<SongWithPopulatedRefs> | null>(null)
 
 // Computed
 const hasResults = computed(() => songs.value.length > 0)
@@ -80,9 +80,11 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const performSearch = async () => {
   if (searchTimeout) clearTimeout(searchTimeout)
 
+
   searchTimeout = setTimeout(async () => {
     isLoading.value = true
     error.value = null
+    songs.value = []
 
     try {
       // Build search filters object, only including properties that have values
@@ -123,19 +125,19 @@ const performSearch = async () => {
       searchFilters.sort = filters.value.sort || 'newest'
 
       // Get pagination controller
-      paginationController = await searchSongsAdvanced(searchFilters, (docs) => {
+      paginationController.value = await searchSongsAdvanced(searchFilters, (docs) => {
         songs.value = docs
       })
 
-      await paginationController.updatePagination()
+      await paginationController.value?.updatePagination()
 
       // Fetch the current page
-      await paginationController.fetchPage(currentPage.value)
+      await paginationController.value?.fetchPage(currentPage.value)
 
       // Read pagination data from controller after fetching
-      if (paginationController.pagination) {
-        totalResults.value = paginationController.pagination.total || 0
-        totalPages.value = paginationController.pagination.pages || 0
+      if (paginationController.value?.pagination) {
+        totalResults.value = paginationController.value.pagination.total || 0
+        totalPages.value = paginationController.value.pagination.pages || 0
       }
 
       // Update URL
@@ -197,12 +199,12 @@ const goToPage = async (page: number) => {
   try {
     if (paginationController) {
       // Fetch the page
-      await paginationController.fetchPage(page)
+      await paginationController.value?.fetchPage(page)
 
       // Read pagination data from controller after fetching
-      if (paginationController.pagination) {
-        totalResults.value = paginationController.pagination.total || 0
-        totalPages.value = paginationController.pagination.pages || 0
+      if (paginationController.value?.pagination) {
+        totalResults.value = paginationController.value.pagination.total || 0
+        totalPages.value = paginationController.value.pagination.pages || 0
       }
     } else {
       await performSearch()
@@ -295,7 +297,9 @@ const getPageNumbers = (): (number | string)[] => {
         <!-- Main Content -->
         <main class="flex-1 min-w-0">
           <!-- Results Header -->
-          <div v-if="hasResults || hasQuery || hasFilters" class="mb-6">
+          <div
+            v-if="(hasResults || hasQuery || hasFilters) && paginationController?.pagination?.total && searchQuery.length"
+            class="mb-6">
             <Typography variant="h2" class="mb-2">
               <span v-if="hasQuery || hasFilters">{{ t('pages.discovery.searchResults') }}</span>
               <span v-else>{{ t('pages.discovery.title') }}</span>
