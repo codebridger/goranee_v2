@@ -4,6 +4,11 @@ import { useI18n } from 'vue-i18n'
 import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight, LayoutGrid, AlignJustify } from 'lucide-vue-next'
 import { useTranspose } from '~/composables/useTranspose'
 import IconButton from '~/components/base/IconButton.vue'
+import Stepper from '~/components/base/Stepper.vue'
+import SegmentedControl from '~/components/base/SegmentedControl.vue'
+import CarouselNav from '~/components/base/CarouselNav.vue'
+import Drawer from '~/components/base/Drawer.vue'
+import Card from '~/components/base/Card.vue'
 
 const { t } = useI18n()
 
@@ -67,6 +72,11 @@ const stepKey = (direction: -1 | 1) => {
   emit('update:tableIndex', newIndex)
 }
 
+// Format key name for stepper
+const formatKeyName = (val: number) => {
+  return getKeyDisplayName(val, props.keyQuality)
+}
+
 // Select a specific key
 const selectKey = (index: number) => {
   emit('update:tableIndex', index)
@@ -77,12 +87,22 @@ const MIN_SPEED = 0.1
 const MAX_SPEED = 4
 const SPEED_STEP = 0.1
 
-// Step speed up or down
+// Step speed up or down (kept for mobile IconButton usage)
 const stepSpeed = (direction: -1 | 1) => {
   const newSpeed = Math.round((props.scrollSpeed + direction * SPEED_STEP) * 10) / 10
   if (newSpeed >= MIN_SPEED && newSpeed <= MAX_SPEED) {
     emit('update:speed', newSpeed)
   }
+}
+
+// Format speed for stepper
+const formatSpeed = (val: number) => {
+  return `${val}x`
+}
+
+// Format font size for stepper
+const formatFontSize = (val: number) => {
+  return `${Math.round(val * 100)}%`
 }
 
 // Scroll carousel to center the selected key
@@ -120,6 +140,17 @@ const scrollCarousel = (carouselEl: HTMLElement | null, direction: -1 | 1) => {
   carouselEl.scrollBy({ left: scrollAmount, behavior: 'smooth' })
 }
 
+// Grid mode options for segmented control
+const gridModeOptions = computed(() => [
+  { value: false, label: t('toolbox.list'), icon: AlignJustify },
+  { value: true, label: t('toolbox.grid'), icon: LayoutGrid }
+])
+
+// Column options for segmented control
+const columnOptionsForControl = computed(() =>
+  columnOptions.map(opt => ({ value: opt.value, label: opt.label }))
+)
+
 // Mobile drawer state
 const showMobileDrawer = ref(false)
 const activeTab = ref<'transpose' | 'scroll' | 'font'>('transpose')
@@ -138,6 +169,7 @@ const openDrawer = (tab: 'transpose' | 'scroll' | 'font') => {
 const closeDrawer = () => {
   showMobileDrawer.value = false
 }
+
 </script>
 
 <template>
@@ -145,32 +177,19 @@ const closeDrawer = () => {
     <!-- DESKTOP VIEW (Sticky Sidebar) -->
     <div class="hidden lg:flex flex-col gap-6 sticky top-24">
       <!-- Transpose Card -->
-      <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.transpose') }}</div>
-
+      <Card variant="section" :title="t('toolbox.transpose')">
         <!-- +/- Controls -->
-        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-3">
-          <button
-            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer"
-            @click="stepKey(-1)" :aria-label="t('toolbox.ariaLabels.decreaseTranspose')">
-            <Minus class="w-4 h-4" />
-          </button>
-          <span class="font-mono font-bold text-lg">{{ currentKeyName }}</span>
-          <button
-            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer"
-            @click="stepKey(1)" :aria-label="t('toolbox.ariaLabels.increaseTranspose')">
-            <Plus class="w-4 h-4" />
-          </button>
+        <div class="mb-3">
+          <Stepper :model-value="currentTableIndex" :min="0" :max="11" :step="1" :format-value="formatKeyName"
+            :decrease-aria-label="t('toolbox.ariaLabels.decreaseTranspose')"
+            :increase-aria-label="t('toolbox.ariaLabels.increaseTranspose')" size="md" variant="compact"
+            @update:model-value="(val) => emit('update:tableIndex', val)" />
         </div>
 
         <!-- Key Carousel -->
         <div class="relative mb-3">
-          <!-- Left Arrow -->
-          <button
-            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
-            @click="scrollCarousel(carouselRef, -1)">
-            <ChevronLeft class="w-4 h-4 text-text-primary/60 group-hover:text-text-primary transition-colors" />
-          </button>
+          <CarouselNav direction="left" size="md" :ariaLabel="t('toolbox.ariaLabels.scrollLeft')"
+            @click="scrollCarousel(carouselRef, -1)" />
 
           <!-- Carousel Container -->
           <div ref="carouselRef" class="flex gap-1 overflow-x-auto scrollbar-hide scroll-smooth px-7 py-1"
@@ -188,22 +207,17 @@ const closeDrawer = () => {
             </button>
           </div>
 
-          <!-- Right Arrow -->
-          <button
-            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
-            @click="scrollCarousel(carouselRef, 1)">
-            <ChevronRight class="w-4 h-4 text-text-primary/60 group-hover:text-text-primary transition-colors" />
-          </button>
+          <CarouselNav direction="right" size="md" :ariaLabel="t('toolbox.ariaLabels.scrollRight')"
+            @click="scrollCarousel(carouselRef, 1)" />
         </div>
 
         <div class="text-center text-xs text-text-muted">
           {{ t('toolbox.original') }}: {{ originalKeyName }}
         </div>
-      </div>
+      </Card>
 
       <!-- Auto Scroll Card -->
-      <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.autoScroll') }}</div>
+      <Card variant="section" :title="t('toolbox.autoScroll')">
         <div class="relative group">
           <button
             class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
@@ -219,68 +233,34 @@ const closeDrawer = () => {
         </div>
 
         <div class="text-xs text-text-muted mb-2">{{ t('toolbox.speed') }}</div>
-        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
-          <button
-            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            :disabled="scrollSpeed <= MIN_SPEED" @click="stepSpeed(-1)">
-            <Minus class="w-4 h-4" />
-          </button>
-          <span class="font-mono font-bold text-lg min-w-[3rem] text-center">{{ scrollSpeed }}x</span>
-          <button
-            class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-base transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            :disabled="scrollSpeed >= MAX_SPEED" @click="stepSpeed(1)">
-            <Plus class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+        <Stepper :model-value="scrollSpeed" :min="MIN_SPEED" :max="MAX_SPEED" :step="SPEED_STEP"
+          :format-value="formatSpeed" :decrease-aria-label="t('toolbox.ariaLabels.decreaseSpeed')"
+          :increase-aria-label="t('toolbox.ariaLabels.increaseSpeed')" size="md" variant="compact"
+          @update:model-value="(val) => emit('update:speed', val)" />
+      </Card>
 
       <!-- Font Size Card -->
-      <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.fontSize') }}</div>
-        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1">
-          <button class="flex-1 py-1 text-sm font-bold hover:bg-surface-base rounded-md cursor-pointer"
-            @click="emit('update:fontSize', Math.max(0.8, fontSize - 0.1))">
-            A-
-          </button>
-          <span class="w-px h-4 bg-border-subtle"></span>
-          <button class="flex-1 py-1 text-lg font-bold hover:bg-surface-base rounded-md cursor-pointer"
-            @click="emit('update:fontSize', Math.min(2.0, fontSize + 0.1))">
-            A+
-          </button>
-        </div>
-      </div>
+      <Card variant="section" :title="t('toolbox.fontSize')">
+        <Stepper :model-value="fontSize" :min="0.8" :max="2.0" :step="0.1" :format-value="formatFontSize"
+          :decrease-aria-label="t('toolbox.ariaLabels.decreaseFontSize')"
+          :increase-aria-label="t('toolbox.ariaLabels.increaseFontSize')" size="md" variant="compact"
+          @update:model-value="(val) => emit('update:fontSize', val)" />
+      </Card>
 
       <!-- Layout Card (Grid Toggle) -->
-      <div class="bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm">
-        <div class="text-xs font-bold text-text-muted uppercase mb-3">{{ t('toolbox.layout') }}</div>
-        <div class="flex items-center justify-between bg-surface-muted rounded-lg p-1 mb-3">
-          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded-md cursor-pointer transition-colors"
-            :class="!gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
-            @click="emit('update:gridMode', false)">
-            <AlignJustify class="w-4 h-4" />
-            <span class="text-xs font-medium">{{ t('toolbox.list') }}</span>
-          </button>
-          <button class="flex-1 py-2 flex items-center justify-center gap-2 rounded-md cursor-pointer transition-colors"
-            :class="gridMode ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50'"
-            @click="emit('update:gridMode', true)">
-            <LayoutGrid class="w-4 h-4" />
-            <span class="text-xs font-medium">{{ t('toolbox.grid') }}</span>
-          </button>
+      <Card variant="section" :title="t('toolbox.layout')">
+        <div class="mb-3">
+          <SegmentedControl :model-value="gridMode" :options="gridModeOptions" size="md" variant="default"
+            @update:model-value="(val) => emit('update:gridMode', val)" />
         </div>
 
         <!-- Column selector (only visible when grid mode is on) -->
         <div v-if="gridMode" class="flex items-center justify-between">
           <span class="text-xs text-text-muted">{{ t('toolbox.columns') }}</span>
-          <div class="flex items-center bg-surface-muted rounded-lg p-0.5">
-            <button v-for="option in columnOptions" :key="option.value"
-              class="px-2.5 py-1 text-xs font-medium rounded-md cursor-pointer transition-colors"
-              :class="gridColumns === option.value ? 'bg-surface-base shadow-sm' : 'hover:bg-surface-base/50 text-text-muted'"
-              @click="emit('update:gridColumns', option.value)">
-              {{ option.label }}
-            </button>
-          </div>
+          <SegmentedControl :model-value="gridColumns" :options="columnOptionsForControl" size="sm" variant="compact"
+            @update:model-value="(val) => emit('update:gridColumns', val)" />
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- MOBILE VIEW (Fixed Bottom Bar) -->
@@ -319,159 +299,113 @@ const closeDrawer = () => {
     </div>
 
     <!-- MOBILE DRAWER (Overlay) -->
-    <div v-if="showMobileDrawer" class="lg:hidden fixed inset-0 z-60">
-      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeDrawer"></div>
+    <Drawer v-model="showMobileDrawer" position="bottom" :backdrop="true" :close-on-backdrop="true" class="lg:hidden">
 
-      <div class="absolute bottom-0 left-0 right-0 bg-surface-base rounded-t-2xl p-6 animate-slide-up">
-        <div class="w-12 h-1 bg-border-subtle rounded-full mx-auto mb-6"></div>
+      <!-- Transpose Tab -->
+      <div v-if="activeTab === 'transpose'" class="space-y-6">
+        <h3 class="text-lg font-bold text-center">{{ t('toolbox.transposeKey') }}</h3>
 
-        <!-- Transpose Tab -->
-        <div v-if="activeTab === 'transpose'" class="space-y-6">
-          <h3 class="text-lg font-bold text-center">{{ t('toolbox.transposeKey') }}</h3>
+        <!-- +/- Controls with Current Key -->
+        <div class="flex items-center justify-center gap-6">
+          <IconButton :icon="Minus" variant="secondary" size="sm" :ariaLabel="t('toolbox.ariaLabels.decreaseTranspose')"
+            @click="stepKey(-1)" />
 
-          <!-- +/- Controls with Current Key -->
-          <div class="flex items-center justify-center gap-6">
-            <IconButton :icon="Minus" variant="secondary" size="sm"
-              :ariaLabel="t('toolbox.ariaLabels.decreaseTranspose')" @click="stepKey(-1)" />
-
-            <div class="text-center">
-              <div class="text-4xl font-bold font-mono text-text-accent">{{ currentKeyName }}</div>
-              <div class="text-sm text-text-muted mt-1">{{ t('toolbox.original') }}: {{ originalKeyName }}</div>
-            </div>
-
-            <IconButton :icon="Plus" variant="secondary" size="sm"
-              :ariaLabel="t('toolbox.ariaLabels.increaseTranspose')" @click="stepKey(1)" />
+          <div class="text-center">
+            <div class="text-4xl font-bold font-mono text-text-accent">{{ currentKeyName }}</div>
+            <div class="text-sm text-text-muted mt-1">{{ t('toolbox.original') }}: {{ originalKeyName }}</div>
           </div>
 
-          <!-- Key Carousel (Mobile) -->
-          <div class="relative">
-            <!-- Left Arrow -->
-            <button
-              class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
-              @click="scrollCarousel(mobileCarouselRef, -1)">
-              <ChevronLeft class="w-5 h-5 text-text-primary/60 group-hover:text-text-primary transition-colors" />
-            </button>
+          <IconButton :icon="Plus" variant="secondary" size="sm" :ariaLabel="t('toolbox.ariaLabels.increaseTranspose')"
+            @click="stepKey(1)" />
+        </div>
 
-            <!-- Carousel Container -->
-            <div ref="mobileCarouselRef" class="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-10 py-2"
-              style="scrollbar-width: none; -ms-overflow-style: none;">
-              <button v-for="key in keySignatures" :key="key.index" :data-key-index="key.index"
-                class="flex-shrink-0 w-12 h-12 rounded-xl font-mono text-base font-bold transition-all cursor-pointer"
-                :class="[
-                  key.index === currentTableIndex
-                    ? 'bg-text-accent text-white shadow-lg scale-110'
-                    : 'bg-surface-muted hover:bg-surface-base text-text-primary',
-                  key.index === originalTableIndex && key.index !== currentTableIndex
-                    ? 'ring-2 ring-text-accent/30'
-                    : ''
-                ]" @click="selectKey(key.index)">
-                {{ keyQuality === 'minor' ? key.minor : key.major }}
-              </button>
-            </div>
+        <!-- Key Carousel (Mobile) -->
+        <div class="relative">
+          <CarouselNav direction="left" size="lg" :ariaLabel="t('toolbox.ariaLabels.scrollLeft')"
+            @click="scrollCarousel(mobileCarouselRef, -1)" />
 
-            <!-- Right Arrow -->
-            <button
-              class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-surface-base/60 backdrop-blur-sm rounded-full shadow-sm hover:bg-surface-base/90 transition-all cursor-pointer group"
-              @click="scrollCarousel(mobileCarouselRef, 1)">
-              <ChevronRight class="w-5 h-5 text-text-primary/60 group-hover:text-text-primary transition-colors" />
+          <!-- Carousel Container -->
+          <div ref="mobileCarouselRef" class="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-10 py-2"
+            style="scrollbar-width: none; -ms-overflow-style: none;">
+            <button v-for="key in keySignatures" :key="key.index" :data-key-index="key.index"
+              class="flex-shrink-0 w-12 h-12 rounded-xl font-mono text-base font-bold transition-all cursor-pointer"
+              :class="[
+                key.index === currentTableIndex
+                  ? 'bg-text-accent text-white shadow-lg scale-110'
+                  : 'bg-surface-muted hover:bg-surface-base text-text-primary',
+                key.index === originalTableIndex && key.index !== currentTableIndex
+                  ? 'ring-2 ring-text-accent/30'
+                  : ''
+              ]" @click="selectKey(key.index)">
+              {{ keyQuality === 'minor' ? key.minor : key.major }}
             </button>
           </div>
 
-          <div class="bg-surface-muted rounded-xl p-4 text-center">
-            <div class="text-sm text-text-muted mb-1">{{ t('toolbox.recommendedCapo') }}</div>
-            <div class="font-bold">{{ t('toolbox.none') }}</div>
-          </div>
+          <CarouselNav direction="right" size="lg" :ariaLabel="t('toolbox.ariaLabels.scrollRight')"
+            @click="scrollCarousel(mobileCarouselRef, 1)" />
         </div>
 
-        <!-- Scroll/Speed Tab -->
-        <div v-else-if="activeTab === 'scroll'" class="space-y-6">
-          <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
+        <div class="bg-surface-muted rounded-xl p-4 text-center">
+          <div class="text-sm text-text-muted mb-1">{{ t('toolbox.recommendedCapo') }}</div>
+          <div class="font-bold">{{ t('toolbox.none') }}</div>
+        </div>
+      </div>
 
-          <div class="flex items-center justify-center gap-6">
-            <IconButton :icon="Minus" variant="secondary" size="sm" :disabled="scrollSpeed <= MIN_SPEED"
-              :ariaLabel="t('toolbox.ariaLabels.decreaseSpeed')" @click="stepSpeed(-1)" />
+      <!-- Scroll/Speed Tab -->
+      <div v-else-if="activeTab === 'scroll'" class="space-y-6">
+        <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
 
-            <div class="text-center">
-              <div class="text-4xl font-bold font-mono text-text-accent min-w-[5rem]">{{ scrollSpeed }}x</div>
-            </div>
+        <div class="flex items-center justify-center gap-6">
+          <IconButton :icon="Minus" variant="secondary" size="sm" :disabled="scrollSpeed <= MIN_SPEED"
+            :ariaLabel="t('toolbox.ariaLabels.decreaseSpeed')" @click="stepSpeed(-1)" />
 
-            <IconButton :icon="Plus" variant="secondary" size="sm" :disabled="scrollSpeed >= MAX_SPEED"
-              :ariaLabel="t('toolbox.ariaLabels.increaseSpeed')" @click="stepSpeed(1)" />
+          <div class="text-center">
+            <div class="text-4xl font-bold font-mono text-text-accent min-w-[5rem]">{{ scrollSpeed }}x</div>
           </div>
 
-          <div class="flex items-center justify-between bg-surface-muted rounded-xl p-4">
-            <span class="text-sm font-bold">{{ t('toolbox.fontSize') }}</span>
-            <div class="flex items-center gap-4">
-              <IconButton :icon="Minus" variant="secondary" size="sm"
-                :ariaLabel="t('toolbox.ariaLabels.decreaseFontSize')"
-                @click="emit('update:fontSize', Math.max(0.8, fontSize - 0.1))" />
-              <span class="text-sm">{{ Math.round(fontSize * 100) }}%</span>
-              <IconButton :icon="Plus" variant="secondary" size="sm"
-                :ariaLabel="t('toolbox.ariaLabels.increaseFontSize')"
-                @click="emit('update:fontSize', Math.min(2.0, fontSize + 0.1))" />
-            </div>
-          </div>
-
-          <!-- Grid Layout & Columns Combined (Mobile) -->
-          <div class="bg-surface-muted rounded-xl p-4 space-y-3">
-            <!-- Layout Toggle Row -->
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
-              <div class="flex items-center bg-surface-base rounded-lg p-1">
-                <button class="p-2 rounded-md cursor-pointer transition-colors"
-                  :class="!gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
-                  @click="emit('update:gridMode', false)">
-                  <AlignJustify class="w-5 h-5" />
-                </button>
-                <button class="p-2 rounded-md cursor-pointer transition-colors"
-                  :class="gridMode ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
-                  @click="emit('update:gridMode', true)">
-                  <LayoutGrid class="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Columns Row (always visible, disabled when not in grid mode) -->
-            <div class="flex items-center justify-between transition-opacity"
-              :class="{ 'opacity-40 pointer-events-none': !gridMode }">
-              <span class="text-sm font-bold">{{ t('toolbox.columns') }}</span>
-              <div class="flex items-center bg-surface-base rounded-lg p-1">
-                <button v-for="option in columnOptions" :key="option.value"
-                  class="px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer transition-colors"
-                  :class="gridColumns === option.value ? 'bg-text-accent text-white' : 'text-text-muted hover:text-text-primary'"
-                  @click="emit('update:gridColumns', option.value)" :disabled="!gridMode">
-                  {{ option.label }}
-                </button>
-              </div>
-            </div>
-          </div>
+          <IconButton :icon="Plus" variant="secondary" size="sm" :disabled="scrollSpeed >= MAX_SPEED"
+            :ariaLabel="t('toolbox.ariaLabels.increaseSpeed')" @click="stepSpeed(1)" />
         </div>
 
+        <div class="flex items-center justify-between bg-surface-muted rounded-xl p-4">
+          <span class="text-sm font-bold">{{ t('toolbox.fontSize') }}</span>
+          <Stepper :model-value="fontSize" :min="0.8" :max="2.0" :step="0.1" :format-value="formatFontSize"
+            :decrease-aria-label="t('toolbox.ariaLabels.decreaseFontSize')"
+            :increase-aria-label="t('toolbox.ariaLabels.increaseFontSize')" size="sm" variant="compact"
+            @update:model-value="(val) => emit('update:fontSize', val)" />
+        </div>
+
+        <!-- Grid Layout & Columns Combined (Mobile) -->
+        <div class="bg-surface-muted rounded-xl p-4 space-y-3">
+          <!-- Layout Toggle Row -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
+            <SegmentedControl :model-value="gridMode" :options="gridModeOptions" size="lg" variant="compact"
+              @update:model-value="(val) => emit('update:gridMode', val)" />
+          </div>
+
+          <!-- Columns Row (always visible, disabled when not in grid mode) -->
+          <div class="flex items-center justify-between transition-opacity"
+            :class="{ 'opacity-40 pointer-events-none': !gridMode }">
+            <span class="text-sm font-bold">{{ t('toolbox.columns') }}</span>
+            <SegmentedControl :model-value="gridColumns" :options="columnOptionsForControl" size="md" variant="compact"
+              @update:model-value="(val) => emit('update:gridColumns', val)" />
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
         <button
-          class="w-full px-4 py-4 rounded-lg font-bold transition-colors flex items-center justify-center hover:bg-surface-muted text-text-muted mt-6 cursor-pointer"
+          class="w-full px-4 py-4 rounded-lg font-bold transition-colors flex items-center justify-center hover:bg-surface-muted text-text-muted cursor-pointer"
           @click="closeDrawer">
           {{ t('toolbox.close') }}
         </button>
-      </div>
-    </div>
+      </template>
+    </Drawer>
   </div>
 </template>
 
 <style scoped>
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
 /* Hide scrollbar for carousel */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

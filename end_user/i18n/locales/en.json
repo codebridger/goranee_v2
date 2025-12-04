@@ -242,7 +242,9 @@
       "decreaseFontSize": "Decrease font size",
       "increaseFontSize": "Increase font size",
       "decreaseSpeed": "Decrease scroll speed",
-      "increaseSpeed": "Increase scroll speed"
+      "increaseSpeed": "Increase scroll speed",
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right"
     }
   }
 }

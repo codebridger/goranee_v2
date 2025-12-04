@@ -8,10 +8,20 @@ import {
   Settings,
   Share2,
   Music,
+  Minus,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  AlignJustify,
 } from 'lucide-vue-next'
 
 import { useAppConfigStore } from '~/stores/appConfig'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
+import Stepper from '~/components/base/Stepper.vue'
+import SegmentedControl from '~/components/base/SegmentedControl.vue'
+import CarouselNav from '~/components/base/CarouselNav.vue'
+import Drawer from '~/components/base/Drawer.vue'
 
 // ChordLine type definition (matching ChordSheet component)
 interface ChordLine {
@@ -23,6 +33,22 @@ const { t } = useI18n()
 const appConfig = useAppConfigStore()
 const isLoading = ref(false)
 const autoScroll = ref(true)
+const stepperValue = ref(1.5)
+const segmentedValue = ref(false)
+const drawerOpen = ref(false)
+const carouselRef = ref<HTMLElement | null>(null)
+
+const formatStepperValue = (val: number) => `${val}x`
+
+// Demo carousel items
+const carouselItems = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+// Carousel navigation
+const scrollCarousel = (direction: -1 | 1) => {
+  if (!carouselRef.value) return
+  const scrollAmount = 120 * direction
+  carouselRef.value.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+}
 
 // Chord sheet data
 const chordLines: ChordLine[] = [
@@ -199,8 +225,8 @@ const mockSong: SongWithPopulatedRefs = {
 
           <!-- Row 2: Icon Buttons & Tools -->
           <div class="flex flex-wrap items-center gap-6">
-            <IconButton :icon="Play" variant="primary" :aria-label="t('showcase.ariaLabels.playSong')" />
-            <IconButton :icon="Heart" variant="secondary" :aria-label="t('showcase.ariaLabels.likeSong')" />
+            <IconButton :icon="Play" variant="primary" :ariaLabel="t('showcase.ariaLabels.playSong')" />
+            <IconButton :icon="Heart" variant="secondary" :ariaLabel="t('showcase.ariaLabels.likeSong')" />
 
             <!-- Tags/Chips -->
             <span
@@ -268,6 +294,88 @@ const mockSong: SongWithPopulatedRefs = {
               <IconButton :icon="Share2" variant="secondary" size="sm" :ariaLabel="t('showcase.ariaLabels.share')" />
               <IconButton :icon="Settings" variant="primary" size="lg" :ariaLabel="t('showcase.ariaLabels.settings')" />
             </div>
+          </div>
+        </Card>
+      </section>
+
+      <!-- 4.7 NEW BASE COMPONENTS -->
+      <section>
+        <SectionTitle title="04.7 New Base Components" subtitle="Stepper, SegmentedControl, CarouselNav, Drawer" />
+        <Card class="space-y-8">
+          <!-- Stepper -->
+          <div>
+            <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">Stepper</h3>
+            <div class="space-y-4 max-w-md">
+              <div>
+                <p class="text-xs text-text-muted mb-2">Compact variant (default)</p>
+                <Stepper v-model="stepperValue" :min="0.1" :max="4" :step="0.1" :format-value="formatStepperValue"
+                  decrease-aria-label="Decrease value" increase-aria-label="Increase value" size="md"
+                  variant="compact" />
+              </div>
+            </div>
+          </div>
+
+          <!-- SegmentedControl -->
+          <div>
+            <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">SegmentedControl</h3>
+            <div class="space-y-4 max-w-md">
+              <div>
+                <p class="text-xs text-text-muted mb-2">With icons</p>
+                <SegmentedControl v-model="segmentedValue" :options="[
+                  { value: false, label: 'List', icon: AlignJustify },
+                  { value: true, label: 'Grid', icon: LayoutGrid }
+                ]" size="md" variant="default" />
+              </div>
+              <div>
+                <p class="text-xs text-text-muted mb-2">Compact variant</p>
+                <SegmentedControl v-model="segmentedValue" :options="[
+                  { value: false, label: 'List', icon: AlignJustify },
+                  { value: true, label: 'Grid', icon: LayoutGrid }
+                ]" size="md" variant="compact" />
+              </div>
+            </div>
+          </div>
+
+          <!-- CarouselNav -->
+          <div>
+            <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">CarouselNav</h3>
+            <div class="relative bg-surface-muted rounded-lg p-8 max-w-md">
+              <div class="relative">
+                <CarouselNav direction="left" size="md" ariaLabel="Scroll left" @click="scrollCarousel(-1)" />
+
+                <!-- Carousel Container -->
+                <div ref="carouselRef" class="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-8 py-2"
+                  style="scrollbar-width: none; -ms-overflow-style: none;">
+                  <button v-for="(item, index) in carouselItems" :key="index"
+                    class="shrink-0 w-12 h-12 rounded-lg font-mono text-base font-bold transition-all cursor-pointer bg-surface-base hover:bg-text-accent hover:text-white text-text-primary">
+                    {{ item }}
+                  </button>
+                </div>
+
+                <CarouselNav direction="right" size="md" ariaLabel="Scroll right" @click="scrollCarousel(1)" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Drawer -->
+          <div>
+            <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">Drawer</h3>
+            <Button @click="drawerOpen = true">Open Drawer</Button>
+            <Drawer v-model="drawerOpen" position="bottom">
+              <h3 class="text-lg font-bold mb-4">Drawer Content</h3>
+              <p class="text-text-secondary mb-4">This is a drawer component that slides up from the bottom.</p>
+              <template #footer>
+                <Button variant="secondary" block @click="drawerOpen = false">Close</Button>
+              </template>
+            </Drawer>
+          </div>
+
+          <!-- Card Section Variant -->
+          <div>
+            <h3 class="text-sm font-bold text-text-secondary mb-4 uppercase tracking-wider">Card Section Variant</h3>
+            <Card variant="section" title="Section Title">
+              <p class="text-text-secondary">This is a section card with a title prop.</p>
+            </Card>
           </div>
         </Card>
       </section>
@@ -350,3 +458,10 @@ const mockSong: SongWithPopulatedRefs = {
     </main>
   </div>
 </template>
+
+<style scoped>
+/* Hide scrollbar for carousel */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+</style>

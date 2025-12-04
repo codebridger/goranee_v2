@@ -2,8 +2,9 @@
 import { computed } from 'vue';
 
 const props = defineProps<{
-  variant?: 'song' | 'artist' | 'default';
+  variant?: 'song' | 'artist' | 'default' | 'section';
   hoverable?: boolean;
+  title?: string;
 }>();
 
 const classes = computed(() => {
@@ -14,12 +15,19 @@ const classes = computed(() => {
     return 'flex flex-col items-center gap-3 group';
   }
 
+  if (props.variant === 'section') {
+    return 'bg-surface-base border border-border-subtle rounded-xl p-4 shadow-sm';
+  }
+
   return `${base} ${hover} ${props.variant === 'song' ? 'p-4' : 'p-6'}`;
 });
 </script>
 
 <template>
   <div :class="classes">
+    <div v-if="title && variant === 'section'" class="text-xs font-bold text-text-muted uppercase mb-3">
+      {{ title }}
+    </div>
     <slot />
   </div>
 </template>

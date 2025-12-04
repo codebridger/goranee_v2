@@ -242,7 +242,9 @@
       "decreaseFontSize": "کاهش اندازه فونت",
       "increaseFontSize": "افزایش اندازه فونت",
       "decreaseSpeed": "کاهش سرعت اسکرول",
-      "increaseSpeed": "افزایش سرعت اسکرول"
+      "increaseSpeed": "افزایش سرعت اسکرول",
+      "scrollLeft": "اسکرول به چپ",
+      "scrollRight": "اسکرول به راست"
     }
   }
 }
