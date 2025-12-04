@@ -5,6 +5,7 @@ import { ArrowRight, Music } from 'lucide-vue-next'
 import { useTabService } from '~/composables/useTabService'
 import type { SongWithPopulatedRefs, Artist, Genre } from '~/types/song.type'
 import { ROUTES } from '~/constants/routes'
+import CarouselNav from '~/components/base/CarouselNav.vue'
 
 const { t } = useI18n()
 const tabService = useTabService()
@@ -16,6 +17,7 @@ const trendingSongs = ref<SongWithPopulatedRefs[]>([])
 const featuredArtists = ref<Artist[]>([])
 const genres = ref<Genre[]>([])
 const songCache = ref<Record<string, SongWithPopulatedRefs[]>>({})
+const artistCarouselRef = ref<HTMLElement | null>(null)
 
 const tabs = computed(() => [
   t('home.discovery.tabs.all'),
@@ -23,6 +25,12 @@ const tabs = computed(() => [
 ])
 
 const activeTab = ref(t('home.discovery.tabs.all'))
+
+const scrollCarousel = (direction: -1 | 1) => {
+  if (!artistCarouselRef.value) return
+  const scrollAmount = 200 * direction
+  artistCarouselRef.value.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+}
 
 const handleTabChange = async (tabName: string) => {
   activeTab.value = tabName
@@ -134,19 +142,27 @@ onMounted(async () => {
           </NuxtLink>
         </div>
 
-        <div v-if="isLoading || featuredArtists.length > 0"
-          class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide">
-          <template v-if="isLoading">
-            <SkeletonArtistCard v-for="i in 6" :key="i" class="shrink-0 snap-center" />
-          </template>
-          <template v-else>
-            <div v-for="artist in featuredArtists" :key="artist._id"
-              class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
-              @click="artist._id && $router.push(ROUTES.ARTIST.DETAIL(artist._id))">
-              <ArtistCard :name="artist.name" :song-count="artist.chords || 0" :songs-label="t('home.artists.songs')"
-                :gradient-border="(artist as any)._mockColor" />
-            </div>
-          </template>
+        <div v-if="isLoading || featuredArtists.length > 0" class="relative">
+          <CarouselNav direction="left" size="md" :ariaLabel="t('toolbox.ariaLabels.scrollLeft')"
+            @click="scrollCarousel(-1)" />
+
+          <div ref="artistCarouselRef"
+            class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide scroll-smooth px-10">
+            <template v-if="isLoading">
+              <SkeletonArtistCard v-for="i in 6" :key="i" class="shrink-0 snap-center" />
+            </template>
+            <template v-else>
+              <div v-for="artist in featuredArtists" :key="artist._id"
+                class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
+                @click="artist._id && $router.push(ROUTES.ARTIST.DETAIL(artist._id))">
+                <ArtistCard :name="artist.name" :song-count="artist.chords || 0" :songs-label="t('home.artists.songs')"
+                  :gradient-border="(artist as any)._mockColor" />
+              </div>
+            </template>
+          </div>
+
+          <CarouselNav direction="right" size="md" :ariaLabel="t('toolbox.ariaLabels.scrollRight')"
+            @click="scrollCarousel(1)" />
         </div>
         <div v-else class="flex justify-center py-8 text-text-secondary">
           <Typography variant="body">{{ t('home.artists.emptyState') }}</Typography>
