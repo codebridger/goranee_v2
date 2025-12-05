@@ -1,0 +1,33 @@
+.rtl {
+
+    /**
+        Inputs
+    */
+    .vs-input-parent, .vs-select {
+        direction: rtl;
+
+        label {
+            left: auto;
+            right: 13px;
+        }
+
+        .vs-input__icon {
+            position: relative;
+            right: auto;
+            left: 50px;
+        }
+    }
+
+    .vs-select {
+        .vs-select__chips {
+            left: auto;
+            right: 0px;
+        }
+
+        .vs-icon-arrow {
+            direction: ltr;
+            right: auto;
+            left: 15px;
+        }
+    }
+}

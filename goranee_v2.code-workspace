@@ -8,6 +8,9 @@
     },
     {
       "path": "end_user"
+    },
+    {
+      "path": "admin_panel"
     }
   ]
 }
