@@ -2,23 +2,11 @@
   <div class="rtl">
     <!-- NAVBAR -->
     <vs-navbar>
-      <vs-button
-        slot="left"
-        flat
-        v-if="!isLogin"
-        :loading="pending"
-        to="/auth/login"
-      >
+      <vs-button slot="left" flat v-if="!isLogin" :loading="pending" to="/auth/login">
         {{ $t("auth.sign-in") }}
       </vs-button>
 
-      <vs-button
-        slot="left"
-        v-if="isLogin"
-        @click="activeSidebar = !activeSidebar"
-        flat
-        icon
-      >
+      <vs-button slot="left" v-if="isLogin" @click="activeSidebar = !activeSidebar" flat icon>
         <i class="bx bx-menu"></i>
       </vs-button>
 
@@ -42,7 +30,7 @@
     <!-- SIDEBAR -->
     <vs-sidebar :open.sync="activeSidebar" absolute>
       <!-- Admin section -->
-      <vs-sidebar-group v-if="user && user.type == 'administrator'">
+      <vs-sidebar-group v-if="user && user.permissionGroup.title === 'administrator'">
         <template #header>
           <vs-sidebar-item arrow>
             <template #icon>
@@ -71,7 +59,7 @@
       </vs-sidebar-group>
 
       <!-- Settings -->
-      <vs-sidebar-group v-if="user && user.type == 'administrator'">
+      <vs-sidebar-group v-if="user && user.permissionGroup.title === 'administrator'">
         <template #header>
           <vs-sidebar-item arrow>
             <template #icon>
@@ -133,6 +121,7 @@ export default {
 .page-content {
   @apply px-4 pt-16;
 }
+
 // html {
 //   font-family:
 //     'Source Sans Pro',
@@ -186,5 +175,4 @@ export default {
 // .button--grey:hover {
 //   color: #fff;
 //   background-color: #35495e;
-// }
-</style>
+// }</style>

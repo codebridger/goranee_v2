@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@coderline/alphatab": "^1.2.1",
-    "@modular-rest/client": "1.2.26",
+    "@modular-rest/client": "^1.14.0",
     "@nuxtjs/google-gtag": "^1.0.4",
     "@nuxtjs/pwa": "^3.3.5",
     "boxicons": "^2.0.7",

@@ -11,6 +11,23 @@ interface State {
     error: any,
 }
 
+// Type definitions based on @modular-rest/client v1.14.0
+interface LoginOptionsType {
+    idType: 'email' | 'phone';
+    id: string;
+    password: string;
+}
+
+interface IdentityType {
+    idType: 'email' | 'phone';
+    id: string;
+}
+
+interface RequestError {
+    hasError: boolean;
+    error: any;
+}
+
 export default {
     state() {
         return {
@@ -35,16 +52,16 @@ export default {
     },
 
     actions: {
-        login({ commit }: Context, option: Types.LoginOptions) {
+        login({ commit }: Context, option: LoginOptionsType) {
 
             return authentication.login(option, true)
                 .then(user => {
                     commit('SET_USER', user);
                 })
-                .catch((result: Types.RequestError) => {
+                .catch((result: RequestError) => {
                     toaster.toast({
                         label: 'Login error',
-                        description: result.error.e
+                        description: result.error?.e || result.error
                     })
 
                     commit('SET_ERROR', result.error)
@@ -60,7 +77,7 @@ export default {
                 }).catch(error => {
                     return authentication.loginAsAnonymous()
                 })
-                // .catch((result: Types.RequestError) => {
+                // .catch((result: RequestError) => {
                 //     toaster.toast({
                 //         label: 'Login error',
                 //         description: result.error
@@ -72,13 +89,13 @@ export default {
 
         },
 
-        submitIdentity({ commit }: Context, option: Types.Identity) {
+        submitIdentity({ commit }: Context, option: IdentityType) {
 
             return authentication.registerIdentity(option)
-                .catch((result: Types.RequestError) => {
+                .catch((result: RequestError) => {
                     toaster.toast({
                         label: 'Register error',
-                        description: result.error.e
+                        description: result.error?.e || result.error
                     })
 
                     commit('SET_ERROR', result.error)
@@ -89,10 +106,10 @@ export default {
         verifyId({ commit }: Context, option: { code: string, id: string }) {
 
             return authentication.validateCode(option)
-                .catch((result: Types.RequestError) => {
+                .catch((result: RequestError) => {
                     toaster.toast({
                         label: 'Verify code error',
-                        description: result.error.e
+                        description: result.error?.e || result.error
                     })
 
                     commit('SET_ERROR', result.error)
@@ -103,10 +120,10 @@ export default {
         submitPassword({ commit }: Context, option: { code: string, id: string, password: string }) {
 
             return authentication.submitPassword(option)
-                .catch((result: Types.RequestError) => {
+                .catch((result: RequestError) => {
                     toaster.toast({
                         label: 'Submit password error',
-                        description: result.error.e
+                        description: result.error?.e || result.error
                     })
 
                     commit('SET_ERROR', result.error)
@@ -117,10 +134,10 @@ export default {
         changePassword({ commit }: Context, option: { code: string, id: string, password: string }) {
 
             return authentication.changePassword(option)
-                .catch((result: Types.RequestError) => {
+                .catch((result: RequestError) => {
                     toaster.toast({
                         label: 'Change password error',
-                        description: result.error.e
+                        description: result.error?.e || result.error
                     })
 
                     commit('SET_ERROR', result.error)

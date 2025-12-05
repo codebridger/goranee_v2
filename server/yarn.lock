@@ -39,10 +39,10 @@
   dependencies:
     vary "^1.1.2"
 
-"@modular-rest/server@^1.16.0":
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/@modular-rest/server/-/server-1.16.0.tgz#bf114196fb3092213a82510e499bc800c64f6845"
-  integrity sha512-FQiHR6PiTtN17N6WtZ6YoFN8LdkKgj5o0ZnkdFirb4dtdkMQPgV/nPUjIr04esKR6vk8/MSA0QvnUP/c8DS4Hw==
+"@modular-rest/server@^1.16.1":
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/@modular-rest/server/-/server-1.16.1.tgz#d113effc5ab23906f90e2e8c8ea99e0a4357f7ba"
+  integrity sha512-jLySOdOIDzxBl8Z3b6cSOn0o2O3Gxe7z4JBtNugyPZ2BAk7lyOa6SbtlM0GjSyZ1N601dJQ0sMsaicXiuGQsFQ==
   dependencies:
     "@koa/cors" "^3.1.0"
     colog "^1.0.4"

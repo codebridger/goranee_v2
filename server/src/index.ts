@@ -22,7 +22,7 @@ const app = createRest({
   },
   mongo: {
     mongoBaseAddress: "mongodb://localhost:27017",
-    dbPrefix: "mrest_",
+    dbPrefix: "goranee_",
   },
   onBeforeInit: (app) => {
     // Add Health cheker route
