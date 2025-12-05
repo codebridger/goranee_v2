@@ -1,0 +1,64 @@
+services:
+  nginx:
+    image: ghcr.io/navidshad/goranee_v2_nginx:${NGINX_IMAGE_TAG:-latest}
+    # build:
+    #   context: .
+    #   dockerfile: nginx.Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/certbot:/var/www/certbot:ro
+    depends_on:
+      - server
+      - end_user
+    networks:
+      - default
+
+  server:
+    image: ghcr.io/navidshad/goranee_v2_server:${SERVER_IMAGE_TAG:-latest}
+    # build:
+    #   context: ./server
+    #   dockerfile: Dockerfile
+    restart: always
+    expose:
+      - "8081"
+    volumes:
+      - ./server/uploads:/server/uploads
+      - ./server/backups:/server/backups
+    environment:
+      - ADMIN_EMAIL=${SERVER_ADMIN_EMAIL:-admin@mail.com}
+      - ADMIN_PASSWORD=${SERVER_ADMIN_PASSWORD:-admin}
+      - NODE_ENV=production
+      - MONGODB_URL=mongodb://mongo:27017
+    depends_on:
+      - mongo
+    networks:
+      - default
+
+  end_user:
+    image: ghcr.io/navidshad/goranee_v2_end_user:${END_USER_IMAGE_TAG:-latest}
+    # build:
+    #   context: ./end_user
+    #   dockerfile: Dockerfile
+    restart: always
+    expose:
+      - "8080"
+    environment:
+      - NODE_ENV=production
+      - NUXT_API_BASE_URL=/api/
+    depends_on:
+      - server
+    networks:
+      - default
+
+  mongo:
+    image: ghcr.io/navidshad/chord_library_mongodb:4.4.28
+    volumes:
+      - ./database_data:/data/db
+    restart: always
+    networks:
+      - default
+

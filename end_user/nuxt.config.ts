@@ -3,6 +3,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  // Server configuration
+  nitro: {
+    port: process.env.PORT ? parseInt(process.env.PORT) : 8080,
+    host: '0.0.0.0',
+  },
+
   modules: [
     '@pinia/nuxt',
     '@nuxtjs/i18n',
@@ -13,7 +19,7 @@ export default defineNuxtConfig({
     // Private keys (only available on server-side)
     // Public keys (exposed to client-side)
     public: {
-      apiBaseUrl: process.env.NUXT_API_BASE_URL || process.env.VITE_API_BASE_URL || '',
+      apiBaseUrl: process.env.NUXT_API_BASE_URL || process.env.VITE_API_BASE_URL || '/api/',
     },
   },
 

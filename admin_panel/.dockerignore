@@ -1,0 +1,16 @@
+node_modules
+.nuxt
+dist
+*.log
+.env
+.env.local
+.DS_Store
+.git
+.gitignore
+README.md
+*.md
+.vscode
+.idea
+test
+coverage
+

@@ -21,8 +21,30 @@ function ImportFile(
     // On macOS with Homebrew, it might be at /opt/homebrew/bin/mongoimport
 
     exec(command, (err, stdout, stderr) => {
-      if (err) reject(err);
-      else done(stdout || stderr);
+      if (err) {
+        // Format error with meaningful message
+        const errorMessage = err.message || String(err);
+        const isCommandNotFound = errorMessage.includes('command not found') || errorMessage.includes('mongoimport: not found');
+        
+        if (isCommandNotFound) {
+          reject({
+            message: `mongoimport command not found. Please ensure MongoDB Database Tools are installed and in your system PATH.`,
+            originalError: errorMessage,
+            step: 'database_import',
+            collection: `${db}.${coll}`
+          });
+        } else {
+          reject({
+            message: `Failed to import collection ${db}.${coll}: ${errorMessage}`,
+            originalError: errorMessage,
+            step: 'database_import',
+            collection: `${db}.${coll}`,
+            stderr: stderr
+          });
+        }
+      } else {
+        done(stdout || stderr);
+      }
     });
   });
 }
@@ -46,7 +68,7 @@ function clearData(db: string = "", collection: string = ""): any {
   return collectionAdapter.deleteMany({});
 }
 
-export async function importCollections(collectionPaths: string[]) {
+export async function importCollections(collectionPaths: string[]): Promise<void> {
   for (let fileDir of collectionPaths) {
     const pathPars = fileDir.split("/");
     const fileName = pathPars[pathPars.length - 1];
@@ -54,31 +76,43 @@ export async function importCollections(collectionPaths: string[]) {
     const collection = fileName.split(" ")[1].split(".")[0];
 
     // Remove all data
-    //
+    // If clearing fails, log warning but continue (data might not exist)
     try {
       await clearData(dbName, collection);
-    } catch (error) {
-      // debugger
+    } catch (error: any) {
+      console.warn(
+        `Warning: Failed to clear collection ${dbName}.${collection} before import:`,
+        error?.message || error
+      );
+      // Continue with import even if clear fails - might be empty collection
     }
 
     // Import new data
-    //
-    await ImportFile(fileDir, dbName, collection)
-      .then((r) => {
-        console.info(
-          "#========================== ",
-          fileName,
-          " import has been done."
-        );
-        // console.log(r);
-      })
-      .catch((err) => {
-        console.warn(
-          "#=========== error ======== ",
-          fileName,
-          " import has not been done."
-        );
-        console.error(err);
-      });
+    // This must succeed - throw error if it fails
+    try {
+      const result = await ImportFile(fileDir, dbName, collection);
+      console.info(
+        "#========================== ",
+        fileName,
+        " import has been done."
+      );
+    } catch (err: any) {
+      // Log the error for debugging
+      console.error(
+        "#=========== error ======== ",
+        fileName,
+        " import has not been done."
+      );
+      console.error(err);
+      
+      // Re-throw with proper formatting
+      throw {
+        message: err.message || `Failed to import collection from ${fileName}`,
+        originalError: err.originalError || err,
+        step: err.step || 'database_import',
+        collection: err.collection || `${dbName}.${collection}`,
+        fileName: fileName
+      };
+    }
   }
 }

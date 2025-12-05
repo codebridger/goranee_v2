@@ -3,14 +3,14 @@ import { BASE_URL } from "@/config";
 export default {
   state() {
     return {
-      list: [],
+      list: []
     };
   },
 
   getters: {
     list(state) {
       return state.list || [];
-    },
+    }
   },
 
   mutations: {
@@ -21,19 +21,19 @@ export default {
     REMOVE_FROMlIST(state, fileName) {
       let index = state.list.findIndex(fileName);
       state.list.splice(index, 1);
-    },
+    }
   },
 
   actions: {
     getList(
       { commit, state },
       options = {
-        reload: false,
+        reload: false
       }
     ) {
       const url = BASE_URL + "/backup/list";
 
-      return fetch(url).then(async (r) => {
+      return fetch(url).then(async r => {
         let body = await r.json();
         commit("SET_LIST", body.list);
         return body;
@@ -48,7 +48,7 @@ export default {
     removeBackupfile({ commit, state }, fileName) {
       const url = BASE_URL + "/backup/" + fileName;
       return fetch(url, {
-        method: "DELETE",
+        method: "DELETE"
       }).then(() => commit("REMOVE_FROMlIST", fileName));
     },
 
@@ -56,21 +56,21 @@ export default {
       const url = BASE_URL + "/backup/restore";
 
       const body = JSON.stringify({
-        fileName,
+        fileName
       });
 
       return fetch(url, {
         method: "POST",
         body,
         headers: {
-          "Content-Type": "application/json",
-        },
-      }).then(async (res) => {
-        const body = res.json();
+          "Content-Type": "application/json"
+        }
+      }).then(async res => {
+        const body = await res.json();
 
-        if (!res.ok) throw body;
+        if (!res.ok) throw body.message;
         else return body;
       });
-    },
-  },
+    }
+  }
 };

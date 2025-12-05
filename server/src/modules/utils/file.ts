@@ -145,3 +145,35 @@ export const moveFolderContent = async (source: string, dest: string): Promise<v
     }
 }
 
+export const copyFolder = (source: string, dest: string): Promise<void> => {
+    // Create directory if it doesn't exist
+    fs.mkdirSync(dest, {
+        recursive: true
+    });
+
+    return new Promise((done, reject) => {
+        // Use cp -r to copy directory contents
+        // The command copies all contents from source to dest
+        exec(`cp -r "${source}/." "${dest}/" 2>&1`, (error, stdout, stderr) => {
+            if (error) {
+                // Check if error is due to empty directory (which is acceptable)
+                if (stderr && stderr.includes('No such file or directory')) {
+                    // Source might be empty, which is fine
+                    done();
+                } else if (error.killed) {
+                    reject({
+                        message: `Failed to copy folder from ${source} to ${dest}: ${error.message || stderr}`
+                    });
+                } else {
+                    // Some other error occurred
+                    reject({
+                        message: `Failed to copy folder from ${source} to ${dest}: ${error.message || stderr}`
+                    });
+                }
+            } else {
+                done();
+            }
+        });
+    });
+}
+

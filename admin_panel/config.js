@@ -7,7 +7,8 @@ function setBaseURL() {
   }
 
   if (typeof baseURL === "undefined") {
-    baseURL = "http://localhost:8081";
+    // Default to /api which will be proxied by nginx to the server
+    baseURL = "/api";
   }
 
   if (!baseURL.startsWith("http")) {
@@ -22,4 +23,4 @@ function setBaseURL() {
 }
 
 export const BASE_URL = setBaseURL();
-export const BASE_URL_ON_ClIENT = process.env.BASE_URL;
+export const BASE_URL_ON_ClIENT = setBaseURL();

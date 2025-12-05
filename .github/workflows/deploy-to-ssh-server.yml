@@ -1,0 +1,177 @@
+# Steps to deploy the app:
+# - Build the Docker images and push them to GitHub Container Registry
+# - Deploy the Docker images to server by SSH
+
+name: Deploy To SSH Server
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  IMAGE_TAG_SERVER: SERVER-${{ github.sha }}
+  IMAGE_TAG_END_USER: END_USER-${{ github.sha }}
+  REGISTRY: ghcr.io
+  IMAGE_NAME: navidshad/goranee_v2
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      nginx: ${{ steps.filter.outputs.nginx }}
+      server: ${{ steps.filter.outputs.server }}
+      admin_panel: ${{ steps.filter.outputs.admin_panel }}
+      end_user: ${{ steps.filter.outputs.end_user }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            nginx:
+              - 'nginx/**'
+              - 'nginx.Dockerfile'
+            server:
+              - 'server/**'
+            admin_panel:
+              - 'admin_panel/**'
+            end_user:
+              - 'end_user/**'
+          list-files: shell
+
+  build-nginx:
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.nginx == 'true' || needs.check-changes.outputs.admin_panel == 'true'
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Build admin panel static files
+        run: |
+          cd admin_panel
+          echo "VUE_APP_BASE_URL=/api/" > .env
+          echo "VUE_APP_BASE_URL_ON_SERVER=http://localhost:8081/" >> .env
+          npm install
+          npm run generate
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Nginx Image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest -f nginx.Dockerfile .
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
+        working-directory: .
+
+  build-server:
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Server Image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }} -f server/Dockerfile ./server
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
+
+  build-end-user:
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.end_user == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Build end_user app
+        run: |
+          cd end_user
+          echo "NUXT_API_BASE_URL=/api/" > .env
+          npm install
+          npm run build
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push End User Image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }} -f end_user/Dockerfile ./end_user
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-server, build-end-user, build-nginx, check-changes]
+    if: always() && (needs.build-server.result == 'success' || needs.build-server.result == 'skipped') && (needs.build-end-user.result == 'success' || needs.build-end-user.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Copy docker-compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yaml"
+          target: "."
+          timeout: 30s
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        env:
+          SERVER_IMAGE_TAG: ${{ env.IMAGE_TAG_SERVER }}
+          END_USER_IMAGE_TAG: ${{ env.IMAGE_TAG_END_USER }}
+          SERVER_ADMIN_EMAIL: ${{ vars.SERVER_ADMIN_EMAIL }}
+          SERVER_ADMIN_PASSWORD: ${{ vars.SERVER_ADMIN_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: SERVER_IMAGE_TAG, END_USER_IMAGE_TAG, SERVER_ADMIN_EMAIL, SERVER_ADMIN_PASSWORD, GITHUB_TOKEN
+          script: |
+            # Login to GitHub Container Registry
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin || true
+
+            # Set image tags (use commit SHA tags or fallback to latest)
+            export SERVER_IMAGE_TAG=${SERVER_IMAGE_TAG:-SERVER-${{ github.sha }}}
+            export END_USER_IMAGE_TAG=${END_USER_IMAGE_TAG:-END_USER-${{ github.sha }}}
+            export NGINX_IMAGE_TAG=latest
+
+            # Remove the previous version of the app, if exists
+            docker-compose down || true
+            # Remove all stopped images
+            docker system prune -a --force || true
+            # Pull latest images
+            docker-compose pull || true
+            # Up the app
+            docker-compose up --remove-orphans -d
+

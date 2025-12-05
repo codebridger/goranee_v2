@@ -5,9 +5,7 @@
         By tapping opposit button a new backup will be generate, then will be
         shown on the table.
       </p>
-      <vs-button :loading="pendingBackup" @click="createBackup"
-        >Create new Backup</vs-button
-      >
+      <vs-button :loading="pendingBackup" @click="createBackup">Create new Backup</vs-button>
     </div>
 
     <div class="container w-full">
@@ -34,9 +32,7 @@
           </vs-td>
           <vs-td class="flex">
             <vs-button @click="restore(file.title)">Restore</vs-button>
-            <vs-button color="red" @click="removeBackup(file.title)" danger
-              >Remove</vs-button
-            >
+            <vs-button color="red" @click="removeBackup(file.title)" danger>Remove</vs-button>
           </vs-td>
         </vs-tr>
       </template>
@@ -104,10 +100,11 @@ export default {
             type: "info",
           });
         })
-        .catch((body) => {
+        .catch((message) => {
+          debugger
           notifier.toast({
             label: `Restore failed`,
-            description: JSON.stringify(body),
+            description: message,
             type: "error",
           });
         });

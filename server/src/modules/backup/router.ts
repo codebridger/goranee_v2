@@ -40,11 +40,16 @@ backup.get("/", async (ctx) => {
     .then((_) => {
       ctx.body = reply.create("s");
     })
-    .catch((error) => {
-      console.log(error);
+    .catch((error: any) => {
+      console.error("Backup creation failed:", error);
       ctx.status = 500;
       ctx.body = reply.create("f", {
-        message: "Backup request failed, please inform the administrative.",
+        message:
+          error?.message ||
+          "Backup request failed, please inform the administrator.",
+        step: error?.step || "backup_creation",
+        originalError:
+          process.env.NODE_ENV === "development" ? error : undefined,
       });
     });
 });
@@ -146,8 +151,9 @@ backup.post("/restore", async (ctx) => {
     ctx.status = 400;
     ctx.body = reply.create("f", {
       message: '"fileName" parameter is required.',
+      step: "validation",
     });
-    return; // Added return to avoid continuation
+    return;
   }
 
   await service
@@ -155,9 +161,48 @@ backup.post("/restore", async (ctx) => {
     .then((_) => {
       ctx.body = reply.create("s");
     })
-    .catch((_) => {
-      ctx.status = 400;
-      ctx.body = reply.create("f", _);
+    .catch((error: any) => {
+      console.error("Restore operation failed:", error);
+
+      // Determine appropriate HTTP status code based on error type
+      let statusCode = 500; // Default to server error
+      if (error?.step === "validation") {
+        statusCode = 400; // Bad request for validation errors
+      } else if (
+        error?.step === "database_import" ||
+        error?.step === "database_export"
+      ) {
+        statusCode = 500; // Server error for database operations
+      }
+
+      // Format error response
+      const errorResponse: any = {
+        message:
+          error?.message ||
+          "Restore operation failed. Please check the logs for details.",
+        step: error?.step || "unknown",
+      };
+
+      // Include rollback status if available
+      if (error?.rollbackFailed !== undefined) {
+        errorResponse.rollbackFailed = error.rollbackFailed;
+        if (error.rollbackFailed) {
+          errorResponse.rollbackError = error.rollbackError;
+          errorResponse.message +=
+            " WARNING: Automatic rollback also failed. Manual intervention may be required.";
+        } else {
+          errorResponse.message +=
+            " The system has been rolled back to its previous state.";
+        }
+      }
+
+      // Include original error details in development mode
+      if (process.env.NODE_ENV === "development" && error?.originalError) {
+        errorResponse.originalError = error.originalError;
+      }
+
+      ctx.status = statusCode;
+      ctx.body = reply.create("f", errorResponse);
     });
 });
 

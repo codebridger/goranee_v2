@@ -122,6 +122,7 @@ export default {
   ],
 
   router: {
+    base: '/admin',
     middleware: ["init"],
   },
 
@@ -151,4 +152,7 @@ export default {
   build: {},
 
   buildDir: "../.nuxt",
+
+  // Target for static generation
+  target: 'static',
 };
