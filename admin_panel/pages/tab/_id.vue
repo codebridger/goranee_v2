@@ -61,7 +61,7 @@ export default {
         const defaultLang = song.defaultLang || 'ckb-IR'
         const langContent = song.content[defaultLang] || song.content['ckb-IR']
         songTitle = langContent?.title || ''
-        songRhythm = langContent?.rhythm || ''
+        songRhythm = song.rhythm || '' // Rhythm is now in main object
         songSections = langContent?.sections || []
         songTitleSeo = langContent?.title_seo || ''
       } else {

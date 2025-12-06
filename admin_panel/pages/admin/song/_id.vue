@@ -45,7 +45,7 @@
           <seo-labels v-model="currentLangForm.title_seo"></seo-labels>
 
           <vs-input class="mt-5" block :label="$t('song.vocal-from')" :value="vocalNote" disabled />
-          <vs-input class="mt-5" block :label="$t('song.rhythm')" v-model="currentLangForm.rhythm" />
+          <vs-input class="mt-5" block :label="$t('song.rhythm')" v-model="form.rhythm" />
 
           <!-- Copy from language -->
           <div class="mt-5">
@@ -127,6 +127,7 @@ export default {
           'hac': null,
         },
         defaultLang: 'ckb-IR',
+        rhythm: "",
         artists: [],
         genres: [],
         chords: {
@@ -140,7 +141,6 @@ export default {
       currentLangForm: {
         title: "",
         title_seo: "",
-        rhythm: "",
         sections: [],
       },
     };
@@ -158,7 +158,6 @@ export default {
     hasCurrentContent() {
       return this.currentLangForm.title ||
         this.currentLangForm.title_seo ||
-        this.currentLangForm.rhythm ||
         (this.currentLangForm.sections && this.currentLangForm.sections.length > 0);
     },
   },
@@ -177,7 +176,7 @@ export default {
     },
     switchLanguage(lang) {
       // Save current language content before switching (but not during initialization)
-      if (!this.isInitializing && (this.currentLangForm.title || this.currentLangForm.title_seo || this.currentLangForm.rhythm || this.currentLangForm.sections.length > 0)) {
+      if (!this.isInitializing && (this.currentLangForm.title || this.currentLangForm.title_seo || this.currentLangForm.sections.length > 0)) {
         this.form.content[this.currentLang] = { ...this.currentLangForm };
       }
 
@@ -188,7 +187,6 @@ export default {
         this.currentLangForm = {
           title: this.form.content[lang].title || '',
           title_seo: this.form.content[lang].title_seo || '',
-          rhythm: this.form.content[lang].rhythm || '',
           sections: this.form.content[lang].sections ? JSON.parse(JSON.stringify(this.form.content[lang].sections)) : [],
         };
       } else {
@@ -196,7 +194,6 @@ export default {
         this.currentLangForm = {
           title: '',
           title_seo: '',
-          rhythm: '',
           sections: [],
         };
       }
@@ -230,11 +227,10 @@ export default {
         if (!confirmed) return;
       }
 
-      // Copy content to current language
+      // Copy content to current language (rhythm is not copied as it's shared)
       this.currentLangForm = {
         title: sourceContent.title || '',
         title_seo: sourceContent.title_seo || '',
-        rhythm: sourceContent.rhythm || '',
         sections: sourceContent.sections ? JSON.parse(JSON.stringify(sourceContent.sections)) : [],
       };
 
@@ -260,6 +256,7 @@ export default {
           update: {
             content: this.form.content,
             defaultLang: this.form.defaultLang,
+            rhythm: this.form.rhythm,
             artists: this.form.artists,
             genres: this.form.genres,
             chords: this.form.chords,
@@ -294,10 +291,11 @@ export default {
         this.form.content['ckb-IR'] = {
           title: this.song.title || '',
           title_seo: this.song.title_seo || '',
-          rhythm: this.song.rhythm || '',
           sections: this.song.sections || [],
         };
         this.form.defaultLang = 'ckb-IR';
+        // Move rhythm from old structure to main object
+        this.form.rhythm = this.song.rhythm || '';
       } else if (this.song.content) {
         // New structure - ensure all language keys exist
         this.form.content = {
@@ -309,7 +307,8 @@ export default {
         this.form.defaultLang = this.song.defaultLang || 'ckb-IR';
       }
 
-      // Copy shared fields
+      // Copy shared fields (including rhythm)
+      this.form.rhythm = this.song.rhythm || '';
       this.form.artists = this.song.artists || [];
       this.form.genres = this.song.genres || [];
       this.form.chords = this.song.chords || { keySignature: "", list: [], vocalNote: {} };

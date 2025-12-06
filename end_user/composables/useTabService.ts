@@ -30,14 +30,11 @@ export const useTabService = () => {
     try {
       const defaultProjection = {
         'content.ckb-IR.title': 1,
-        'content.ckb-IR.rhythm': 1,
         'content.ckb-Latn.title': 1,
-        'content.ckb-Latn.rhythm': 1,
         'content.kmr.title': 1,
-        'content.kmr.rhythm': 1,
         'content.hac.title': 1,
-        'content.hac.rhythm': 1,
         defaultLang: 1,
+        rhythm: 1,
         image: 1,
         artists: 1,
         'chords.keySignature': 1,
@@ -82,14 +79,11 @@ export const useTabService = () => {
           populate: ['artists'],
           projection: {
             'content.ckb-IR.title': 1,
-            'content.ckb-IR.rhythm': 1,
             'content.ckb-Latn.title': 1,
-            'content.ckb-Latn.rhythm': 1,
             'content.kmr.title': 1,
-            'content.kmr.rhythm': 1,
             'content.hac.title': 1,
-            'content.hac.rhythm': 1,
             defaultLang: 1,
+            rhythm: 1,
             image: 1,
             artists: 1,
             'chords.keySignature': 1,
@@ -223,7 +217,7 @@ export const useTabService = () => {
           _id: songWithContent._id,
           title: fallbackContent?.title || '',
           title_seo: fallbackContent?.title_seo,
-          rhythm: fallbackContent?.rhythm || getRandomElement(MOCK_RHYTHMS),
+          rhythm: songWithContent.rhythm || getRandomElement(MOCK_RHYTHMS),
           sections: fallbackContent?.sections,
           artists: songWithContent.artists,
           genres: songWithContent.genres,
@@ -238,7 +232,7 @@ export const useTabService = () => {
         _id: songWithContent._id,
         title: langContent.title || '',
         title_seo: langContent.title_seo,
-        rhythm: langContent.rhythm || getRandomElement(MOCK_RHYTHMS),
+        rhythm: songWithContent.rhythm || getRandomElement(MOCK_RHYTHMS),
         sections: langContent.sections,
         artists: songWithContent.artists,
         genres: songWithContent.genres,
@@ -288,14 +282,11 @@ export const useTabService = () => {
           limit,
           select: {
             'content.ckb-IR.title': 1,
-            'content.ckb-IR.rhythm': 1,
             'content.ckb-Latn.title': 1,
-            'content.ckb-Latn.rhythm': 1,
             'content.kmr.title': 1,
-            'content.kmr.rhythm': 1,
             'content.hac.title': 1,
-            'content.hac.rhythm': 1,
             defaultLang: 1,
+            rhythm: 1,
             image: 1,
             artists: 1,
             'chords.keySignature': 1
@@ -347,14 +338,9 @@ export const useTabService = () => {
       )
     }
 
-    // Rhythm filter - search in all language content
+    // Rhythm filter - search in main rhythm field (not language-specific)
     if (rhythm && rhythm.trim().length > 0) {
-      orConditions.push(
-        { 'content.ckb-IR.rhythm': { $regex: rhythm, $options: 'i' } },
-        { 'content.ckb-Latn.rhythm': { $regex: rhythm, $options: 'i' } },
-        { 'content.kmr.rhythm': { $regex: rhythm, $options: 'i' } },
-        { 'content.hac.rhythm': { $regex: rhythm, $options: 'i' } }
-      )
+      queryObj.rhythm = { $regex: rhythm, $options: 'i' }
     }
 
     // If we have OR conditions, add them to query
@@ -402,14 +388,11 @@ export const useTabService = () => {
         options: {
           select: {
             'content.ckb-IR.title': 1,
-            'content.ckb-IR.rhythm': 1,
             'content.ckb-Latn.title': 1,
-            'content.ckb-Latn.rhythm': 1,
             'content.kmr.title': 1,
-            'content.kmr.rhythm': 1,
             'content.hac.title': 1,
-            'content.hac.rhythm': 1,
             defaultLang: 1,
+            rhythm: 1,
             image: 1,
             artists: 1,
             'chords.keySignature': 1,
@@ -561,14 +544,11 @@ export const useTabService = () => {
         options: {
           select: {
             'content.ckb-IR.title': 1,
-            'content.ckb-IR.rhythm': 1,
             'content.ckb-Latn.title': 1,
-            'content.ckb-Latn.rhythm': 1,
             'content.kmr.title': 1,
-            'content.kmr.rhythm': 1,
             'content.hac.title': 1,
-            'content.hac.rhythm': 1,
             defaultLang: 1,
+            rhythm: 1,
             image: 1,
             artists: 1,
             'chords.keySignature': 1,
@@ -616,7 +596,7 @@ export const useTabService = () => {
           currentLang: song.defaultLang || 'ckb-IR',
           title: defaultContent.title,
           title_seo: defaultContent.title_seo,
-          rhythm: defaultContent.rhythm,
+          rhythm: song.rhythm,
           sections: defaultContent.sections,
         } as SongWithLang
       }
@@ -627,7 +607,7 @@ export const useTabService = () => {
         currentLang: targetLang,
         title: langContent.title,
         title_seo: langContent.title_seo,
-        rhythm: langContent.rhythm,
+        rhythm: song.rhythm,
         sections: langContent.sections,
       } as SongWithLang
     } catch (error) {

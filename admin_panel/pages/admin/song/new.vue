@@ -30,7 +30,7 @@
             class="mt-4"
             block
             :label="$t('song.rhythm')"
-            v-model="form.content['ckb-IR'].rhythm"
+            v-model="form.rhythm"
           />
           <select-artist
             class="mt-6"
@@ -67,9 +67,8 @@ export default {
       form: {
         content: {
           'ckb-IR': {
-        title: '',
+            title: '',
             title_seo: '',
-        rhythm: '-',
             sections: [],
           },
           'ckb-Latn': null,
@@ -77,6 +76,7 @@ export default {
           'hac': null,
         },
         defaultLang: 'ckb-IR',
+        rhythm: '-',
         artists: [],
         genres: [],
         chords: {

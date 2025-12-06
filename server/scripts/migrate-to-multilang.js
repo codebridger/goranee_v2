@@ -16,7 +16,8 @@
  *   - Always backup your database before running this script
  *   - Test on a staging/local environment first
  *   - Script skips already migrated documents
- *   - Old fields (title, title_seo, rhythm, sections, name, name_seo, bio) are DELETED after migration
+ *   - Old fields (title, title_seo, sections, name, name_seo, bio) are DELETED after migration
+ *   - Rhythm stays in main object (not language-specific)
  */
 
 require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
@@ -67,15 +68,14 @@ function migrateSong(song) {
     return null; // Skip
   }
 
-  // Extract old fields
+  // Extract old fields (rhythm stays in main object, not language-specific)
   const defaultContent = {
     title: song.title || "",
     title_seo: song.title_seo || null,
-    rhythm: song.rhythm || null,
     sections: song.sections || [],
   };
 
-  // Create new structure and remove old fields
+  // Create new structure and remove old fields (keep rhythm in main object)
   const update = {
     $set: {
       content: {
@@ -85,13 +85,15 @@ function migrateSong(song) {
         hac: null,
       },
       defaultLang: "ckb-IR",
+      // Keep rhythm in main object (it's not language-specific)
+      rhythm: song.rhythm || null,
       updatedAt: new Date(),
     },
     $unset: {
       title: "",
       title_seo: "",
-      rhythm: "",
       sections: "",
+      // Note: rhythm is NOT unset - it stays in the main object
     },
   };
 

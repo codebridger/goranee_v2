@@ -48,7 +48,6 @@ export interface Melody {
 export interface SongLanguageContent {
   title: string
   title_seo?: string
-  rhythm?: string
   sections?: SongSection[]
 }
 
@@ -97,6 +96,7 @@ export interface Song {
   }
   defaultLang: LanguageCode
   // Shared content
+  rhythm?: string
   artists?: string[] // ObjectId references
   genres?: string[] // ObjectId references
   chords?: SongChords
