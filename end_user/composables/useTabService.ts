@@ -171,11 +171,11 @@ export const useTabService = () => {
     return songs.map((song) => {
       // If it's already a SongWithPopulatedRefs (old structure), return as is
       if ('title' in song && typeof song.title === 'string') {
-        const songWithRefs = song as unknown as SongWithPopulatedRefs
+      const songWithRefs = song as unknown as SongWithPopulatedRefs
 
-        // Mock rhythm if missing
-        if (!songWithRefs.rhythm) {
-          songWithRefs.rhythm = getRandomElement(MOCK_RHYTHMS)
+      // Mock rhythm if missing
+      if (!songWithRefs.rhythm) {
+        songWithRefs.rhythm = getRandomElement(MOCK_RHYTHMS)
         }
 
         // Ensure chords object exists and mock key if missing

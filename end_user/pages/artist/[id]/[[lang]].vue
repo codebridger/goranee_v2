@@ -106,6 +106,16 @@ const getRelatedArtistSongCount = (related: Artist) => {
 	return related.chords || 0;
 };
 
+const getRelatedArtistName = (related: Artist) => {
+	// Extract name from content object
+	if (related.content) {
+		const defaultLang = related.defaultLang || 'ckb-IR'
+		return related.content[defaultLang]?.name || related.content['ckb-IR']?.name || ''
+	}
+	// Fallback to old structure
+	return (related as any).name || ''
+};
+
 const navigateToSong = (songId?: string) => {
 	if (songId) {
 		return navigateTo(ROUTES.TAB.DETAIL(songId));
@@ -250,7 +260,7 @@ useHead({
 
 					<!-- Horizontal Scroll Container -->
 					<div class="flex overflow-x-auto pb-8 -mx-4 px-4 gap-6 hide-scrollbar snap-x">
-						<ArtistCard v-for="related in relatedArtists" :key="related._id" :name="related.name"
+						<ArtistCard v-for="related in relatedArtists" :key="related._id" :name="getRelatedArtistName(related)"
 							:song-count="getRelatedArtistSongCount(related)"
 							:avatar-url="getRelatedArtistAvatarUrl(related)"
 							:gradient-border="(related as any)._mockColor" class="min-w-[200px] w-[200px] snap-start"
@@ -309,3 +319,4 @@ useHead({
 	animation-delay: 4s;
 }
 </style>
+
