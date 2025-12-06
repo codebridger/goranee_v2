@@ -1,6 +1,6 @@
 const dotenv = require("dotenv");
 dotenv.config({
-  path: require("path").join(__dirname, "../.env"),
+  path: require("path").join(__dirname, "../.env")
 });
 
 export default {
@@ -8,7 +8,7 @@ export default {
     // base url for client side to be used in axios
     BASE_URL: process.env.VUE_APP_BASE_URL,
     // base url for server side to be used in axios
-    BASE_URL_ON_SERVER: process.env.VUE_APP_BASE_URL_ON_SERVER,
+    BASE_URL_ON_SERVER: process.env.VUE_APP_BASE_URL_ON_SERVER
   },
 
   server: {
@@ -20,45 +20,45 @@ export default {
     title: "آکورد گورانی کوردی",
     meta: [
       {
-        charset: "utf-8",
+        charset: "utf-8"
       },
       {
         name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        content: "width=device-width, initial-scale=1"
       },
       {
         hid: "default",
         name: "description",
-        content: "آرشیو آکورد آهنگ های کوردی",
-      },
+        content: "آرشیو آکورد آهنگ های کوردی"
+      }
     ],
     link: [
       {
         rel: "icon",
         type: "image/x-icon",
-        href: "/favicon.ico",
-      },
-    ],
+        href: "/favicon.ico"
+      }
+    ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: ["vuesax/dist/vuesax.css"],
+  css: ["vuesax/dist/vuesax.css", "~/assets/css/tailwind.css"],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     "@/plugins/vuesax",
     {
       src: "@plugins/toaster.js",
-      mode: "client",
+      mode: "client"
     },
     {
       src: "@plugins/boot.ts",
-      mode: "client",
+      mode: "client"
     },
     {
       src: "@plugins/croppa.js",
-      mode: "client",
-    },
+      mode: "client"
+    }
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -66,35 +66,35 @@ export default {
     "~/components",
     {
       path: "~/components/administration",
-      prefix: "",
+      prefix: ""
     },
     {
       path: "~/components/database",
-      prefix: "",
+      prefix: ""
     },
     {
       path: "~/components/inputs",
-      prefix: "",
+      prefix: ""
     },
     {
       path: "~/components/layouts",
-      prefix: "",
+      prefix: ""
     },
     {
       path: "~/components/materials",
-      prefix: "",
+      prefix: ""
     },
     {
       path: "~/components/notifiers",
-      prefix: "",
-    },
+      prefix: ""
+    }
   ],
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/typescript
     "@nuxt/typescript-build",
-    "@nuxtjs/tailwindcss",
+    "@nuxtjs/tailwindcss"
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -111,26 +111,26 @@ export default {
           {
             code: "fa",
             iso: "fa-IR",
-            file: "fa-IR.js",
-          },
+            file: "fa-IR.js"
+          }
         ],
         lazy: true,
         langDir: "lang/",
-        defaultLocale: "fa",
-      },
-    ],
+        defaultLocale: "fa"
+      }
+    ]
   ],
 
   router: {
-    base: '/admin',
-    middleware: ["init"],
+    base: "/admin",
+    middleware: ["init"]
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
-      lang: "en",
-    },
+      lang: "en"
+    }
   },
 
   "google-gtag": {
@@ -141,18 +141,30 @@ export default {
       anonymize_ip: true, // anonymize IP
       send_page_view: true, // might be necessary to avoid duplicated page track on page reload
       linker: {
-        domains: ["goranee.ir", "localhost"],
-      },
+        domains: ["goranee.ir", "localhost"]
+      }
     },
     debug: true, // enable to track in dev mode
-    disableAutoPageTrack: false, // disable if you don't want to track each page route with router.afterEach(...)
+    disableAutoPageTrack: false // disable if you don't want to track each page route with router.afterEach(...)
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: {
+    postcss: {
+      preset: {
+        stage: 1
+      },
+      plugins: {
+        // tailwindcss will be added by @nuxtjs/tailwindcss module
+        autoprefixer: {}
+      }
+    }
+  },
 
   buildDir: "../.nuxt",
 
-  // Target for static generation
-  target: 'static',
+  // Target: static for Docker builds, server for local SSR development
+  // Set NUXT_TARGET=static in Docker build environment
+  // Defaults to "server" for local development (SSR mode)
+  target: process.env.NUXT_TARGET || "server"
 };

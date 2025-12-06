@@ -5,7 +5,7 @@
       <h2 class="text-lg">{{ title }}</h2>
       <vs-button v-if="allowAdd" @click="showAddForm">{{
         $t('add')
-      }}</vs-button>
+        }}</vs-button>
     </div>
 
     <!-- Content -->
@@ -33,10 +33,7 @@
                 {{ field.mutate ? field.mutate(row) : row[field.key] }}
               </span>
 
-              <image-viewer
-                v-if="field.type == 'image'"
-                :fileDoc="row[field.key]"
-              />
+              <image-viewer v-if="field.type == 'image'" :fileDoc="row[field.key]" />
             </vs-td>
 
             <!-- Row Actions -->
@@ -44,20 +41,9 @@
               <div class="flex items-center justify-between">
                 <span class="text-gray-300">_id: {{ row._id }}</span>
                 <div class="flex">
-                  <vs-button
-                    warn
-                    border
-                    v-if="allowEdit"
-                    @click="showEditForm(row)"
-                    >{{ $t('edit') }}</vs-button
-                  >
-                  <vs-button
-                    danger
-                    border
-                    v-if="allowRemove"
-                    @click="showRemoveDialog(row)"
-                    >{{ $t('remove') }}</vs-button
-                  >
+                  <vs-button warn border v-if="allowEdit" @click="showEditForm(row)">{{ $t('edit') }}</vs-button>
+                  <vs-button danger border v-if="allowRemove" @click="showRemoveDialog(row)">{{ $t('remove')
+                    }}</vs-button>
                 </div>
               </div>
             </template>
@@ -90,6 +76,11 @@ export default {
     allowAdd: { type: Boolean, default: true },
     allowEdit: { type: Boolean, default: true },
     allowRemove: { type: Boolean, default: true },
+    /**
+     * Custom edit route function: (id) => string
+     * If provided, navigates to this route instead of showing edit form
+     */
+    customEditRoute: Function,
   },
 
   data() {
@@ -143,6 +134,14 @@ export default {
       })
     },
     showEditForm(row) {
+      // If custom edit route is provided, navigate to it
+      if (this.customEditRoute) {
+        const route = this.customEditRoute(row._id)
+        this.$router.push(route)
+        return
+      }
+
+      // Otherwise, use the default form dialog
       let props = {
         database: this.database,
         collection: this.collection,
@@ -201,5 +200,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

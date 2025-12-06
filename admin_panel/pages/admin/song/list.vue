@@ -44,7 +44,7 @@ export default {
         database: 'tab',
         collection: 'song',
         query: {},
-        populates: ['genres', { path: 'artists', select: 'name' }],
+        populates: ['genres', 'artists'],
         options: {
           sort: '-_id',
         },

@@ -2,16 +2,14 @@
   <vs-card type="3" class="card-song" @click="push">
     <template #title>
       <NuxtLink :to="to">
-        <h2 class="text-right">{{ "آکورد " + song.title }}</h2>
+        <h2 class="text-right">{{ "آکورد " + songTitle }}</h2>
       </NuxtLink>
     </template>
     <template #text>
-      <div
-        class="flex flex-col items-end justify-between h-32 w-32 md:w-40 lg:w-48 xl:w-48"
-      >
+      <div class="flex flex-col items-end justify-between h-32 w-32 md:w-40 lg:w-48 xl:w-48">
         <div class="flex flex-wrap">
           <span v-for="(artist, i) in song.artists" :key="i">{{
-            artist.name
+            getArtistName(artist)
           }}</span>
         </div>
         <div class="flex flex-wrap">
@@ -27,13 +25,7 @@
       </div>
     </template>
     <template #interactions>
-      <vs-button
-        v-if="allowRemove"
-        icon
-        danger
-        tranparent
-        @click="$emit('remove')"
-      >
+      <vs-button v-if="allowRemove" icon danger tranparent @click="$emit('remove')">
         <i class="bx bx-trash-alt"></i>
       </vs-button>
     </template>
@@ -55,8 +47,26 @@ export default {
     thumbnailLink() {
       return fileProvider.getFileLink(this.song.image, BASE_URL_ON_ClIENT);
     },
+    songTitle() {
+      // Extract title from content object (new structure)
+      if (this.song.content) {
+        const defaultLang = this.song.defaultLang || 'ckb-IR'
+        return this.song.content[defaultLang]?.title || this.song.content['ckb-IR']?.title || ''
+      }
+      // Fallback to old structure
+      return this.song.title || ''
+    },
   },
   methods: {
+    getArtistName(artist) {
+      // Extract name from content object (new structure)
+      if (artist && artist.content) {
+        const defaultLang = artist.defaultLang || 'ckb-IR'
+        return artist.content[defaultLang]?.name || artist.content['ckb-IR']?.name || ''
+      }
+      // Fallback to old structure
+      return artist?.name || ''
+    },
     getRandomColor() {
       var letters = "0123456789ABCDEF";
       var color = "#";
@@ -68,7 +78,7 @@ export default {
     push() {
       if (this.to) this.$router.push(this.to);
     },
-  },
+  }
 };
 </script>
 

@@ -12,7 +12,8 @@ RUN npm ci || yarn install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build static files
+# Build static files (set NUXT_TARGET=static for static generation)
+ENV NUXT_TARGET=static
 RUN npm run generate
 
 # Stage 2: Nginx (for serving static files)

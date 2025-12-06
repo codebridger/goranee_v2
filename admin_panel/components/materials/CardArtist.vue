@@ -2,7 +2,7 @@
   <vs-card class="card-artist" @click="push">
     <template #title>
       <NuxtLink :to="to">
-        <h2>{{ "آکورد های " + artist.name }}</h2>
+        <h2>{{ "آکورد های " + artistName }}</h2>
       </NuxtLink>
     </template>
     <template #text>
@@ -59,6 +59,15 @@ export default {
   computed: {
     thumbnailLink() {
       return fileProvider.getFileLink(this.artist.image, BASE_URL_ON_ClIENT);
+    },
+    artistName() {
+      // Extract name from content object (new structure)
+      if (this.artist && this.artist.content) {
+        const defaultLang = this.artist.defaultLang || 'ckb-IR'
+        return this.artist.content[defaultLang]?.name || this.artist.content['ckb-IR']?.name || ''
+      }
+      // Fallback to old structure
+      return this.artist?.name || ''
     },
   },
   methods: {

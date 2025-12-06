@@ -17,7 +17,7 @@
             class="mt-4"
             block
             :label="$t('song.title')"
-            v-model="form.title"
+            v-model="form.content['ckb-IR'].title"
           />
           <vs-input
             class="mt-5"
@@ -30,7 +30,7 @@
             class="mt-4"
             block
             :label="$t('song.rhythm')"
-            v-model="form.rhythm"
+            v-model="form.content['ckb-IR'].rhythm"
           />
           <select-artist
             class="mt-6"
@@ -50,7 +50,7 @@
           </div> -->
         </div>
       </div>
-      <chord-editor class="w-2/3" v-model="form.sections" />
+      <chord-editor class="w-2/3" v-model="form.content['ckb-IR'].sections" />
     </card>
   </div>
 </template>
@@ -65,8 +65,18 @@ export default {
     return {
       pending: false,
       form: {
+        content: {
+          'ckb-IR': {
         title: '',
+            title_seo: '',
         rhythm: '-',
+            sections: [],
+          },
+          'ckb-Latn': null,
+          'kmr': null,
+          'hac': null,
+        },
+        defaultLang: 'ckb-IR',
         artists: [],
         genres: [],
         chords: {
@@ -74,7 +84,6 @@ export default {
           list: [],
           vocalNote: {},
         },
-        sections: [],
       },
     }
   },

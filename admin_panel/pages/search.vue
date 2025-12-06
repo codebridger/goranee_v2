@@ -75,8 +75,15 @@ export default {
           .find({
             database: "tab",
             collection: "song",
-            query: { $text: { $search: this.phrase } },
-            populates: ["genres", { path: "artists", select: "name" }],
+            query: { 
+              $or: [
+                { 'content.ckb-IR.title': { $regex: this.phrase, $options: 'i' } },
+                { 'content.ckb-Latn.title': { $regex: this.phrase, $options: 'i' } },
+                { 'content.kmr.title': { $regex: this.phrase, $options: 'i' } },
+                { 'content.hac.title': { $regex: this.phrase, $options: 'i' } },
+              ]
+            },
+            populates: ["genres", "artists"],
             options: { sort: "-_id" },
           })
           .then((docs) => this.filterSearchResultSong(docs, this.phrase)),
@@ -86,7 +93,14 @@ export default {
           .find({
             database: "tab",
             collection: "artist",
-            query: { $text: { $search: this.phrase } },
+            query: { 
+              $or: [
+                { 'content.ckb-IR.name': { $regex: this.phrase, $options: 'i' } },
+                { 'content.ckb-Latn.name': { $regex: this.phrase, $options: 'i' } },
+                { 'content.kmr.name': { $regex: this.phrase, $options: 'i' } },
+                { 'content.hac.name': { $regex: this.phrase, $options: 'i' } },
+              ]
+            },
             options: { sort: "-_id" },
           })
           // .then((docs) => this.filterSearchResultArtist(docs, this.phrase)),
@@ -107,30 +121,40 @@ export default {
       for (let i = 0; i < docs.length; i++) {
         const song = docs[i];
 
-        //
-        // Search in title
-        if (song.title.includes(phrase)) {
-          this.addSong(song);
+        // Extract title from content object (new structure)
+        let songTitle = ''
+        if (song.content) {
+          const defaultLang = song.defaultLang || 'ckb-IR'
+          songTitle = song.content[defaultLang]?.title || song.content['ckb-IR']?.title || ''
+        } else {
+          songTitle = song.title || ''
         }
 
-        //
-        // Search in lyric
-        for (
-          let sectionIndex = 0;
-          sectionIndex < song.sections.length;
-          sectionIndex++
-        ) {
-          const section = song.sections[sectionIndex];
+        // Search in title
+        if (songTitle.includes(phrase)) {
+          this.addSong(song);
+          continue
+        }
 
-          // search line bye line
-          for (
-            let lineIndex = 0;
-            lineIndex < section.lines.length;
-            lineIndex++
-          ) {
-            const line = section.lines[lineIndex];
-            if (line.text.includes(phrase)) {
-              this.addSong(song);
+        // Search in lyrics (sections) - check all language versions
+        const contentToSearch = song.content || {}
+        const languages = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+        
+        for (const lang of languages) {
+          const langContent = contentToSearch[lang]
+          if (!langContent || !langContent.sections) continue
+          
+          for (let sectionIndex = 0; sectionIndex < langContent.sections.length; sectionIndex++) {
+            const section = langContent.sections[sectionIndex]
+            if (!section.lines) continue
+
+            // search line by line
+            for (let lineIndex = 0; lineIndex < section.lines.length; lineIndex++) {
+              const line = section.lines[lineIndex]
+              if (line.text && line.text.includes(phrase)) {
+                this.addSong(song)
+                return // Found in lyrics, no need to continue searching
+              }
             }
           }
         }
@@ -138,46 +162,43 @@ export default {
     },
 
     filterSearchResultArtist(docs = [], phrase = "") {
+      // This function appears to be unused but keeping it updated for consistency
       for (let i = 0; i < docs.length; i++) {
         const song = docs[i];
 
-        //
-        // Search in title
-        if (song.title.includes(phrase)) {
-          this.addSong(song);
+        // Extract title from content object (new structure)
+        let songTitle = ''
+        if (song.content) {
+          const defaultLang = song.defaultLang || 'ckb-IR'
+          songTitle = song.content[defaultLang]?.title || song.content['ckb-IR']?.title || ''
+        } else {
+          songTitle = song.title || ''
         }
 
-        //
-        // Search in artists
-        // for (
-        //   let artistIndex = 0;
-        //   artistIndex < song.artists.length;
-        //   artistIndex++
-        // ) {
-        //   const artist = song.artists[artistIndex];
-        //   if (artist.name.includes(phrase)) {
-        //     this.addSong(song);
-        //   }
-        // }
+        // Search in title
+        if (songTitle.includes(phrase)) {
+          this.addSong(song);
+          continue
+        }
 
-        //
-        // Search in lyric
-        for (
-          let sectionIndex = 0;
-          sectionIndex < song.sections.length;
-          sectionIndex++
-        ) {
-          const section = song.sections[sectionIndex];
+        // Search in lyrics (sections) - check all language versions
+        const contentToSearch = song.content || {}
+        const languages = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+        
+        for (const lang of languages) {
+          const langContent = contentToSearch[lang]
+          if (!langContent || !langContent.sections) continue
+          
+          for (let sectionIndex = 0; sectionIndex < langContent.sections.length; sectionIndex++) {
+            const section = langContent.sections[sectionIndex]
+            if (!section.lines) continue
 
-          // search line bye line
-          for (
-            let lineIndex = 0;
-            lineIndex < section.lines.length;
-            lineIndex++
-          ) {
-            const line = section.lines[lineIndex];
-            if (line.text.includes(phrase)) {
-              this.addSong(song);
+            for (let lineIndex = 0; lineIndex < section.lines.length; lineIndex++) {
+              const line = section.lines[lineIndex]
+              if (line.text && line.text.includes(phrase)) {
+                this.addSong(song)
+                return
+              }
             }
           }
         }

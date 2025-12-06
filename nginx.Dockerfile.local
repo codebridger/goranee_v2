@@ -22,6 +22,8 @@ COPY admin_panel ./
 # Use /api as base URL so admin panel talks to nginx proxy instead of direct server
 ENV VUE_APP_BASE_URL=/api
 ENV VUE_APP_BASE_URL_ON_SERVER=http://server:8081
+# Set NUXT_TARGET=static for static generation in Docker
+ENV NUXT_TARGET=static
 
 # Build static files
 RUN npm run generate

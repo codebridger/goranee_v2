@@ -2,53 +2,31 @@
   <div class="flex flex-col">
     <div v-for="(field, i) in fieldsToShow" :key="i" class="mt-8">
       <!-- STRING -->
-      <vs-input
-        block
-        :label="field.title || field.key"
-        :type="field.type"
-        :placeholder="field.placeholder"
-        :value="form[field.key]"
-        @input="form[field.key] = $event"
-        v-if="field.type == 'string'"
-      >
+      <vs-input block :label="field.title || field.key" :type="field.type" :placeholder="field.placeholder"
+        :value="form[field.key]" @input="form[field.key] = $event" v-if="field.type == 'string'">
         <template #icon v-if="field.icon">
           <i :class="[field.icon]" />
         </template>
       </vs-input>
 
-      <seo-labels
-        :value="form[field.key]"
-        @input="form[field.key] = $event"
-        v-if="field.type == 'seo'"
-      />
+      <seo-labels :value="form[field.key]" @input="form[field.key] = $event" v-if="field.type == 'seo'" />
 
       <!-- IMAGE -->
-      <image-field
-        v-if="field.type == 'image' && edit"
-        :fileDoc="form[field.key]"
-        :tag="collection"
-        @input="form[field.key] = $event"
-        @changed="edit ? update() : () => {}"
-      />
+      <image-field v-if="field.type == 'image' && edit" :fileDoc="form[field.key]" :tag="collection"
+        @input="form[field.key] = $event" @changed="edit ? update() : () => { }" />
 
       <!-- CUSTOM FIELD -->
-      <component
-        v-if="field.inputComponent"
-        :is="field.inputComponent"
-        :label="field.title || field.key"
-        :placeholder="field.placeholder"
-        :value="form[field.key] || ''"
-        @input="form[field.key] = $event"
-      />
+      <component v-if="field.inputComponent" :is="field.inputComponent" :label="field.title || field.key"
+        :placeholder="field.placeholder" :value="form[field.key] || ''" @input="form[field.key] = $event" />
     </div>
 
     <div class="mt-8">
       <vs-button class="mt-16" v-if="!edit" @click="create">{{
         $t('create')
-      }}</vs-button>
+        }}</vs-button>
       <vs-button class="mt-16" v-else @click="update">{{
         $t('update')
-      }}</vs-button>
+        }}</vs-button>
     </div>
   </div>
 </template>
@@ -178,5 +156,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

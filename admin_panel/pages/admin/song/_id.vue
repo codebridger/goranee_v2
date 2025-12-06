@@ -21,109 +21,67 @@
 
     <!-- Language Tabs -->
     <div class="mt-4 flex gap-2 border-b border-gray-200">
-      <button
-        v-for="lang in availableLangs"
-        :key="lang"
-        :class="[
-          'px-4 py-2 font-medium transition-colors',
-          currentLang === lang
-            ? 'border-b-2 border-blue-500 text-blue-600'
-            : 'text-gray-600 hover:text-gray-900'
-        ]"
-        @click="switchLanguage(lang)"
-      >
+      <button v-for="lang in availableLangs" :key="lang" :class="[
+        'px-4 py-2 font-medium transition-colors',
+        currentLang === lang
+          ? 'border-b-2 border-blue-500 text-blue-600'
+          : 'text-gray-600 hover:text-gray-900'
+      ]" @click="switchLanguage(lang)">
         {{ getLangLabel(lang) }}
         <span v-if="hasLangContent(lang)" class="ml-1 text-green-500">✓</span>
       </button>
-      <button
-        v-if="availableLangs.length < 4"
-        class="px-4 py-2 text-gray-500 hover:text-gray-700"
-        @click="addLanguage"
-      >
+      <button v-if="availableLangs.length < 4" class="px-4 py-2 text-gray-500 hover:text-gray-700" @click="addLanguage">
         + {{ $t('add-language') || 'Add Language' }}
       </button>
     </div>
 
-    <chord-picker
-      class="mt-4"
-      :value="form.chords"
-      @input="form.chords = $event"
-    />
+    <chord-picker class="mt-4" :value="form.chords" @input="form.chords = $event" />
 
     <card class="p-4 mt-4 flex space-x-4">
       <div class="w-1/3 pr-4">
         <div>
-          <vs-input
-            class="mt-4"
-            block
-            :label="$t('song.title')"
-            v-model="currentLangForm.title"
-          />
+          <vs-input class="mt-4" block :label="$t('song.title')" v-model="currentLangForm.title" />
 
           <seo-labels v-model="currentLangForm.title_seo"></seo-labels>
 
-          <vs-input
-            class="mt-5"
-            block
-            :label="$t('song.vocal-from')"
-            :value="vocalNote"
-            disabled
-          />
-          <vs-input
-            class="mt-5"
-            block
-            :label="$t('song.rhythm')"
-            v-model="currentLangForm.rhythm"
-          />
-          
+          <vs-input class="mt-5" block :label="$t('song.vocal-from')" :value="vocalNote" disabled />
+          <vs-input class="mt-5" block :label="$t('song.rhythm')" v-model="currentLangForm.rhythm" />
+
           <!-- Copy from language -->
           <div class="mt-5">
-            <label class="block mb-2">{{ $t('copy-from-language') || 'Copy from language' }}</label>
-            <select
-              v-model="copyFromLang"
-              @change="copyLanguage"
-              class="w-full p-2 border border-gray-300 rounded"
-            >
-              <option value="">{{ $t('select-language') || 'Select language...' }}</option>
-              <option
-                v-for="lang in availableLangs.filter(l => l !== currentLang)"
-                :key="lang"
-                :value="lang"
-              >
-                {{ getLangLabel(lang) }}
-              </option>
-            </select>
+            <label class="block mb-2 font-medium">{{ $t('copy-from-language') || 'Copy from language' }}</label>
+            <div class="flex gap-2">
+              <select v-model="copyFromLang" class="flex-1 p-2 border border-gray-300 rounded"
+                :class="{ 'border-blue-500': copyFromLang }">
+                <option value="">{{ $t('select-language') || 'Select language...' }}</option>
+                <option v-for="lang in availableLangs.filter(l => l !== currentLang && hasLangContent(l))" :key="lang"
+                  :value="lang">
+                  {{ getLangLabel(lang) }}
+                </option>
+              </select>
+              <vs-button :disabled="!copyFromLang || !hasLangContent(copyFromLang)" @click="copyLanguage" class="px-4">
+                <i class="bx bx-copy mr-1"></i>
+                {{ $t('copy') || 'Copy' }}
+              </vs-button>
+            </div>
+            <p v-if="copyFromLang && !hasLangContent(copyFromLang)" class="mt-1 text-xs text-red-500">
+              {{ $t('no-content-to-copy') || 'No content available in this language' }}
+            </p>
+            <p v-if="hasCurrentContent && copyFromLang && hasLangContent(copyFromLang)"
+              class="mt-1 text-xs text-yellow-600">
+              {{ $t('copy-warning') || '⚠ This will overwrite current content' }}
+            </p>
           </div>
 
-          <select-artist
-            class="mt-6"
-            block
-            :label="$t('artist.artists')"
-            v-model="form.artists"
-          />
-          <select-genre
-            class="mt-6"
-            block
-            :label="$t('genre.genres')"
-            v-model="form.genres"
-          />
+          <select-artist class="mt-6" block :label="$t('artist.artists')" v-model="form.artists" />
+          <select-genre class="mt-6" block :label="$t('genre.genres')" v-model="form.genres" />
 
           <div class="mt-10">
             <label>{{ $t("image-cover") }}</label>
             <image-field tag="song" v-model="form.image" @changed="update" />
-            <MelodyUploader
-            class="mt-5"
-              tag="melody"
-              v-model="form.melodies"
-              @changed="update"
-            />
           </div>
 
-          <melody-uploader
-            class="mt-10"
-            v-model="form.melodies"
-            @changed="update"
-          />
+          <melody-uploader class="mt-10" v-model="form.melodies" @changed="update" />
         </div>
       </div>
       <chord-editor class="w-2/3" v-model="currentLangForm.sections" />
@@ -160,9 +118,10 @@ export default {
       song: null,
       currentLang: 'ckb-IR',
       copyFromLang: '',
+      isInitializing: true,
       form: {
         content: {
-          'ckb-IR': { title: '', title_seo: '', rhythm: '', sections: [] },
+          'ckb-IR': null,
           'ckb-Latn': null,
           'kmr': null,
           'hac': null,
@@ -181,7 +140,7 @@ export default {
       currentLangForm: {
         title: "",
         title_seo: "",
-        rhythm: "-",
+        rhythm: "",
         sections: [],
       },
     };
@@ -195,6 +154,12 @@ export default {
     },
     availableLangs() {
       return ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'];
+    },
+    hasCurrentContent() {
+      return this.currentLangForm.title ||
+        this.currentLangForm.title_seo ||
+        this.currentLangForm.rhythm ||
+        (this.currentLangForm.sections && this.currentLangForm.sections.length > 0);
     },
   },
   methods: {
@@ -211,17 +176,15 @@ export default {
       return this.form.content[lang] && this.form.content[lang].title;
     },
     switchLanguage(lang) {
-      // Save current language content before switching
-      if (this.form.content[this.currentLang]) {
-        this.form.content[this.currentLang] = { ...this.currentLangForm };
-      } else {
+      // Save current language content before switching (but not during initialization)
+      if (!this.isInitializing && (this.currentLangForm.title || this.currentLangForm.title_seo || this.currentLangForm.rhythm || this.currentLangForm.sections.length > 0)) {
         this.form.content[this.currentLang] = { ...this.currentLangForm };
       }
-      
+
       this.currentLang = lang;
-      
+
       // Load new language content
-      if (this.form.content[lang]) {
+      if (this.form.content[lang] && this.form.content[lang] !== null) {
         this.currentLangForm = {
           title: this.form.content[lang].title || '',
           title_seo: this.form.content[lang].title_seo || '',
@@ -247,9 +210,9 @@ export default {
     },
     copyLanguage() {
       if (!this.copyFromLang) return;
-      
+
       const sourceContent = this.form.content[this.copyFromLang];
-      if (!sourceContent) {
+      if (!sourceContent || !this.hasLangContent(this.copyFromLang)) {
         notifier.toast({
           label: 'Error',
           description: 'Source language content not found',
@@ -257,7 +220,16 @@ export default {
         });
         return;
       }
-      
+
+      // Show confirmation if current content will be overwritten
+      if (this.hasCurrentContent) {
+        const confirmed = confirm(
+          this.$t('copy-confirm-message') ||
+          `This will overwrite the current ${this.getLangLabel(this.currentLang)} content. Continue?`
+        );
+        if (!confirmed) return;
+      }
+
       // Copy content to current language
       this.currentLangForm = {
         title: sourceContent.title || '',
@@ -265,13 +237,20 @@ export default {
         rhythm: sourceContent.rhythm || '',
         sections: sourceContent.sections ? JSON.parse(JSON.stringify(sourceContent.sections)) : [],
       };
-      
+
+      // Show success message
+      notifier.toast({
+        label: 'Success',
+        description: `${this.$t('copied-from') || 'Copied from'} ${this.getLangLabel(this.copyFromLang)}`,
+        type: 'success',
+      });
+
       this.copyFromLang = '';
     },
     update() {
       // Save current language content before updating
       this.form.content[this.currentLang] = { ...this.currentLangForm };
-      
+
       this.pending = true;
       dataProvider
         .updateOne({
@@ -320,20 +299,30 @@ export default {
         };
         this.form.defaultLang = 'ckb-IR';
       } else if (this.song.content) {
-        // New structure
-        this.form.content = { ...this.song.content };
+        // New structure - ensure all language keys exist
+        this.form.content = {
+          'ckb-IR': this.song.content['ckb-IR'] || null,
+          'ckb-Latn': this.song.content['ckb-Latn'] || null,
+          'kmr': this.song.content['kmr'] || null,
+          'hac': this.song.content['hac'] || null,
+        };
         this.form.defaultLang = this.song.defaultLang || 'ckb-IR';
       }
-      
+
       // Copy shared fields
       this.form.artists = this.song.artists || [];
       this.form.genres = this.song.genres || [];
       this.form.chords = this.song.chords || { keySignature: "", list: [], vocalNote: {} };
       this.form.image = this.song.image || null;
       this.form.melodies = this.song.melodies || [];
-      
-      // Load current language content
+
+      // Set current language to default language
+      this.currentLang = this.form.defaultLang;
+
+      // Load current language content (without saving first)
+      this.isInitializing = true;
       this.switchLanguage(this.currentLang);
+      this.isInitializing = false;
     }
   },
 };

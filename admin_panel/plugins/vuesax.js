@@ -1,4 +1,5 @@
-import Vue from 'vue'
-import Vuesax from 'vuesax'
+import Vue from "vue";
+import Vuesax from "vuesax";
 
-Vue.use(Vuesax)
+//Vuesax styles
+Vue.use(Vuesax);

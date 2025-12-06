@@ -1,10 +1,12 @@
-export default function({ store, redirect, route, error }) {
+export default async function({ store, redirect, route, error }) {
   const isLogin = store.getters["auth/isLogin"];
   const user = store.state.auth.user;
   const path = route.path;
 
   // check login state
   if (!isLogin) {
+    await store.dispatch("auth/loginWithLastSession");
+
     redirect(302, "/auth/login");
     return;
   }
