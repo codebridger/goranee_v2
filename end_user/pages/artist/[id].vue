@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Play, Heart } from 'lucide-vue-next';
 import { useTabService } from '~/composables/useTabService';
 import type { Artist, SongWithPopulatedRefs } from '~/types/song.type';
+import type { LanguageCode } from '~/constants/routes';
 import { fileProvider } from '@modular-rest/client';
 import SongCard from '~/components/widget/SongCard.vue';
 import ArtistCard from '~/components/widget/ArtistCard.vue';
@@ -17,6 +18,15 @@ const { t } = useI18n();
 const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists } = useTabService();
 
 const artistId = computed(() => route.params.id as string);
+const langCode = computed<LanguageCode>(() => {
+	const lang = route.params.lang as string | string[]
+	// Handle array case (catch-all route)
+	const langStr = Array.isArray(lang) ? lang[0] : lang
+	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+	return validLangs.includes(langStr as LanguageCode) 
+		? (langStr as LanguageCode) 
+		: 'ckb-IR' // Default fallback
+});
 const artist = ref<Artist | null>(null);
 const songs = ref<SongWithPopulatedRefs[]>([]);
 const relatedArtists = ref<Artist[]>([]);
@@ -26,7 +36,7 @@ const loadData = async () => {
 	isLoading.value = true;
 	try {
 		const [artistData, songsData, relatedData] = await Promise.all([
-			fetchArtist(artistId.value),
+			fetchArtist(artistId.value, langCode.value),
 			fetchSongsByArtist(artistId.value),
 			fetchFeaturedArtists()
 		]);
@@ -46,6 +56,13 @@ const loadData = async () => {
 
 onMounted(() => {
 	loadData();
+});
+
+// Watch for language changes in route
+watch(langCode, async () => {
+	if (artistId.value) {
+		await loadData();
+	}
 });
 
 const artistImage = computed(() => {
@@ -105,9 +122,61 @@ const navigateToHome = () => {
 	return navigateTo(ROUTES.HOME);
 };
 
+// Get artist name from current language content
+const artistName = computed(() => {
+	if (!artist.value) return ''
+	const langContent = artist.value.content?.[langCode.value]
+	return langContent?.name || artist.value.content?.[artist.value.defaultLang]?.name || ''
+});
+
 // SEO
 useHead({
-	title: computed(() => artist.value?.name ? `${artist.value.name} - Goranee` : t('common.artist')),
+	title: computed(() => artistName.value ? `${artistName.value} - Goranee` : t('common.artist')),
+	link: computed(() => {
+		if (!artist.value) return []
+		
+		const baseUrl = 'https://goranee.ir'
+		const links: any[] = []
+		
+		// Get available languages for artist
+		const availableLangs = (Object.keys(artist.value.content || {}) as LanguageCode[]).filter(
+			lang => artist.value?.content?.[lang]?.name
+		)
+		
+		if (availableLangs.length > 1) {
+			// Add hreflang for each available language
+			availableLangs.forEach(lang => {
+				const url = lang === 'ckb-IR'
+					? `${baseUrl}/artist/${artistId.value}`
+					: `${baseUrl}/artist/${artistId.value}/${lang}`
+				
+				links.push({
+					rel: 'alternate',
+					hreflang: lang,
+					href: url,
+				})
+			})
+			
+			// Add x-default
+			links.push({
+				rel: 'alternate',
+				hreflang: 'x-default',
+				href: `${baseUrl}/artist/${artistId.value}`,
+			})
+		}
+		
+		// Add canonical URL
+		const canonicalUrl = langCode.value === 'ckb-IR'
+			? `${baseUrl}/artist/${artistId.value}`
+			: `${baseUrl}/artist/${artistId.value}/${langCode.value}`
+		
+		links.push({
+			rel: 'canonical',
+			href: canonicalUrl,
+		})
+		
+		return links
+	}),
 });
 </script>
 

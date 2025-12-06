@@ -1,28 +1,50 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
 import { useTranspose } from '~/composables/useTranspose'
 import { useSongSettings } from '~/composables/useSongSettings'
+import type { LanguageCode } from '~/constants/routes'
+import type { SongWithLang, SongWithPopulatedRefs, Song } from '~/types/song.type'
+import { getAvailableLangs } from '~/types/song.type'
+import { dataProvider } from '@modular-rest/client'
+import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
 import SongInfoCard from '~/components/widget/song/SongInfoCard.vue'
 import MainChordSheet from '~/components/widget/song/MainChordSheet.vue'
 import SongFloatingToolbox from '~/components/widget/song/SongFloatingToolbox.vue'
 import SongSidebar from '~/components/widget/song/SongSidebar.vue'
-import type { SongWithPopulatedRefs } from '~/types/song.type'
+import LanguageSwitcher from '~/components/widget/song/LanguageSwitcher.vue'
 
 definePageMeta({
 	layout: 'song'
 })
 
 const route = useRoute()
+const router = useRouter()
+
+// Extract song ID and language from route
 const songId = computed(() => route.params.id as string)
+const langCode = computed<LanguageCode>(() => {
+	const lang = route.params.lang as string | string[]
+	// Handle array case (catch-all route)
+	const langStr = Array.isArray(lang) ? lang[0] : lang
+	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+	return validLangs.includes(langStr as LanguageCode) 
+		? (langStr as LanguageCode) 
+		: 'ckb-IR' // Default fallback
+})
 
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
 const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
 const { getOriginalTableIndex, fetchTables } = useTranspose()
 
-const song = ref<SongWithPopulatedRefs | null>(null)
+const song = ref<SongWithLang | null>(null)
+const fullSong = ref<Song | null>(null) // Store full song object to get available languages
+const availableLangs = computed(() => {
+	if (!fullSong.value) return song.value ? [song.value.currentLang] : []
+	return getAvailableLangs(fullSong.value)
+})
 const artistSongs = ref<SongWithPopulatedRefs[]>([])
 const similarSongs = ref<SongWithPopulatedRefs[]>([]) // Placeholder for now
 
@@ -43,9 +65,26 @@ onMounted(async () => {
 	// Fetch chord transposition tables (cached after first load)
 	await fetchTables()
 
-	// Fetch song data
+	// Fetch song data with language
 	const id = songId.value
-	song.value = await fetchSongById(id)
+	song.value = await fetchSongById(id, langCode.value)
+	
+		// Also fetch full song object to get available languages
+		if (id) {
+			try {
+				const fullSongData = await dataProvider.findOne<Song>({
+					database: DATABASE_NAME,
+					collection: COLLECTION_NAME.SONG,
+					query: { _id: id },
+					options: { limit: 1 },
+				})
+				if (fullSongData) {
+					fullSong.value = fullSongData
+				}
+			} catch (error) {
+				console.error('Failed to fetch full song object:', error)
+			}
+		}
 
 	if (song.value) {
 		// Determine original table index from song's first chord
@@ -83,6 +122,13 @@ onMounted(async () => {
 				artistSongs.value = await fetchSongsByArtist(artistId)
 			}
 		}
+	}
+})
+
+// Watch for language changes in route
+watch(langCode, async (newLang) => {
+	if (songId.value) {
+		song.value = await fetchSongById(songId.value, newLang)
 	}
 })
 
@@ -164,12 +210,63 @@ const getArtistObj = () => {
 const keyQuality = computed(() => {
 	return song.value?.chords?.keySignature as 'major' | 'minor' | undefined
 })
+
+// SEO: hreflang and canonical URLs
+useHead({
+	link: computed(() => {
+		if (!song.value || !fullSong.value) return []
+		
+		const baseUrl = 'https://goranee.ir'
+		const links: any[] = []
+		const available = getAvailableLangs(fullSong.value)
+		
+		// Add hreflang for each available language
+		available.forEach(lang => {
+			const url = lang === 'ckb-IR'
+				? `${baseUrl}/tab/${songId.value}`
+				: `${baseUrl}/tab/${songId.value}/${lang}`
+			
+			links.push({
+				rel: 'alternate',
+				hreflang: lang,
+				href: url,
+			})
+		})
+		
+		// Add x-default
+		links.push({
+			rel: 'alternate',
+			hreflang: 'x-default',
+			href: `${baseUrl}/tab/${songId.value}`,
+		})
+		
+		// Add canonical URL
+		const canonicalUrl = langCode.value === 'ckb-IR'
+			? `${baseUrl}/tab/${songId.value}`
+			: `${baseUrl}/tab/${songId.value}/${langCode.value}`
+		
+		links.push({
+			rel: 'canonical',
+			href: canonicalUrl,
+		})
+		
+		return links
+	}),
+})
 </script>
 
 <template>
 	<div v-if="song" class="min-h-screen bg-surface-base pb-0">
 
 		<div class="container mx-auto px-4 py-4">
+			<!-- Language Switcher -->
+			<LanguageSwitcher 
+				v-if="availableLangs.length > 1"
+				:available-langs="availableLangs"
+				:current-lang="langCode"
+				:song-id="songId"
+			/>
+			
 			<!-- MOBILE HEADER (Compact) -->
 			<div class="lg:hidden mb-4">
 				<SongInfoCard variant="mobile" :title="song.title" :artist="getArtistObj()" :rhythm="song.rhythm"
@@ -235,3 +332,4 @@ const keyQuality = computed(() => {
 		<div class="loading loading-spinner loading-lg text-primary"></div>
 	</div>
 </template>
+

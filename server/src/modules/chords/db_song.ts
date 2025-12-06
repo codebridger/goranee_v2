@@ -21,6 +21,21 @@ let SongSectionSchema = new Schema({
     lines: [{ chords: String, text: String }]
 })
 
+// Language-specific content schema for songs
+let SongLanguageContentSchema = new Schema({
+    title: { type: String, required: true },
+    title_seo: { type: String },
+    rhythm: { type: String },
+    sections: [SongSectionSchema],
+}, { _id: false }) // No _id for nested documents
+
+// Language-specific content schema for artists
+let ArtistLanguageContentSchema = new Schema({
+    name: { type: String, required: true },
+    name_seo: { type: String },
+    bio: { type: String },
+}, { _id: false }) // No _id for nested documents
+
 let MelodySchema = new Schema({
     title: String,
     file: schemas.file,
@@ -52,8 +67,20 @@ export default [
         database: 'tab',
         collection: 'artist',
         schema: new Schema({
-            name: { type: String, required: true },
-            name_seo: { type: String },
+            // Language-specific content as nested object with lang codes as keys
+            content: {
+                'ckb-IR': ArtistLanguageContentSchema,
+                'ckb-Latn': ArtistLanguageContentSchema,
+                'kmr': ArtistLanguageContentSchema,
+                'hac': ArtistLanguageContentSchema,
+            },
+            // Default language (for backward compatibility and fallback)
+            defaultLang: { 
+                type: String, 
+                enum: ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'],
+                default: 'ckb-IR'
+            },
+            // Shared content (not language-specific)
             chords: { type: Number, default: 0 },
             image: schemas.file,
         }),
@@ -74,9 +101,20 @@ export default [
         database: 'tab',
         collection: 'song',
         schema: new Schema({
-            title: { type: String, required: true },
-            title_seo: { type: String },
-            rhythm: { type: String, },
+            // Language-specific content as nested object with lang codes as keys
+            content: {
+                'ckb-IR': SongLanguageContentSchema,
+                'ckb-Latn': SongLanguageContentSchema,
+                'kmr': SongLanguageContentSchema,
+                'hac': SongLanguageContentSchema,
+            },
+            // Default language (for backward compatibility and fallback)
+            defaultLang: { 
+                type: String, 
+                enum: ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'],
+                default: 'ckb-IR'
+            },
+            // Shared content (not language-specific)
             artists: [{ type: Schema.Types.ObjectId, ref: 'artist', default: [] }],
             genres: [{ type: Schema.Types.ObjectId, ref: 'genre', default: [] }],
             chords: {
@@ -84,9 +122,11 @@ export default [
                 vocalNote: VocalNoteSchema,
                 list: [SongChordSchema]
             },
-            sections: [SongSectionSchema],
             image: schemas.file,
             melodies: [MelodySchema],
+            // Timestamps
+            createdAt: { type: Date, default: Date.now },
+            updatedAt: { type: Date, default: Date.now },
         }),
         permissions: [
             new Permission({

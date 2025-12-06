@@ -1,5 +1,8 @@
 // Type definitions for db_song.js CollectionDefinitions
 
+// Language code type
+export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'
+
 // File reference type (for Schemas.file)
 export interface FileReference {
   path?: string
@@ -41,6 +44,20 @@ export interface Melody {
   file?: FileReference
 }
 
+// Language-specific content types
+export interface SongLanguageContent {
+  title: string
+  title_seo?: string
+  rhythm?: string
+  sections?: SongSection[]
+}
+
+export interface ArtistLanguageContent {
+  name: string
+  name_seo?: string
+  bio?: string
+}
+
 // Collection types
 export interface Genre {
   _id?: string
@@ -51,11 +68,16 @@ export interface Genre {
 
 export interface Artist {
   _id?: string
-  name: string // required
-  name_seo?: string
+  // Nested object: lang code is the key
+  content: {
+    'ckb-IR'?: ArtistLanguageContent
+    'ckb-Latn'?: ArtistLanguageContent
+    'kmr'?: ArtistLanguageContent
+    'hac'?: ArtistLanguageContent
+  }
+  defaultLang: LanguageCode
   chords?: number
   image?: FileReference
-  bio?: string
 }
 
 export interface SongChords {
@@ -66,21 +88,51 @@ export interface SongChords {
 
 export interface Song {
   _id: string
-  title: string // required
-  title_seo?: string
-  rhythm?: string
+  // Nested object: lang code is the key
+  content: {
+    'ckb-IR'?: SongLanguageContent
+    'ckb-Latn'?: SongLanguageContent
+    'kmr'?: SongLanguageContent
+    'hac'?: SongLanguageContent
+  }
+  defaultLang: LanguageCode
+  // Shared content
   artists?: string[] // ObjectId references
   genres?: string[] // ObjectId references
   chords?: SongChords
-  sections?: SongSection[]
   image?: FileReference
   melodies?: Melody[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+// Helper type for current language view (flattened for easier use)
+export interface SongWithLang extends Omit<Song, 'content'> {
+  currentLang: LanguageCode
+  title: string
+  title_seo?: string
+  rhythm?: string
+  sections?: SongSection[]
 }
 
 // Document types with populated references (optional, for when refs are populated)
 export interface SongWithPopulatedRefs extends Omit<Song, 'artists' | 'genres'> {
   artists?: Artist[]
   genres?: Genre[]
+}
+
+// Helper function to get available languages
+export function getAvailableLangs(song: Song): LanguageCode[] {
+  return (Object.keys(song.content || {}) as LanguageCode[]).filter(
+    lang => song.content[lang]?.title
+  )
+}
+
+// Helper function to get available languages for artist
+export function getAvailableLangsForArtist(artist: Artist): LanguageCode[] {
+  return (Object.keys(artist.content || {}) as LanguageCode[]).filter(
+    lang => artist.content[lang]?.name
+  )
 }
 
 

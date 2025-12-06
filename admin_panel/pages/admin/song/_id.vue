@@ -19,6 +19,31 @@
       </div>
     </div>
 
+    <!-- Language Tabs -->
+    <div class="mt-4 flex gap-2 border-b border-gray-200">
+      <button
+        v-for="lang in availableLangs"
+        :key="lang"
+        :class="[
+          'px-4 py-2 font-medium transition-colors',
+          currentLang === lang
+            ? 'border-b-2 border-blue-500 text-blue-600'
+            : 'text-gray-600 hover:text-gray-900'
+        ]"
+        @click="switchLanguage(lang)"
+      >
+        {{ getLangLabel(lang) }}
+        <span v-if="hasLangContent(lang)" class="ml-1 text-green-500">✓</span>
+      </button>
+      <button
+        v-if="availableLangs.length < 4"
+        class="px-4 py-2 text-gray-500 hover:text-gray-700"
+        @click="addLanguage"
+      >
+        + {{ $t('add-language') || 'Add Language' }}
+      </button>
+    </div>
+
     <chord-picker
       class="mt-4"
       :value="form.chords"
@@ -32,10 +57,10 @@
             class="mt-4"
             block
             :label="$t('song.title')"
-            v-model="form.title"
+            v-model="currentLangForm.title"
           />
 
-          <seo-labels v-model="form.title_seo"></seo-labels>
+          <seo-labels v-model="currentLangForm.title_seo"></seo-labels>
 
           <vs-input
             class="mt-5"
@@ -48,8 +73,28 @@
             class="mt-5"
             block
             :label="$t('song.rhythm')"
-            v-model="form.rhythm"
+            v-model="currentLangForm.rhythm"
           />
+          
+          <!-- Copy from language -->
+          <div class="mt-5">
+            <label class="block mb-2">{{ $t('copy-from-language') || 'Copy from language' }}</label>
+            <select
+              v-model="copyFromLang"
+              @change="copyLanguage"
+              class="w-full p-2 border border-gray-300 rounded"
+            >
+              <option value="">{{ $t('select-language') || 'Select language...' }}</option>
+              <option
+                v-for="lang in availableLangs.filter(l => l !== currentLang)"
+                :key="lang"
+                :value="lang"
+              >
+                {{ getLangLabel(lang) }}
+              </option>
+            </select>
+          </div>
+
           <select-artist
             class="mt-6"
             block
@@ -81,7 +126,7 @@
           />
         </div>
       </div>
-      <chord-editor class="w-2/3" v-model="form.sections" />
+      <chord-editor class="w-2/3" v-model="currentLangForm.sections" />
     </card>
   </div>
 </template>
@@ -104,18 +149,25 @@ export default {
       .catch(({ error }) => null);
 
     if (data) {
-      delete data._id;
       return {
-        form: data,
+        song: data,
       };
     } else error("Song doesn't found");
   },
   data() {
     return {
       pending: false,
+      song: null,
+      currentLang: 'ckb-IR',
+      copyFromLang: '',
       form: {
-        title: "",
-        rhythm: "-",
+        content: {
+          'ckb-IR': { title: '', title_seo: '', rhythm: '', sections: [] },
+          'ckb-Latn': null,
+          'kmr': null,
+          'hac': null,
+        },
+        defaultLang: 'ckb-IR',
         artists: [],
         genres: [],
         chords: {
@@ -123,9 +175,14 @@ export default {
           list: [],
           vocalNote: {},
         },
-        sections: [],
         image: null,
         melodies: [],
+      },
+      currentLangForm: {
+        title: "",
+        title_seo: "",
+        rhythm: "-",
+        sections: [],
       },
     };
   },
@@ -136,18 +193,109 @@ export default {
     vocalNote() {
       return (this.form.chords.vocalNote || {}).note || "";
     },
+    availableLangs() {
+      return ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'];
+    },
   },
   methods: {
+    getLangLabel(lang) {
+      const labels = {
+        'ckb-IR': 'سورانی (ایران)',
+        'ckb-Latn': 'سورانی (لاتین)',
+        'kmr': 'کرمانجی',
+        'hac': 'گورانی',
+      };
+      return labels[lang] || lang;
+    },
+    hasLangContent(lang) {
+      return this.form.content[lang] && this.form.content[lang].title;
+    },
+    switchLanguage(lang) {
+      // Save current language content before switching
+      if (this.form.content[this.currentLang]) {
+        this.form.content[this.currentLang] = { ...this.currentLangForm };
+      } else {
+        this.form.content[this.currentLang] = { ...this.currentLangForm };
+      }
+      
+      this.currentLang = lang;
+      
+      // Load new language content
+      if (this.form.content[lang]) {
+        this.currentLangForm = {
+          title: this.form.content[lang].title || '',
+          title_seo: this.form.content[lang].title_seo || '',
+          rhythm: this.form.content[lang].rhythm || '',
+          sections: this.form.content[lang].sections ? JSON.parse(JSON.stringify(this.form.content[lang].sections)) : [],
+        };
+      } else {
+        // Initialize empty form for new language
+        this.currentLangForm = {
+          title: '',
+          title_seo: '',
+          rhythm: '',
+          sections: [],
+        };
+      }
+    },
+    addLanguage() {
+      // Find first available language slot
+      const available = this.availableLangs.find(lang => !this.form.content[lang]);
+      if (available) {
+        this.switchLanguage(available);
+      }
+    },
+    copyLanguage() {
+      if (!this.copyFromLang) return;
+      
+      const sourceContent = this.form.content[this.copyFromLang];
+      if (!sourceContent) {
+        notifier.toast({
+          label: 'Error',
+          description: 'Source language content not found',
+          type: 'error',
+        });
+        return;
+      }
+      
+      // Copy content to current language
+      this.currentLangForm = {
+        title: sourceContent.title || '',
+        title_seo: sourceContent.title_seo || '',
+        rhythm: sourceContent.rhythm || '',
+        sections: sourceContent.sections ? JSON.parse(JSON.stringify(sourceContent.sections)) : [],
+      };
+      
+      this.copyFromLang = '';
+    },
     update() {
+      // Save current language content before updating
+      this.form.content[this.currentLang] = { ...this.currentLangForm };
+      
       this.pending = true;
       dataProvider
         .updateOne({
           database: "tab",
           collection: "song",
           query: { _id: this.id },
-          update: this.form,
+          update: {
+            content: this.form.content,
+            defaultLang: this.form.defaultLang,
+            artists: this.form.artists,
+            genres: this.form.genres,
+            chords: this.form.chords,
+            image: this.form.image,
+            melodies: this.form.melodies,
+            updatedAt: new Date(),
+          },
         })
-        // .then(() => this.$router.push('/admin/song'))
+        .then(() => {
+          notifier.toast({
+            label: 'Success',
+            description: 'Song saved successfully',
+            type: 'success',
+          });
+        })
         .catch(({ error }) => {
           notifier.toast({
             label: "Update song error",
@@ -157,6 +305,36 @@ export default {
         })
         .finally(() => (this.pending = false));
     },
+  },
+  mounted() {
+    // Initialize form from song data
+    if (this.song) {
+      // Migrate old structure to new if needed
+      if (this.song.title && !this.song.content) {
+        // Old structure - migrate on the fly
+        this.form.content['ckb-IR'] = {
+          title: this.song.title || '',
+          title_seo: this.song.title_seo || '',
+          rhythm: this.song.rhythm || '',
+          sections: this.song.sections || [],
+        };
+        this.form.defaultLang = 'ckb-IR';
+      } else if (this.song.content) {
+        // New structure
+        this.form.content = { ...this.song.content };
+        this.form.defaultLang = this.song.defaultLang || 'ckb-IR';
+      }
+      
+      // Copy shared fields
+      this.form.artists = this.song.artists || [];
+      this.form.genres = this.song.genres || [];
+      this.form.chords = this.song.chords || { keySignature: "", list: [], vocalNote: {} };
+      this.form.image = this.song.image || null;
+      this.form.melodies = this.song.melodies || [];
+      
+      // Load current language content
+      this.switchLanguage(this.currentLang);
+    }
   },
 };
 </script>

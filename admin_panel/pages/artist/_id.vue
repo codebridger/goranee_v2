@@ -1,6 +1,6 @@
 <template>
   <div>
-    <grid-songs :list="list" :title="artist.name" />
+    <grid-songs :list="list" :title="artistName" />
   </div>
 </template>
 
@@ -37,10 +37,23 @@ export default {
 
   data() {},
 
+  computed: {
+    artistName() {
+      if (!this.artist) return '';
+      // Handle new structure with content object
+      if (this.artist.content) {
+        const defaultLang = this.artist.defaultLang || 'ckb-IR';
+        return this.artist.content[defaultLang]?.name || this.artist.content['ckb-IR']?.name || '';
+      }
+      // Fallback to old structure
+      return this.artist.name || '';
+    },
+  },
   head() {
+    const name = this.artistName;
     let titles = [
-      this.artist.name,
-      ...(this.artist.name_seo || "").split("\n"),
+      name,
+      ...((this.artist?.content?.[this.artist?.defaultLang || 'ckb-IR']?.name_seo || this.artist?.name_seo || "")).split("\n"),
     ];
 
     let metaList = [];
@@ -58,7 +71,7 @@ export default {
     }
 
     return {
-      title: this.artist.name,
+      title: name,
       meta: metaList,
     };
   },

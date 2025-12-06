@@ -22,8 +22,32 @@ const props = withDefaults(
 const showFullBio = ref(false)
 const { t } = useI18n()
 
+// Extract artist name from content object
+const artistName = computed(() => {
+  if (!props.artist) return ''
+  // New structure with content object
+  if (props.artist.content) {
+    const defaultLang = props.artist.defaultLang || 'ckb-IR'
+    return props.artist.content[defaultLang]?.name || props.artist.content['ckb-IR']?.name || ''
+  }
+  // Fallback to old structure (for backward compatibility during migration)
+  return (props.artist as any).name || ''
+})
+
+// Extract artist bio from content object
+const artistBio = computed(() => {
+  if (!props.artist) return ''
+  // New structure with content object
+  if (props.artist.content) {
+    const defaultLang = props.artist.defaultLang || 'ckb-IR'
+    return props.artist.content[defaultLang]?.bio || props.artist.content['ckb-IR']?.bio || ''
+  }
+  // Fallback to old structure (for backward compatibility during migration)
+  return (props.artist as any).bio || ''
+})
+
 const hasBio = computed(
-  () => !!props.artist?.bio && props.artist.bio.trim().length > 0
+  () => !!artistBio.value && artistBio.value.trim().length > 0
 )
 
 const bioToggleText = computed(() =>
@@ -90,7 +114,7 @@ const toggleBio = () => {
               :class="props.gradientClass"></div>
             <div class="relative w-48 h-48 lg:w-80 lg:h-80 rounded-full p-[6px] bg-surface-card shadow-2xl">
               <div class="w-full h-full rounded-full overflow-hidden bg-surface-base relative">
-                <img v-if="props.artistImage" :src="props.artistImage" :alt="props.artist?.name"
+                <img v-if="props.artistImage" :src="props.artistImage" :alt="artistName"
                   class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                 <div v-else
                   class="w-full h-full flex items-center justify-center bg-surface-subtle text-text-secondary">
@@ -107,7 +131,7 @@ const toggleBio = () => {
           <!-- Name & Stats -->
           <h1
             class="text-4xl lg:text-6xl font-black mb-8 tracking-tight text-transparent bg-clip-text bg-linear-to-r from-text-primary to-text-secondary leading-tight">
-            {{ props.artist?.name }}
+            {{ artistName }}
           </h1>
 
           <div class="flex items-center gap-4 text-text-secondary text-base font-medium mb-8">
@@ -129,7 +153,7 @@ const toggleBio = () => {
           <!-- Bio -->
           <div v-if="hasBio" class="max-w-xl text-text-secondary leading-relaxed relative text-lg">
             <div :class="{ 'line-clamp-3': !showFullBio }" class="transition-all duration-300">
-              <p>{{ props.artist?.bio }}</p>
+              <p>{{ artistBio }}</p>
             </div>
             <button @click="toggleBio"
               class="mt-3 text-brand-primary text-sm font-bold flex items-center gap-1 hover:underline focus:outline-none">

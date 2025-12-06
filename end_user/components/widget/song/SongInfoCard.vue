@@ -19,9 +19,21 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useI18n()
 
+// Extract artist name from content object
+const artistName = computed(() => {
+  if (!props.artist) return ''
+  // New structure with content object
+  if (props.artist.content) {
+    const defaultLang = props.artist.defaultLang || 'ckb-IR'
+    return props.artist.content[defaultLang]?.name || props.artist.content['ckb-IR']?.name || ''
+  }
+  // Fallback to old structure (for backward compatibility during migration)
+  return (props.artist as any).name || ''
+})
+
 // Helper for safe image URL
 const getArtistImage = (artist?: Artist) => {
-	return 'https://placehold.co/600x600/130A12/FF2E93?text=' + (artist?.name || 'Artist')
+	return 'https://placehold.co/600x600/130A12/FF2E93?text=' + (artistName.value || 'Artist')
 }
 
 const bgImage = computed(() => props.image || getArtistImage(props.artist))
@@ -64,8 +76,8 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 					<h1 class="text-2xl font-bold text-text-primary leading-tight mb-1">
 						{{ title }}
 					</h1>
-					<p v-if="artist?.name" class="text-sm text-text-secondary">
-						{{ artist.name }}
+					<p v-if="artistName" class="text-sm text-text-secondary">
+						{{ artistName }}
 					</p>
 				</div>
 			</div>
@@ -91,8 +103,8 @@ const bgImage = computed(() => props.image || getArtistImage(props.artist))
 				<h1 class="text-lg font-bold text-text-primary truncate leading-tight">
 					{{ title }}
 				</h1>
-				<p v-if="artist?.name" class="text-xs text-text-secondary truncate mt-0.5">
-					{{ artist.name }}
+				<p v-if="artistName" class="text-xs text-text-secondary truncate mt-0.5">
+					{{ artistName }}
 				</p>
 			</div>
 

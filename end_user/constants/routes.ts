@@ -3,6 +3,8 @@
  * Use these constants instead of hardcoded route paths throughout the application
  */
 
+export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'
+
 export const ROUTES = {
   HOME: '/',
   DISCOVERY: '/discovery',
@@ -12,11 +14,13 @@ export const ROUTES = {
   
   ARTIST: {
     INDEX: '/artist',
-    DETAIL: (id: string) => `/artist/${id}`,
+    DETAIL: (id: string, lang?: LanguageCode) => 
+      lang ? `/artist/${id}/${lang}` : `/artist/${id}`,
   },
   
   TAB: {
-    DETAIL: (id: string) => `/tab/${id}`,
+    DETAIL: (id: string, lang?: LanguageCode) => 
+      lang ? `/tab/${id}/${lang}` : `/tab/${id}`,
   },
   
   LEGAL: {

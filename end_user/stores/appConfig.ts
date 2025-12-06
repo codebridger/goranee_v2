@@ -8,7 +8,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   // Theme state
   const getInitialTheme = (): boolean => {
     // Check localStorage first (client-side only)
-    if (process.client) {
+    if (import.meta.client) {
       const stored = localStorage.getItem('theme')
       if (stored === 'dark' || stored === 'light') {
         return stored === 'dark'
@@ -24,13 +24,18 @@ export const useAppConfigStore = defineStore('appConfig', () => {
 
   // Language state (synced with i18n)
   const getInitialLanguage = (): MessageLanguages => {
-    if (process.client) {
+    if (import.meta.client) {
       const stored = localStorage.getItem('language') as MessageLanguages
       if (stored && (stored === 'en' || stored === 'fa')) {
         return stored
       }
+      // If no stored value, use i18n's current locale (which should be the defaultLocale 'fa')
+      if (locale.value && (locale.value === 'en' || locale.value === 'fa')) {
+        return locale.value as MessageLanguages
+      }
     }
-    return 'en'
+    // Fallback to 'fa' to match i18n defaultLocale in nuxt.config.ts
+    return 'fa'
   }
   const currentLanguage = ref<MessageLanguages>(getInitialLanguage())
 
@@ -41,7 +46,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
 
   // Initialize theme on store creation
   const initializeTheme = () => {
-    if (process.client && typeof document !== 'undefined') {
+    if (import.meta.client && typeof document !== 'undefined') {
       if (isDark.value) {
         document.documentElement.classList.add('dark')
         document.documentElement.classList.remove('light')
@@ -55,7 +60,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   // Toggle theme
   const toggleTheme = () => {
     isDark.value = !isDark.value
-    if (process.client && typeof document !== 'undefined') {
+    if (import.meta.client && typeof document !== 'undefined') {
       if (isDark.value) {
         document.documentElement.classList.add('dark')
         document.documentElement.classList.remove('light')
@@ -70,7 +75,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   // Set theme explicitly
   const setTheme = (dark: boolean) => {
     isDark.value = dark
-    if (process.client && typeof document !== 'undefined') {
+    if (import.meta.client && typeof document !== 'undefined') {
       if (isDark.value) {
         document.documentElement.classList.add('dark')
         document.documentElement.classList.remove('light')
@@ -87,7 +92,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
     currentLanguage.value = langCode
     setLocale(langCode)
     setDocumentDirection(langCode)
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.setItem('language', langCode)
     }
   }
@@ -104,7 +109,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   )
 
   // Initialize on store creation (client-side only)
-  if (process.client) {
+  if (import.meta.client) {
     initializeTheme()
     if (currentLanguage.value !== locale.value) {
       setLocale(currentLanguage.value)
