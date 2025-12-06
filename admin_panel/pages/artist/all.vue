@@ -6,24 +6,34 @@
 import { dataProvider } from "@modular-rest/client";
 
 export default {
-  async asyncData({}) {
+  async asyncData({ }) {
     let list = [];
 
-    await dataProvider
-      .find({
+    // Skip API calls during static generation
+    if (process.server) {
+      return {
+        list,
+      };
+    }
+
+    try {
+      const docs = await dataProvider.find({
         database: "tab",
         collection: "artist",
         query: {},
         options: { sort: "-_id" },
-      })
-      .then((docs) => (list = docs));
+      });
+      list = docs || [];
+    } catch (err) {
+      console.error("Error fetching artists:", err);
+    }
 
     return {
       list,
     };
   },
 
-  data() {},
+  data() { },
 
   head() {
     return {

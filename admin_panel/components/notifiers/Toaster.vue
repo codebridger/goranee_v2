@@ -1,15 +1,8 @@
 <template>
   <div class="toast-container flex flex-col justify-end">
-    <ToastMessage
-      v-for="stackMember in toastStack"
-      :key="stackMember.id"
-      :id="stackMember.id"
-      :label="stackMember.toast"
-      :description="stackMember.description"
-      :lifeTime="lifeTime"
-      :class="[stackMember.type]"
-      @remove="onRemoveToast"
-    />
+    <ToastMessage v-for="stackMember in toastStack" :key="stackMember.id" :id="stackMember.id"
+      :label="stackMember.toast" :description="stackMember.description" :lifeTime="lifeTime" :class="[stackMember.type]"
+      @remove="onRemoveToast" />
   </div>
 </template>
 

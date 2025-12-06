@@ -5,7 +5,7 @@
       <h2 class="text-lg">{{ title }}</h2>
       <vs-button v-if="allowAdd" @click="showAddForm">{{
         $t('add')
-        }}</vs-button>
+      }}</vs-button>
     </div>
 
     <!-- Content -->
@@ -43,7 +43,7 @@
                 <div class="flex">
                   <vs-button warn border v-if="allowEdit" @click="showEditForm(row)">{{ $t('edit') }}</vs-button>
                   <vs-button danger border v-if="allowRemove" @click="showRemoveDialog(row)">{{ $t('remove')
-                    }}</vs-button>
+                  }}</vs-button>
                 </div>
               </div>
             </template>
@@ -91,6 +91,10 @@ export default {
   },
 
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
     this.find()
   },
 

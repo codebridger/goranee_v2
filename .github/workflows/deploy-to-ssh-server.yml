@@ -174,4 +174,3 @@ jobs:
             docker-compose pull || true
             # Up the app
             docker-compose up --remove-orphans -d
-

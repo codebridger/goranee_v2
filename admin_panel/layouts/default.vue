@@ -98,6 +98,11 @@ export default {
     };
   },
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
+
     if (!this.isLogin) {
       this.pending = true;
       this.$store.dispatch("auth/loginWithLastSession").finally((_) => {

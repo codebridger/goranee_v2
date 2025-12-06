@@ -24,9 +24,11 @@ ENV VUE_APP_BASE_URL=/api
 ENV VUE_APP_BASE_URL_ON_SERVER=http://server:8081
 # Set NUXT_TARGET=static for static generation in Docker
 ENV NUXT_TARGET=static
+# Increase Node.js memory limit for build process
+ENV NODE_OPTIONS=--max-old-space-size=4096
 
-# Build static files
-RUN npm run generate
+# Build static files (use docker-specific script with memory optimization)
+RUN npm run generate:docker || npm run generate
 
 # Stage 2: Nginx with admin static files
 FROM nginx:alpine

@@ -14,6 +14,8 @@ COPY . .
 
 # Build static files (set NUXT_TARGET=static for static generation)
 ENV NUXT_TARGET=static
+# Increase Node.js memory limit for build process
+ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN npm run generate
 
 # Stage 2: Nginx (for serving static files)

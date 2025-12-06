@@ -1,22 +1,9 @@
 <template>
   <div>
-    <vs-select
-      :loading="pending"
-      :multiple="multiple"
-      :key="list.length"
-      :label="label"
-      :placehoder="placehoder"
-      :block="block"
-      :value="value"
-      @input="tempValue = $event"
-    >
+    <vs-select :loading="pending" :multiple="multiple" :key="list.length" :label="label" :placehoder="placehoder"
+      :block="block" :value="value" @input="tempValue = $event">
       <slot v-bind:list="list">
-        <vs-option
-          v-for="(item, i) in list"
-          :key="i"
-          :label="item[optionLabelKey]"
-          :value="item._id"
-        >
+        <vs-option v-for="(item, i) in list" :key="i" :label="item[optionLabelKey]" :value="item._id">
           {{ item[optionLabelKey] }}
         </vs-option>
       </slot>
@@ -64,10 +51,19 @@ export default {
     },
   },
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
     this.loadItems()
   },
   methods: {
     loadItems() {
+      // Skip API calls during static generation
+      if (process.server) {
+        return;
+      }
+
       this.pending = true
       dataProvider
         .find({
@@ -89,5 +85,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

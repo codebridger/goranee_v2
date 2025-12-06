@@ -6,7 +6,7 @@
       <div class="flex">
         <vs-button :loading="pending" @click="update">{{
           $t("update")
-        }}</vs-button>
+          }}</vs-button>
         <div class="float-button">
           <vs-button danger icon blank :loading="pending" @click="update">
             <i class="bx bxs-save"></i>
@@ -98,19 +98,31 @@ export default {
   components: { SeoLabels },
   middleware: ["auth"],
   async asyncData({ params, error }) {
-    let data = await dataProvider
-      .findOne({
+    // Skip API calls during static generation
+    if (process.server) {
+      return {
+        song: null,
+      };
+    }
+
+    try {
+      const data = await dataProvider.findOne({
         database: "tab",
         collection: "song",
         query: { _id: params.id },
-      })
-      .catch(({ error }) => null);
+      });
 
-    if (data) {
-      return {
-        song: data,
-      };
-    } else error("Song doesn't found");
+      if (data) {
+        return {
+          song: data,
+        };
+      } else {
+        error({ statusCode: 404, message: "Song doesn't found" });
+      }
+    } catch (err) {
+      console.error("Error fetching song:", err);
+      error({ statusCode: 500, message: "Failed to load song" });
+    }
   },
   data() {
     return {

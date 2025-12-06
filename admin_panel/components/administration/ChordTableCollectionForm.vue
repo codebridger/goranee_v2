@@ -1,18 +1,9 @@
 <template>
   <div class="flex flex-col">
     <div class="lg:flex lg:space-x-5">
-      <select-chord-type
-        class="mt-6 lg:w-1/2"
-        block
-        :label="$t('chord.select-type')"
-        v-model="form.type"
-      />
-      <select-key-signature
-        class="mt-6 lg:w-1/2"
-        block
-        :label="$t('chord.select-keySignature')"
-        v-model="form.keySignature"
-      />
+      <select-chord-type class="mt-6 lg:w-1/2" block :label="$t('chord.select-type')" v-model="form.type" />
+      <select-key-signature class="mt-6 lg:w-1/2" block :label="$t('chord.select-keySignature')"
+        v-model="form.keySignature" />
     </div>
 
     <!-- Regular table -->
@@ -35,18 +26,11 @@
         <vs-tr v-for="(fieldsRow, rowIndex) in form.rows" :key="rowIndex">
           <!-- Notes -->
           <vs-td>
-            <select-note
-              :pending="chordPending"
-              v-model="form.vocalRows[rowIndex]"
-            />
+            <select-note :pending="chordPending" v-model="form.vocalRows[rowIndex]" />
           </vs-td>
           <!-- Chords -->
           <vs-td v-for="(column, columnIndex) in columns" :key="columnIndex">
-            <select-chord
-              :list="chords"
-              :pending="chordPending"
-              v-model="form.rows[rowIndex][column]"
-            />
+            <select-chord :list="chords" :pending="chordPending" v-model="form.rows[rowIndex][column]" />
           </vs-td>
         </vs-tr>
       </template>
@@ -69,20 +53,10 @@
 
       <!-- TBody -->
       <template slot="tbody">
-        <vs-tr
-          v-for="(fieldsRow, rowIndex) in form.chromaticRows"
-          :key="rowIndex"
-        >
-          <vs-td
-            v-for="(column, columnIndex) in chromaticColumns"
-            :key="columnIndex"
-          >
-            <select-chord
-              :list="chords"
-              :pending="chordPending"
-              :value="form.chromaticRows[rowIndex][column] || ''"
-              @input="form.chromaticRows[rowIndex][column] = $event"
-            />
+        <vs-tr v-for="(fieldsRow, rowIndex) in form.chromaticRows" :key="rowIndex">
+          <vs-td v-for="(column, columnIndex) in chromaticColumns" :key="columnIndex">
+            <select-chord :list="chords" :pending="chordPending" :value="form.chromaticRows[rowIndex][column] || ''"
+              @input="form.chromaticRows[rowIndex][column] = $event" />
           </vs-td>
         </vs-tr>
       </template>
@@ -166,6 +140,10 @@ export default {
   },
 
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
     this.getChordList()
   },
 
@@ -243,6 +221,11 @@ export default {
     },
 
     getChordList() {
+      // Skip API calls during static generation
+      if (process.server) {
+        return;
+      }
+
       this.chordPending = true
       dataProvider
         .find({
@@ -260,5 +243,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

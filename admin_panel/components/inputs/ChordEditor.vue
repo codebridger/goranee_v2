@@ -54,10 +54,16 @@ export default {
     }
   },
   created() {
-    window.addEventListener('keyup', this.onToggleEditMode)
+    // Only add event listeners on client side
+    if (process.client && typeof window !== 'undefined') {
+      window.addEventListener('keyup', this.onToggleEditMode)
+    }
   },
   destroyed() {
-    window.removeEventListener('keyup', this.onToggleEditMode)
+    // Only remove event listeners on client side
+    if (process.client && typeof window !== 'undefined') {
+      window.removeEventListener('keyup', this.onToggleEditMode)
+    }
   },
   watch: {
     value: {

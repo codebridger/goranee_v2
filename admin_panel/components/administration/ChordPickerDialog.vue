@@ -3,42 +3,24 @@
     <div class="flex justify-between">
       <vs-button flat @click="submitChords">{{ $t('select') }}</vs-button>
       <vs-button-group>
-        <vs-button
-          flat
-          v-for="(signature, i) in signatures"
-          :key="i"
-          :active="activeTable == signature"
-          @click="activeTable = signature"
-          >{{ signature }}</vs-button
-        >
+        <vs-button flat v-for="(signature, i) in signatures" :key="i" :active="activeTable == signature"
+          @click="activeTable = signature">{{ signature }}</vs-button>
       </vs-button-group>
     </div>
 
-    <vs-select
-      class="mt-6"
-      :value="form.keySignature"
-      @input="form.keySignature = $event"
-      label-placeholder="Key Signature"
-    >
+    <vs-select class="mt-6" :value="form.keySignature" @input="form.keySignature = $event"
+      label-placeholder="Key Signature">
       <vs-option label="major" value="major">major</vs-option>
       <vs-option label="minor" value="minor">minor</vs-option>
     </vs-select>
 
     <sequence-presentor class="mt-2" :slots="signatures" :active="activeTable">
-      <card-chord-table
-        v-for="(signature, i) in signatures"
-        allowChoose
-        :key="i"
-        :table="tables[i]"
-        :slot="signature"
-        :chords="form.list"
-        :vocalNote="form.vocalNote"
-        @input="
+      <card-chord-table v-for="(signature, i) in signatures" allowChoose :key="i" :table="tables[i]" :slot="signature"
+        :chords="form.list" :vocalNote="form.vocalNote" @input="
           form.list = $event.chords
-          form.vocalNote = $event.vocalNote
-          selectKeySignature()
-        "
-      />
+        form.vocalNote = $event.vocalNote
+        selectKeySignature()
+          " />
     </sequence-presentor>
   </div>
 </template>
@@ -79,6 +61,10 @@ export default {
     },
   },
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
     this.getTables()
   },
   methods: {
@@ -93,6 +79,11 @@ export default {
       this.closeModal()
     },
     getTables() {
+      // Skip API calls during static generation
+      if (process.server) {
+        return;
+      }
+
       dataProvider
         .find({
           database: 'chord',
@@ -118,5 +109,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

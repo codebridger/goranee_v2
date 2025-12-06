@@ -1,13 +1,8 @@
 <template>
   <card class="p-2 flex items-center space-x-1 scroll">
     <!-- loop -->
-    <div
-      class="chord-box box-hover relative"
-      v-for="(table, i) in tables"
-      :key="i"
-      :class="{ selected: i == currentTableIndex }"
-      @click="currentTableIndex = i"
-    >
+    <div class="chord-box box-hover relative" v-for="(table, i) in tables" :key="i"
+      :class="{ selected: i == currentTableIndex }" @click="currentTableIndex = i">
       <span class="text-lg">{{ table.keySignature[chords.keySignature] }}</span>
     </div>
   </card>
@@ -143,6 +138,11 @@ export default {
   },
 
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
+
     this.$store.dispatch("chords/getTables").then(() => {
       this.findMainTable(this.chords);
     });

@@ -8,14 +8,8 @@
 
     <!-- Content -->
     <div class="p-8 mt-4 flex justify-between flex-wrap space-y-4">
-      <card-chord-table
-        v-for="(table, i) in list"
-        allowEdite
-        :key="i"
-        :table="table"
-        @edit="showEditForm(table)"
-        @remove="showRemoveDialog(table)"
-      />
+      <card-chord-table v-for="(table, i) in list" allowEdite :key="i" :table="table" @edit="showEditForm(table)"
+        @remove="showRemoveDialog(table)" />
     </div>
   </div>
 </template>
@@ -40,6 +34,10 @@ export default {
   },
 
   created() {
+    // Skip API calls during static generation
+    if (process.server) {
+      return;
+    }
     this.find()
   },
 
@@ -68,6 +66,11 @@ export default {
 
   methods: {
     find() {
+      // Skip API calls during static generation
+      if (process.server) {
+        return;
+      }
+
       this.pending = true
       dataProvider
         .find(this.findOption)
@@ -145,5 +148,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

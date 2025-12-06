@@ -16,6 +16,11 @@ export default async function () {
     host: BASE_URL as string,
   });
 
+  // Skip API calls during static generation
+  if (process.server) {
+    return;
+  }
+
   localStorage.removeItem("token");
   await authentication.loginAsAnonymous();
 }

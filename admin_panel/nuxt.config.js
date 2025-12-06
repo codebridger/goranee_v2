@@ -15,6 +15,9 @@ export default {
     // host: '0'
   },
 
+  // Disable SSR - client-side only rendering
+  ssr: false,
+
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
     title: "آکورد گورانی کوردی",
@@ -42,6 +45,7 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
+  // Include Tailwind CSS explicitly for static generation with ssr: false
   css: ["vuesax/dist/vuesax.css", "~/assets/css/tailwind.css"],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -126,6 +130,15 @@ export default {
     middleware: ["init"]
   },
 
+  // TailwindCSS module configuration
+  tailwindcss: {
+    cssPath: "~/assets/css/tailwind.css",
+    configPath: "tailwind.config.js",
+    exposeConfig: false,
+    injectPosition: 0, // Inject Tailwind CSS first (0 = first position)
+    viewer: true
+  },
+
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
@@ -154,17 +167,63 @@ export default {
       preset: {
         stage: 1
       },
+      // Tailwind CSS and autoprefixer are automatically added by @nuxtjs/tailwindcss module
       plugins: {
-        // tailwindcss will be added by @nuxtjs/tailwindcss module
         autoprefixer: {}
       }
+    },
+    // Optimize build performance
+    parallel: process.env.NODE_ENV === "production",
+    cache: true,
+    hardSource: false,
+    // Configure loaders - disable fibers for better Docker compatibility
+    loaders: {
+      sass: {
+        sassOptions: {
+          outputStyle: "compressed",
+          fiber: false // Disable fibers to avoid native module compilation issues
+        }
+      },
+      scss: {
+        sassOptions: {
+          outputStyle: "compressed",
+          fiber: false
+        }
+      }
+    },
+    // Extend webpack configuration
+    extend(config, { isDev, isClient }) {
+      // Increase webpack performance hints threshold to avoid warnings
+      if (!isDev) {
+        config.performance = {
+          hints: "warning",
+          maxEntrypointSize: 512000,
+          maxAssetSize: 512000
+        };
+      }
+      // Optimize module resolution
+      config.resolve.symlinks = false;
+      // Add better error handling
+      config.stats = {
+        errorDetails: true,
+        warnings: false
+      };
     }
   },
 
   buildDir: "../.nuxt",
 
-  // Target: static for Docker builds, server for local SSR development
+  // Target: static for static site generation
   // Set NUXT_TARGET=static in Docker build environment
-  // Defaults to "server" for local development (SSR mode)
-  target: process.env.NUXT_TARGET || "server"
+  // Defaults to "static" for static HTML generation (no SSR server required)
+  target: process.env.NUXT_TARGET || "static",
+
+  // Generate configuration for static site generation
+  generate: {
+    // Use fallback mode for dynamic routes (SPA fallback)
+    // This prevents hanging on dynamic routes like /admin/artist/_id, /tab/_id, etc.
+    fallback: true,
+    // Disable crawler to speed up generation and prevent hanging
+    crawler: false
+  }
 };

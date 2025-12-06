@@ -11,22 +11,35 @@ export default {
   async asyncData({ params }) {
     let list = [];
     let artistId = params.id;
+    let artist = null;
 
-    let artist = await dataProvider.findOne({
-      database: "tab",
-      collection: "artist",
-      query: { _id: artistId },
-    });
+    // Skip API calls during static generation
+    if (process.server) {
+      return {
+        list,
+        artistId,
+        artist,
+      };
+    }
 
-    await dataProvider
-      .find({
+    try {
+      artist = await dataProvider.findOne({
+        database: "tab",
+        collection: "artist",
+        query: { _id: artistId },
+      });
+
+      const docs = await dataProvider.find({
         database: "tab",
         collection: "song",
         query: { artists: { $all: [artistId] } },
         populates: ["genres", { path: "artists", select: "name" }],
         options: { sort: "-_id" },
-      })
-      .then((docs) => (list = docs));
+      });
+      list = docs || [];
+    } catch (err) {
+      console.error("Error fetching artist or songs:", err);
+    }
 
     return {
       list,
@@ -35,7 +48,7 @@ export default {
     };
   },
 
-  data() {},
+  data() { },
 
   computed: {
     artistName() {
@@ -61,7 +74,7 @@ export default {
     for (let i = 0; i < titles.length; i++) {
       const title = titles[i].trim();
 
-      if(!title.length) continue;
+      if (!title.length) continue;
 
       metaList.push({
         hid: this.id + i,

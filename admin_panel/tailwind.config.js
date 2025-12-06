@@ -1,3 +1,5 @@
+const path = require("path");
+
 /*
  ** TailwindCSS Configuration File
  **
@@ -6,12 +8,12 @@
  */
 module.exports = {
   content: [
-    "./components/**/*.{js,vue,ts}",
-    "./layouts/**/*.vue",
-    "./pages/**/*.vue",
-    "./plugins/**/*.{js,ts}",
-    "./nuxt.config.{js,ts}",
-    "./app.vue"
+    path.join(__dirname, "./components/**/*.{js,vue,ts}"),
+    path.join(__dirname, "./layouts/**/*.vue"),
+    path.join(__dirname, "./pages/**/*.vue"),
+    path.join(__dirname, "./plugins/**/*.{js,ts}"),
+    path.join(__dirname, "./nuxt.config.{js,ts}"),
+    path.join(__dirname, "./app.vue")
   ],
   theme: {
     extend: {}

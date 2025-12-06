@@ -6,7 +6,7 @@
       <div class="flex">
         <vs-button :loading="pending" @click="update">{{
           $t("update")
-          }}</vs-button>
+        }}</vs-button>
         <div class="float-button">
           <vs-button danger icon blank :loading="pending" @click="update">
             <i class="bx bxs-save"></i>
@@ -55,6 +55,13 @@ import notifier from '../../../utilities/notifier'
 export default {
   middleware: ['auth'],
   async asyncData({ params, error }) {
+    // Skip API calls during static generation
+    if (process.server) {
+      return {
+        artist: null,
+      };
+    }
+
     try {
       const artist = await dataProvider.findOne({
         database: 'tab',
@@ -69,6 +76,7 @@ export default {
 
       return { artist }
     } catch (err) {
+      console.error("Error fetching artist:", err);
       error({ statusCode: 500, message: 'Failed to load artist' })
     }
   },

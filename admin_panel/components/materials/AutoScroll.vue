@@ -46,19 +46,26 @@ export default {
 
   watch: {
     isPlaying(value) {
-      if (value == true) window.requestAnimationFrame(this.scroll);
+      if (value == true && process.client && typeof window !== 'undefined') {
+        window.requestAnimationFrame(this.scroll);
+      }
     },
   },
 
   mounted() {
-    window.addEventListener("resize", this.reportWindowSize);
-    window.addEventListener("scroll", this.getScrollOffset);
-    this.reportWindowSize();
-    this.window;
+    // Only add event listeners on client side
+    if (process.client && typeof window !== 'undefined') {
+      window.addEventListener("resize", this.reportWindowSize);
+      window.addEventListener("scroll", this.getScrollOffset);
+      this.reportWindowSize();
+    }
   },
 
   destroyed() {
-    window.removeEventListener("resize", this.reportWindowSize);
+    // Only remove event listeners on client side
+    if (process.client && typeof window !== 'undefined') {
+      window.removeEventListener("resize", this.reportWindowSize);
+    }
   },
 
   methods: {
@@ -76,14 +83,22 @@ export default {
     },
 
     reportWindowSize() {
-      this.window.width = window.document.body.offsetWidth * 0.9;
+      if (process.client && typeof window !== 'undefined') {
+        this.window.width = window.document.body.offsetWidth * 0.9;
+      }
     },
 
     getScrollOffset() {
-      this.currentPos = window.pageYOffset;
+      if (process.client && typeof window !== 'undefined') {
+        this.currentPos = window.pageYOffset;
+      }
     },
 
     scroll() {
+      if (!process.client || typeof window === 'undefined') {
+        return;
+      }
+
       this.currentPos += this.speed / 50;
 
       let nextPos = this.currentPos;

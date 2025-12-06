@@ -20,11 +20,7 @@
     </div>
 
     <client-only placeholder="Loading transpose...">
-      <Transpose
-        :chords="song.chords"
-        :sections="song.sections"
-        @transposed="onReceivedTranspose"
-      />
+      <Transpose :chords="song.chords" :sections="song.sections" @transposed="onReceivedTranspose" />
 
       <AutoScroll />
     </client-only>
@@ -41,14 +37,28 @@ import { dataProvider } from "@modular-rest/client";
 
 export default {
   async asyncData({ error, params }) {
-    let song = await dataProvider
-      .findOne({
+    // Skip API calls during static generation
+    if (process.server) {
+      return {
+        song: null,
+        songTitle: '',
+        songRhythm: '',
+        songSections: [],
+        songTitleSeo: '',
+      };
+    }
+
+    let song = null;
+    try {
+      song = await dataProvider.findOne({
         database: "tab",
         collection: "song",
         query: { _id: params.id },
         populates: ["artists", "genres"],
-      })
-      .catch(() => null);
+      });
+    } catch (err) {
+      console.error("Error fetching song:", err);
+    }
 
     if (song) {
       // Extract content from new structure for backward compatibility
@@ -56,7 +66,7 @@ export default {
       let songRhythm = ''
       let songSections = []
       let songTitleSeo = ''
-      
+
       if (song.content) {
         const defaultLang = song.defaultLang || 'ckb-IR'
         const langContent = song.content[defaultLang] || song.content['ckb-IR']
@@ -71,20 +81,20 @@ export default {
         songSections = song.sections || []
         songTitleSeo = song.title_seo || ''
       }
-      
+
       // Add flattened fields to song object for template compatibility
       song.title = songTitle
       song.rhythm = songRhythm
       song.sections = songSections
       song.title_seo = songTitleSeo
-      
+
       return {
         song,
         transposedSections: songSections,
         vocalNote: song.chords?.vocalNote || {},
       };
     } else {
-      error("This song dosen't found");
+      error({ statusCode: 404, message: "This song doesn't found" });
     }
   },
 
