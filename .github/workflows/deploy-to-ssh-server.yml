@@ -149,28 +149,50 @@ jobs:
         env:
           SERVER_IMAGE_TAG: ${{ env.IMAGE_TAG_SERVER }}
           END_USER_IMAGE_TAG: ${{ env.IMAGE_TAG_END_USER }}
-          SERVER_ADMIN_EMAIL: ${{ vars.SERVER_ADMIN_EMAIL }}
-          SERVER_ADMIN_PASSWORD: ${{ vars.SERVER_ADMIN_PASSWORD }}
+          SERVER_ADMIN_EMAIL: ${{ secrets.SERVER_ADMIN_EMAIL }}
+          SERVER_ADMIN_PASSWORD: ${{ secrets.SERVER_ADMIN_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          envs: SERVER_IMAGE_TAG, END_USER_IMAGE_TAG, SERVER_ADMIN_EMAIL, SERVER_ADMIN_PASSWORD, GITHUB_TOKEN
+          envs: SERVER_IMAGE_TAG, END_USER_IMAGE_TAG, SERVER_ADMIN_EMAIL, SERVER_ADMIN_PASSWORD, GITHUB_TOKEN, GITHUB_ACTOR, GITHUB_SHA
           script: |
             # Login to GitHub Container Registry
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin || true
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin || true
 
             # Set image tags (use commit SHA tags or fallback to latest)
-            export SERVER_IMAGE_TAG=${SERVER_IMAGE_TAG:-SERVER-${{ github.sha }}}
-            export END_USER_IMAGE_TAG=${END_USER_IMAGE_TAG:-END_USER-${{ github.sha }}}
+            export SERVER_IMAGE_TAG=${SERVER_IMAGE_TAG:-SERVER-${GITHUB_SHA:-latest}}
+            export END_USER_IMAGE_TAG=${END_USER_IMAGE_TAG:-END_USER-${GITHUB_SHA:-latest}}
             export NGINX_IMAGE_TAG=latest
 
             # Remove the previous version of the app, if exists
-            docker-compose down || true
-            # Remove all stopped images
-            docker system prune -a --force || true
-            # Pull latest images
-            docker-compose pull || true
-            # Up the app
+            docker-compose down
+
+            # Pull latest images first
+            docker-compose pull
+
+            # Start the new version
             docker-compose up --remove-orphans -d
+
+            # Clean up unused images to save space
+            # Remove old SHA-tagged images from this project (keep only current deployment)
+            OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/navidshad/goranee_v2_server" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
+            OLD_END_USER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/navidshad/goranee_v2_end_user" | grep "END_USER-" | grep -v "$END_USER_IMAGE_TAG" || true)
+            
+            if [ -n "$OLD_SERVER_IMAGES" ]; then
+              echo "$OLD_SERVER_IMAGES" | xargs docker rmi -f || true
+            fi
+            if [ -n "$OLD_END_USER_IMAGES" ]; then
+              echo "$OLD_END_USER_IMAGES" | xargs docker rmi -f || true
+            fi
+
+            # Remove all dangling images and unused build cache
+            docker image prune -a -f
+            docker builder prune -a -f
+
+            # Remove all stopped containers and unused networks
+            docker container prune -f
+            docker network prune -f
