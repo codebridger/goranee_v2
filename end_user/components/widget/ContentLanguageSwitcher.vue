@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Globe } from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+// Alternative icon options:
+// - Languages (two overlapping circles with text lines - best for language switching)
+// - Type (text/typography icon)
+// - Hash (simple # symbol)
+// - MessageSquare (chat/communication)
+// - AlignLeft (for RTL/LTR indication)
+// - BookOpen (reading/language)
+import { Languages } from 'lucide-vue-next'
 import type { UILanguageOption } from '~/stores/contentLanguage'
 import { useContentLanguageStore } from '~/stores/contentLanguage'
 
@@ -17,6 +24,7 @@ const props = withDefaults(
 
 const contentLanguageStore = useContentLanguageStore()
 const isOpen = defineModel<boolean>({ default: false })
+const containerRef = ref<HTMLElement | null>(null)
 
 const languages: { code: UILanguageOption; nativeLabel: string; shortCode: string }[] = [
 	{ code: 'sorani-latin', nativeLabel: 'Sorani', shortCode: 'LAT' },
@@ -35,10 +43,26 @@ const handleLanguageSwitch = (uiLang: UILanguageOption) => {
 	isOpen.value = false
 }
 
+// Handle click outside to close dropdown
+const handleClickOutside = (event: MouseEvent) => {
+	const target = event.target as HTMLElement
+	if (isOpen.value && containerRef.value && !containerRef.value.contains(target)) {
+		isOpen.value = false
+	}
+}
+
+onMounted(() => {
+	document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+	document.removeEventListener('click', handleClickOutside)
+})
+
 // Determine dropdown position based on placement
 const dropdownClass = computed(() => {
 	if (props.placement === 'menu') {
-		return 'absolute top-full mt-2 start-0 bg-surface-card rounded-2xl shadow-2xl border border-border-subtle p-2 min-w-[180px] z-50'
+		return 'absolute top-full mt-2 start-0 bg-surface-card rounded-2xl shadow-2xl border border-border-subtle p-1 min-w-[180px] z-50'
 	}
 	// For navbar and inline, open downward
 	return 'absolute top-full mt-2 end-0 bg-surface-card rounded-xl shadow-2xl border border-border-subtle p-1 min-w-[140px] z-50'
@@ -46,14 +70,14 @@ const dropdownClass = computed(() => {
 </script>
 
 <template>
-	<div class="relative">
+	<div ref="containerRef" class="relative">
 		<!-- Language Switcher Button -->
-		<button @click="isOpen = !isOpen" :class="[
-			'bg-surface-card rounded-full shadow-lg border border-border-subtle hover:scale-110 transition cursor-pointer flex items-center gap-2',
-			compact ? 'p-2' : 'p-3',
+		<button @click.stop="isOpen = !isOpen" :class="[
+			'bg-surface-card rounded-full shadow-lg border border-border-subtle hover:scale-110 transition cursor-pointer flex items-center gap-1.5',
+			compact ? 'p-1.5' : 'p-2',
 			placement === 'menu' ? 'w-full justify-between px-4 py-3 rounded-xl' : '',
 		]" :title="currentLanguage?.nativeLabel">
-			<Globe class="w-5 h-5 flex-shrink-0" />
+			<Languages class="w-3.5 h-3.5 shrink-0" />
 			<span v-if="!compact || placement === 'menu'" class="text-xs font-bold">
 				{{ placement === 'menu' ? currentLanguage?.nativeLabel : currentLanguage?.shortCode }}
 			</span>
@@ -64,9 +88,9 @@ const dropdownClass = computed(() => {
 			enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100"
 			leave-active-class="transition duration-150 ease-in" leave-from-class="transform scale-100 opacity-100"
 			leave-to-class="transform scale-95 opacity-0">
-			<div v-if="isOpen" :class="dropdownClass" @click.stop>
+			<div v-if="isOpen" :class="[dropdownClass, 'px-3', 'py-3']" @click.stop>
 				<button v-for="lang in languages" :key="lang.code" @click.stop="handleLanguageSwitch(lang.code)"
-					class="w-full text-start px-3 py-2 rounded-lg hover:bg-surface-base transition cursor-pointer"
+					class="w-full text-start px-6  py-2.5 rounded-lg hover:bg-surface-base transition cursor-pointer flex items-center"
 					:class="{
 						'bg-surface-base font-semibold': contentLanguageStore.currentUILanguage === lang.code,
 					}">
@@ -74,8 +98,5 @@ const dropdownClass = computed(() => {
 				</button>
 			</div>
 		</Transition>
-
-		<!-- Backdrop to close dropdown -->
-		<div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false"></div>
 	</div>
 </template>

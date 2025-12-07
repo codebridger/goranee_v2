@@ -193,7 +193,7 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
         {{ loginText }}
       </NuxtLink> -->
       <!-- Content Language Switcher (Desktop) -->
-      <div v-if="!isDiscoveryPage" class="hidden md:block">
+      <div class="hidden md:block">
         <ContentLanguageSwitcher v-model="isContentLanguageMenuOpen" :compact="true" placement="navbar" />
       </div>
       <div class="hidden md:block">
