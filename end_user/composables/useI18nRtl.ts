@@ -1,10 +1,13 @@
-export type MessageLanguages = 'en' | 'fa'
+import type { UILanguageOption } from '~/stores/contentLanguage'
 
-// RTL language configuration
-export const rtlLanguages: MessageLanguages[] = ['fa']
+// Export UILanguageOption as MessageLanguages for backward compatibility
+export type MessageLanguages = UILanguageOption
+
+// RTL language configuration - using UILanguageOption values
+export const rtlLanguages: UILanguageOption[] = ['farsi', 'sorani-farsi']
 
 export const isRtlLanguage = (locale: string): boolean => {
-  return rtlLanguages.includes(locale as MessageLanguages)
+  return rtlLanguages.includes(locale as UILanguageOption)
 }
 
 // Set document direction based on locale

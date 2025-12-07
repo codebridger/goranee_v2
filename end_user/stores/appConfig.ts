@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { setDocumentDirection, type MessageLanguages } from '~/composables/useI18nRtl'
+import { setDocumentDirection } from '~/composables/useI18nRtl'
+import type { UILanguageOption } from '~/stores/contentLanguage'
 
 export const useAppConfigStore = defineStore('appConfig', () => {
   const { locale, setLocale } = useI18n()
@@ -23,25 +24,26 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   const isDark = ref<boolean>(getInitialTheme())
 
   // Language state (synced with i18n)
-  const getInitialLanguage = (): MessageLanguages => {
+  const getInitialLanguage = (): UILanguageOption => {
     if (import.meta.client) {
-      const stored = localStorage.getItem('language') as MessageLanguages
-      if (stored && (stored === 'en' || stored === 'fa')) {
+      const stored = localStorage.getItem('language') as UILanguageOption
+      const validOptions: UILanguageOption[] = ['sorani-latin', 'sorani-farsi', 'farsi', 'english', 'kmr']
+      if (stored && validOptions.includes(stored)) {
         return stored
       }
-      // If no stored value, use i18n's current locale (which should be the defaultLocale 'fa')
-      if (locale.value && (locale.value === 'en' || locale.value === 'fa')) {
-        return locale.value as MessageLanguages
+      // If no stored value, use i18n's current locale
+      if (locale.value && validOptions.includes(locale.value as UILanguageOption)) {
+        return locale.value as UILanguageOption
       }
     }
-    // Fallback to 'fa' to match i18n defaultLocale in nuxt.config.ts
-    return 'fa'
+    // Fallback to 'farsi' to match i18n defaultLocale in nuxt.config.ts
+    return 'farsi'
   }
-  const currentLanguage = ref<MessageLanguages>(getInitialLanguage())
+  const currentLanguage = ref<UILanguageOption>(getInitialLanguage())
 
   // Computed direction based on language
   const currentDirection = computed(() => {
-    return currentLanguage.value === 'fa' ? 'RTL' : 'LTR'
+    return (currentLanguage.value === 'farsi' || currentLanguage.value === 'sorani-farsi') ? 'RTL' : 'LTR'
   })
 
   // Initialize theme on store creation
@@ -88,7 +90,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   }
 
   // Switch language
-  const switchLanguage = (langCode: MessageLanguages) => {
+  const switchLanguage = (langCode: UILanguageOption) => {
     currentLanguage.value = langCode
     setLocale(langCode)
     setDocumentDirection(langCode)
@@ -102,8 +104,11 @@ export const useAppConfigStore = defineStore('appConfig', () => {
     () => locale.value,
     (newLocale) => {
       if (newLocale !== currentLanguage.value) {
-        currentLanguage.value = newLocale as MessageLanguages
-        setDocumentDirection(newLocale)
+        const validOptions: UILanguageOption[] = ['sorani-latin', 'sorani-farsi', 'farsi', 'english', 'kmr']
+        if (validOptions.includes(newLocale as UILanguageOption)) {
+          currentLanguage.value = newLocale as UILanguageOption
+          setDocumentDirection(newLocale)
+        }
       }
     },
   )

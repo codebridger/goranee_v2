@@ -2,6 +2,7 @@ import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { setDocumentDirection } from '~/composables/useI18nRtl'
 import type { LanguageCode } from '~/constants/routes'
 import { ROUTES } from '~/constants/routes'
 
@@ -82,6 +83,21 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
     return mapping.uiLocale
   })
 
+  // Get current direction (RTL or LTR)
+  const getCurrentDirection = computed<'RTL' | 'LTR'>(() => {
+    // sorani-farsi and farsi are RTL
+    if (currentUILanguage.value === 'sorani-farsi' || currentUILanguage.value === 'farsi') {
+      return 'RTL'
+    }
+    // sorani-latin, english, and kmr are LTR
+    return 'LTR'
+  })
+
+  // Check if current language is RTL
+  const isRtl = computed(() => {
+    return getCurrentDirection.value === 'RTL'
+  })
+
   // Set UI language (which determines both UI locale and content language)
   const setUILanguage = (uiLang: UILanguageOption) => {
     const validOptions: UILanguageOption[] = ['sorani-latin', 'sorani-farsi', 'farsi', 'english', 'kmr']
@@ -99,9 +115,14 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
     // Get mapping for UI locale and content language
     const mapping = getLanguageMapping(uiLang)
 
-    // Update i18n locale
+    // Update i18n locale (this will trigger the i18n plugin to set direction)
     if (locale.value !== mapping.uiLocale) {
       setLocale(mapping.uiLocale)
+      // Also set direction explicitly to ensure it's set immediately
+      setDocumentDirection(mapping.uiLocale)
+    } else {
+      // If locale hasn't changed, still update direction in case it's out of sync
+      setDocumentDirection(mapping.uiLocale)
     }
 
     // Update route if we're on a page with lang parameter
@@ -167,9 +188,14 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
           if (import.meta.client) {
             localStorage.setItem('uiLanguage', uiLang)
           }
-          // Update i18n locale
+          // Update i18n locale (this will trigger the i18n plugin to set direction)
           if (locale.value !== mapping.uiLocale) {
             setLocale(mapping.uiLocale)
+            // Also set direction explicitly to ensure it's set immediately
+            setDocumentDirection(mapping.uiLocale)
+          } else {
+            // If locale hasn't changed, still update direction in case it's out of sync
+            setDocumentDirection(mapping.uiLocale)
           }
         }
       }
@@ -185,13 +211,30 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
     { immediate: true }
   )
 
-  // Initialize: sync with route on mount and set i18n locale
+  // Watch UI language changes to update document direction
+  watch(
+    () => currentUILanguage.value,
+    (newLang) => {
+      if (import.meta.client) {
+        const mapping = getLanguageMapping(newLang)
+        setDocumentDirection(mapping.uiLocale)
+      }
+    },
+    { immediate: true }
+  )
+
+  // Initialize: sync with route on mount and set i18n locale and direction
   if (import.meta.client) {
     syncWithRoute()
     // Ensure i18n locale matches current UI language
     const mapping = getLanguageMapping(currentUILanguage.value)
     if (locale.value !== mapping.uiLocale) {
       setLocale(mapping.uiLocale)
+      // Also set direction explicitly to ensure it's set immediately
+      setDocumentDirection(mapping.uiLocale)
+    } else {
+      // If locale hasn't changed, still update direction in case it's out of sync
+      setDocumentDirection(mapping.uiLocale)
     }
   }
 
@@ -199,6 +242,8 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
     currentLanguage: getContentLanguage, // For backward compatibility
     currentUILanguage: computed(() => currentUILanguage.value),
     currentUILocale: getUILocale,
+    currentDirection: getCurrentDirection,
+    isRtl,
     setUILanguage,
     setContentLanguage, // Legacy method
     syncWithRoute,
