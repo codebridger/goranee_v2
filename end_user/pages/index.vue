@@ -3,12 +3,14 @@ import { ref, computed, onMounted } from 'vue'
 import { ArrowRight, Music } from 'lucide-vue-next'
 
 import { useTabService } from '~/composables/useTabService'
+import { useContentLanguageStore } from '~/stores/contentLanguage'
 import type { SongWithPopulatedRefs, Artist, Genre } from '~/types/song.type'
 import { ROUTES } from '~/constants/routes'
 import CarouselNav from '~/components/base/CarouselNav.vue'
 
 const { t } = useI18n()
 const tabService = useTabService()
+const contentLanguageStore = useContentLanguageStore()
 
 const isLoading = ref(true)
 const isListLoading = ref(true)
@@ -25,6 +27,25 @@ const tabs = computed(() => [
 ])
 
 const activeTab = ref(t('home.discovery.tabs.all'))
+
+// Helper function to get artist name with language support
+const getArtistName = (artist: Artist) => {
+  if (!artist) return ''
+  const currentLang = contentLanguageStore.currentLanguage
+
+  // Try to get name from current language
+  const langContent = artist.content?.[currentLang]
+  if (langContent?.name) {
+    return langContent.name
+  }
+
+  // Final fallback to 'ckb-IR'
+  if (artist.content?.['ckb-IR']?.name) {
+    return artist.content['ckb-IR'].name
+  }
+
+  return ''
+}
 
 const scrollCarousel = (direction: -1 | 1) => {
   if (!artistCarouselRef.value) return
@@ -104,7 +125,7 @@ onMounted(async () => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-          }}</Typography>
+            }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>
@@ -155,8 +176,8 @@ onMounted(async () => {
               <div v-for="artist in featuredArtists" :key="artist._id"
                 class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
                 @click="artist._id && $router.push(ROUTES.ARTIST.DETAIL(artist._id))">
-                <ArtistCard :name="artist.name" :song-count="artist.chords || 0" :songs-label="t('home.artists.songs')"
-                  :gradient-border="(artist as any)._mockColor" />
+                <ArtistCard :name="getArtistName(artist)" :song-count="artist.chords || 0"
+                  :songs-label="t('home.artists.songs')" :gradient-border="(artist as any)._mockColor" />
               </div>
             </template>
           </div>

@@ -1,7 +1,7 @@
 // Type definitions for db_song.js CollectionDefinitions
 
 // Language code type
-export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'
+export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac' | 'en'
 
 // File reference type (for Schemas.file)
 export interface FileReference {
@@ -74,7 +74,6 @@ export interface Artist {
     'kmr'?: ArtistLanguageContent
     'hac'?: ArtistLanguageContent
   }
-  defaultLang: LanguageCode
   chords?: number
   image?: FileReference
 }
@@ -94,7 +93,6 @@ export interface Song {
     'kmr'?: SongLanguageContent
     'hac'?: SongLanguageContent
   }
-  defaultLang: LanguageCode
   // Shared content
   rhythm?: string
   artists?: string[] // ObjectId references
@@ -116,21 +114,28 @@ export interface SongWithLang extends Omit<Song, 'content'> {
 }
 
 // Document types with populated references (optional, for when refs are populated)
-export interface SongWithPopulatedRefs extends Omit<Song, 'artists' | 'genres'> {
+export interface SongWithPopulatedRefs extends Omit<Song, 'artists' | 'genres' | 'content'> {
+  // Flattened title from content (added by _processSongs)
+  title?: string
+  title_seo?: string
+  sections?: SongSection[]
   artists?: Artist[]
   genres?: Genre[]
 }
 
+// Content language code (excludes 'en' as it's not used in content objects)
+export type ContentLanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'
+
 // Helper function to get available languages
-export function getAvailableLangs(song: Song): LanguageCode[] {
-  return (Object.keys(song.content || {}) as LanguageCode[]).filter(
+export function getAvailableLangs(song: Song): ContentLanguageCode[] {
+  return (Object.keys(song.content || {}) as ContentLanguageCode[]).filter(
     lang => song.content[lang]?.title
   )
 }
 
 // Helper function to get available languages for artist
-export function getAvailableLangsForArtist(artist: Artist): LanguageCode[] {
-  return (Object.keys(artist.content || {}) as LanguageCode[]).filter(
+export function getAvailableLangsForArtist(artist: Artist): ContentLanguageCode[] {
+  return (Object.keys(artist.content || {}) as ContentLanguageCode[]).filter(
     lang => artist.content[lang]?.name
   )
 }

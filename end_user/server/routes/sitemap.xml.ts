@@ -45,7 +45,6 @@ export default defineEventHandler(async (event) => {
         select: {
           _id: 1,
           content: 1,
-          defaultLang: 1,
           updatedAt: 1,
           createdAt: 1,
         },
@@ -61,7 +60,6 @@ export default defineEventHandler(async (event) => {
         select: {
           _id: 1,
           content: 1,
-          defaultLang: 1,
           updatedAt: 1,
           createdAt: 1,
         },

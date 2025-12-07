@@ -5,6 +5,7 @@ import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
 import { useTranspose } from '~/composables/useTranspose'
 import { useSongSettings } from '~/composables/useSongSettings'
+import { useContentLanguageStore } from '~/stores/contentLanguage'
 import type { LanguageCode } from '~/constants/routes'
 import type { SongWithLang, SongWithPopulatedRefs, Song } from '~/types/song.type'
 import { getAvailableLangs } from '~/types/song.type'
@@ -22,6 +23,7 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
+const contentLanguageStore = useContentLanguageStore()
 
 // Extract song ID and language from route
 const songId = computed(() => route.params.id as string)
@@ -29,13 +31,28 @@ const langCode = computed<LanguageCode>(() => {
 	const lang = route.params.lang as string | string[]
 	// Handle array case (catch-all route)
 	const langStr = Array.isArray(lang) ? lang[0] : lang
-	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac', 'en']
 	return validLangs.includes(langStr as LanguageCode) 
 		? (langStr as LanguageCode) 
 		: 'ckb-IR' // Default fallback
 })
 
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
+
+// Sync store with route on mount and when route changes
+onMounted(() => {
+	contentLanguageStore.syncWithRoute()
+})
+
+watch(
+	() => langCode.value,
+	(newLang) => {
+		if (newLang && newLang !== contentLanguageStore.currentLanguage) {
+			contentLanguageStore.setContentLanguage(newLang)
+		}
+	},
+	{ immediate: true }
+)
 const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
 const { getOriginalTableIndex, fetchTables } = useTranspose()
 

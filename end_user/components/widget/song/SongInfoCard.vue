@@ -21,14 +21,13 @@ const { t } = useI18n()
 
 // Extract artist name from content object
 const artistName = computed(() => {
-  if (!props.artist) return ''
-  // New structure with content object
-  if (props.artist.content) {
-    const defaultLang = props.artist.defaultLang || 'ckb-IR'
-    return props.artist.content[defaultLang]?.name || props.artist.content['ckb-IR']?.name || ''
-  }
-  // Fallback to old structure (for backward compatibility during migration)
-  return (props.artist as any).name || ''
+	if (!props.artist) return ''
+	// New structure with content object
+	if (props.artist.content) {
+		return props.artist.content['ckb-IR']?.name || ''
+	}
+	// Fallback to old structure (for backward compatibility during migration)
+	return (props.artist as any).name || ''
 })
 
 // Helper for safe image URL

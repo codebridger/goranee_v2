@@ -5,7 +5,9 @@ import { useI18n } from 'vue-i18n'
 import { Search, Menu, X, ArrowRight, Loader2, Music } from 'lucide-vue-next'
 import Button from '../base/Button.vue'
 import Input from '../base/Input.vue'
+import ContentLanguageSwitcher from './ContentLanguageSwitcher.vue'
 import { useTabService } from '~/composables/useTabService'
+import { useContentLanguageStore } from '~/stores/contentLanguage'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
 import { ROUTES } from '~/constants/routes'
 
@@ -36,9 +38,11 @@ const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 const tabService = useTabService()
+const contentLanguageStore = useContentLanguageStore()
 
 const navLinks = computed(() => props.links || [])
 const isMenuOpen = ref(false)
+const isContentLanguageMenuOpen = ref(false)
 
 // Search State
 const searchQuery = ref('')
@@ -148,7 +152,15 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
             </div>
             <div>
               <div class="font-bold text-sm text-text-primary">{{ song.title }}</div>
-              <div class="text-xs text-text-secondary">{{ song.artists?.[0]?.name }}</div>
+              <div class="text-xs text-text-secondary">
+                {{
+                  song.artists && song.artists[0]
+                    ? (song.artists[0].content?.[contentLanguageStore.currentLanguage]?.name ||
+                      song.artists[0].content?.['ckb-IR']?.name ||
+                      '')
+                    : ''
+                }}
+              </div>
             </div>
           </div>
           <div @click="handleSearchSubmit"
@@ -180,6 +192,10 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
         :class="['hidden md:block text-sm font-semibold hover:text-text-accent transition cursor-pointer', isTransparent ? 'text-white' : 'text-text-primary']">
         {{ loginText }}
       </NuxtLink> -->
+      <!-- Content Language Switcher (Desktop) -->
+      <div v-if="!isDiscoveryPage" class="hidden md:block">
+        <ContentLanguageSwitcher v-model="isContentLanguageMenuOpen" :compact="true" placement="navbar" />
+      </div>
       <div class="hidden md:block">
         <Button variant="primary" size="sm" to="/discovery">{{ exploreText }}</Button>
       </div>
@@ -224,6 +240,11 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
               {{ link.label }}
               <ArrowRight v-if="isActive(link.to)" class="w-4 h-4 rtl:rotate-180" />
             </NuxtLink>
+          </div>
+
+          <!-- Content Language Switcher (Mobile) -->
+          <div class="mt-4 pt-4 border-t border-border-subtle">
+            <ContentLanguageSwitcher v-model="isContentLanguageMenuOpen" placement="menu" />
           </div>
 
           <div class="mt-auto pt-8 border-t border-border-subtle">

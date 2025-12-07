@@ -124,8 +124,7 @@ const navigateToArtist = (id: string) => {
 const getArtistName = (artist: Artist) => {
   // New structure with content object
   if (artist.content) {
-    const defaultLang = artist.defaultLang || 'ckb-IR'
-    return artist.content[defaultLang]?.name || artist.content['ckb-IR']?.name || ''
+    return artist.content['ckb-IR']?.name || ''
   }
   // Fallback to old structure (for backward compatibility during migration)
   return (artist as any).name || ''
@@ -180,8 +179,9 @@ onMounted(() => {
 
       <!-- Artists Grid -->
       <div v-else-if="artists.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 3xl:grid-cols-6 gap-6">
-        <ArtistCard v-for="artist in artists" :key="artist._id" :name="getArtistName(artist)" :song-count="artist.chords || 0"
-          :songs-label="t('common.songs')" @click="navigateToArtist(artist._id || '')" />
+        <ArtistCard v-for="artist in artists" :key="artist._id" :name="getArtistName(artist)"
+          :song-count="artist.chords || 0" :songs-label="t('common.songs')"
+          @click="navigateToArtist(artist._id || '')" />
       </div>
 
       <!-- Empty State -->

@@ -33,7 +33,6 @@ export const useTabService = () => {
         'content.ckb-Latn.title': 1,
         'content.kmr.title': 1,
         'content.hac.title': 1,
-        defaultLang: 1,
         rhythm: 1,
         image: 1,
         artists: 1,
@@ -82,7 +81,6 @@ export const useTabService = () => {
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
             'content.hac.title': 1,
-            defaultLang: 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -190,8 +188,7 @@ export const useTabService = () => {
 
       // New structure: extract default language content
       const songWithContent = song as Song
-      const defaultLang = songWithContent.defaultLang || 'ckb-IR'
-      const langContent = songWithContent.content?.[defaultLang]
+      const langContent = songWithContent.content?.['ckb-IR']
 
       if (!langContent) {
         // Fallback: try to find any available language
@@ -285,7 +282,6 @@ export const useTabService = () => {
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
             'content.hac.title': 1,
-            defaultLang: 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -391,7 +387,6 @@ export const useTabService = () => {
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
             'content.hac.title': 1,
-            defaultLang: 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -547,7 +542,6 @@ export const useTabService = () => {
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
             'content.hac.title': 1,
-            defaultLang: 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -581,19 +575,19 @@ export const useTabService = () => {
       }
 
       // Extract language-specific content (direct access - O(1))
-      const targetLang = lang || song.defaultLang || 'ckb-IR'
+      const targetLang = lang || 'ckb-IR'
       const langContent = song.content?.[targetLang]
       
       if (!langContent) {
         // Fallback to default language
-        const defaultContent = song.content?.[song.defaultLang || 'ckb-IR']
+        const defaultContent = song.content?.['ckb-IR']
         if (!defaultContent) {
           // If no content at all, return null
           return null
         }
         return {
           ...song,
-          currentLang: song.defaultLang || 'ckb-IR',
+          currentLang: 'ckb-IR',
           title: defaultContent.title,
           title_seo: defaultContent.title_seo,
           rhythm: song.rhythm,

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Play, Heart } from 'lucide-vue-next';
 import { useTabService } from '~/composables/useTabService';
+import { useContentLanguageStore } from '~/stores/contentLanguage';
 import type { Artist, SongWithPopulatedRefs } from '~/types/song.type';
 import type { LanguageCode } from '~/constants/routes';
 import { fileProvider } from '@modular-rest/client';
@@ -15,6 +16,7 @@ import { ROUTES } from '~/constants/routes';
 
 const route = useRoute();
 const { t } = useI18n();
+const contentLanguageStore = useContentLanguageStore();
 const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists } = useTabService();
 
 const artistId = computed(() => route.params.id as string);
@@ -22,9 +24,9 @@ const langCode = computed<LanguageCode>(() => {
 	const lang = route.params.lang as string | string[]
 	// Handle array case (catch-all route)
 	const langStr = Array.isArray(lang) ? lang[0] : lang
-	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
-	return validLangs.includes(langStr as LanguageCode) 
-		? (langStr as LanguageCode) 
+	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac', 'en']
+	return validLangs.includes(langStr as LanguageCode)
+		? (langStr as LanguageCode)
 		: 'ckb-IR' // Default fallback
 });
 const artist = ref<Artist | null>(null);
@@ -55,11 +57,16 @@ const loadData = async () => {
 };
 
 onMounted(() => {
+	// Sync store with route on mount
+	contentLanguageStore.syncWithRoute();
 	loadData();
 });
 
 // Watch for language changes in route
-watch(langCode, async () => {
+watch(langCode, async (newLang) => {
+	if (newLang && newLang !== contentLanguageStore.currentLanguage) {
+		contentLanguageStore.setContentLanguage(newLang);
+	}
 	if (artistId.value) {
 		await loadData();
 	}
@@ -109,8 +116,7 @@ const getRelatedArtistSongCount = (related: Artist) => {
 const getRelatedArtistName = (related: Artist) => {
 	// Extract name from content object
 	if (related.content) {
-		const defaultLang = related.defaultLang || 'ckb-IR'
-		return related.content[defaultLang]?.name || related.content['ckb-IR']?.name || ''
+		return related.content['ckb-IR']?.name || ''
 	}
 	// Fallback to old structure
 	return (related as any).name || ''
@@ -136,7 +142,7 @@ const navigateToHome = () => {
 const artistName = computed(() => {
 	if (!artist.value) return ''
 	const langContent = artist.value.content?.[langCode.value]
-	return langContent?.name || artist.value.content?.[artist.value.defaultLang]?.name || ''
+	return langContent?.name || artist.value.content?.['ckb-IR']?.name || ''
 });
 
 // SEO
@@ -144,29 +150,29 @@ useHead({
 	title: computed(() => artistName.value ? `${artistName.value} - Goranee` : t('common.artist')),
 	link: computed(() => {
 		if (!artist.value) return []
-		
+
 		const baseUrl = 'https://goranee.ir'
 		const links: any[] = []
-		
+
 		// Get available languages for artist
 		const availableLangs = (Object.keys(artist.value.content || {}) as LanguageCode[]).filter(
 			lang => artist.value?.content?.[lang]?.name
 		)
-		
+
 		if (availableLangs.length > 1) {
 			// Add hreflang for each available language
 			availableLangs.forEach(lang => {
 				const url = lang === 'ckb-IR'
 					? `${baseUrl}/artist/${artistId.value}`
 					: `${baseUrl}/artist/${artistId.value}/${lang}`
-				
+
 				links.push({
 					rel: 'alternate',
 					hreflang: lang,
 					href: url,
 				})
 			})
-			
+
 			// Add x-default
 			links.push({
 				rel: 'alternate',
@@ -174,17 +180,17 @@ useHead({
 				href: `${baseUrl}/artist/${artistId.value}`,
 			})
 		}
-		
+
 		// Add canonical URL
 		const canonicalUrl = langCode.value === 'ckb-IR'
 			? `${baseUrl}/artist/${artistId.value}`
 			: `${baseUrl}/artist/${artistId.value}/${langCode.value}`
-		
+
 		links.push({
 			rel: 'canonical',
 			href: canonicalUrl,
 		})
-		
+
 		return links
 	}),
 });
@@ -260,8 +266,8 @@ useHead({
 
 					<!-- Horizontal Scroll Container -->
 					<div class="flex overflow-x-auto pb-8 -mx-4 px-4 gap-6 hide-scrollbar snap-x">
-						<ArtistCard v-for="related in relatedArtists" :key="related._id" :name="getRelatedArtistName(related)"
-							:song-count="getRelatedArtistSongCount(related)"
+						<ArtistCard v-for="related in relatedArtists" :key="related._id"
+							:name="getRelatedArtistName(related)" :song-count="getRelatedArtistSongCount(related)"
 							:avatar-url="getRelatedArtistAvatarUrl(related)"
 							:gradient-border="(related as any)._mockColor" class="min-w-[200px] w-[200px] snap-start"
 							@click="navigateToArtist(related._id)" />
@@ -319,4 +325,3 @@ useHead({
 	animation-delay: 4s;
 }
 </style>
-

@@ -5,6 +5,7 @@ export default defineNuxtConfig({
 
   // Server configuration
   nitro: {
+    // @ts-ignore
     port: process.env.PORT ? parseInt(process.env.PORT) : 8080,
     host: '0.0.0.0',
   },
@@ -19,6 +20,7 @@ export default defineNuxtConfig({
     // Private keys (only available on server-side)
     // Public keys (exposed to client-side)
     public: {
+      // @ts-ignore
       apiBaseUrl: process.env.NUXT_API_BASE_URL || process.env.VITE_API_BASE_URL || '/api/',
     },
   },
@@ -27,18 +29,33 @@ export default defineNuxtConfig({
   i18n: {
     locales: [
       {
-        code: 'en',
-        iso: 'en-US',
-        file: 'en.json',
+        code: 'farsi',
+        iso: 'fa-IR',
+        file: 'farsi.json',
       },
       {
-        code: 'fa',
+        code: 'english',
+        iso: 'en-US',
+        file: 'english.json',
+      },
+      {
+        code: 'sorani-latin',
+        iso: 'en-US',
+        file: 'sorani-latin.json',
+      },
+      {
+        code: 'sorani-farsi',
         iso: 'fa-IR',
-        file: 'fa.json',
+        file: 'sorani-farsi.json',
+      },
+      {
+        code: 'kmr',
+        iso: 'ku-TR',
+        file: 'kmr.json',
       },
     ],
     langDir: 'locales',
-    defaultLocale: 'fa',
+    defaultLocale: 'farsi',
     strategy: 'no_prefix',
     detectBrowserLanguage: false,
   },

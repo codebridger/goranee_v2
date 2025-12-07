@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Play } from 'lucide-vue-next';
 import { fileProvider } from '@modular-rest/client';
 import type { SongWithPopulatedRefs } from '~/types/song.type';
+import { useContentLanguageStore, type ContentLanguageCode } from '~/stores/contentLanguage';
 
 const props = defineProps<{
 	song: SongWithPopulatedRefs;
@@ -13,13 +14,30 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const contentLanguageStore = useContentLanguageStore();
 
 const title = computed(() => props.song.title);
 
 const artist = computed(() => {
-	return props.song.artists && props.song.artists[0]
-		? props.song.artists[0].name
-		: t('common.unknownArtist');
+	if (!props.song.artists || !props.song.artists[0]) {
+		return t('common.unknownArtist');
+	}
+
+	const artistObj = props.song.artists[0];
+	const currentLang = contentLanguageStore.currentLanguage;
+
+	// Try to get name from current language
+	const langContent = artistObj.content?.[currentLang];
+	if (langContent?.name) {
+		return langContent.name;
+	}
+
+	// Final fallback to 'ckb-IR'
+	if (artistObj.content?.['ckb-IR']?.name) {
+		return artistObj.content['ckb-IR'].name;
+	}
+
+	return t('common.unknownArtist');
 });
 
 

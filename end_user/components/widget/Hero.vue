@@ -7,6 +7,7 @@ import Button from '../base/Button.vue'
 import Input from '../base/Input.vue'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
 import { useTabService } from '~/composables/useTabService'
+import { useContentLanguageStore } from '~/stores/contentLanguage'
 import { ROUTES } from '~/constants/routes'
 
 const props = defineProps<{
@@ -17,6 +18,7 @@ const props = defineProps<{
 const router = useRouter()
 const { t } = useI18n()
 const { getImageUrl, searchSongs } = useTabService()
+const contentLanguageStore = useContentLanguageStore()
 const activeIndex = ref(0)
 const timer = ref<ReturnType<typeof setInterval> | null>(null)
 
@@ -118,7 +120,25 @@ const getChordPreview = (song: SongWithPopulatedRefs) => {
 }
 
 const getArtistName = (song: SongWithPopulatedRefs) => {
-    return song.artists?.[0]?.name || 'Unknown Artist'
+    if (!song.artists || !song.artists[0]) {
+        return 'Unknown Artist'
+    }
+
+    const artistObj = song.artists[0]
+    const currentLang = contentLanguageStore.currentLanguage
+
+    // Try to get name from current language
+    const langContent = artistObj.content?.[currentLang]
+    if (langContent?.name) {
+        return langContent.name
+    }
+
+    // Final fallback to 'ckb-IR'
+    if (artistObj.content?.['ckb-IR']?.name) {
+        return artistObj.content['ckb-IR'].name
+    }
+
+    return 'Unknown Artist'
 }
 
 const getArtistImage = (song: SongWithPopulatedRefs) => {
@@ -243,7 +263,7 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 </div>
                                 <div>
                                     <div class="font-bold text-sm text-white text-left">{{ song.title }}</div>
-                                    <div class="text-xs text-gray-400 text-left">{{ song.artists?.[0]?.name }}
+                                    <div class="text-xs text-gray-400 text-left">{{ getArtistName(song) }}
                                     </div>
                                 </div>
                             </div>
