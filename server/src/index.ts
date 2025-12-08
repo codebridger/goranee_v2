@@ -11,10 +11,10 @@ const uploadPath = path.join(__dirname, "..", "uploads");
 const backupPath = path.join(__dirname, "..", "backups");
 
 console.log("uploadPath", uploadPath);
-console.log("ADMIN_EMAIL:", process.env.ADMIN_EMAIL || "NOT SET");
+console.log("ADMIN_EMAIL:", process.env.SERVER_ADMIN_EMAIL || "NOT SET");
 console.log(
   "ADMIN_PASSWORD:",
-  process.env.ADMIN_PASSWORD ? "***SET***" : "NOT SET"
+  process.env.SERVER_ADMIN_PASSWORD ? "***SET***" : "NOT SET"
 );
 
 // Create the rest server configuration
@@ -49,14 +49,14 @@ const restConfig: any = {
 };
 
 // Only add adminUser if both email and password are provided
-if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+if (process.env.SERVER_ADMIN_EMAIL && process.env.SERVER_ADMIN_PASSWORD) {
   restConfig.adminUser = {
-    email: process.env.ADMIN_EMAIL,
-    password: process.env.ADMIN_PASSWORD,
+    email: process.env.SERVER_ADMIN_EMAIL,
+    password: process.env.SERVER_ADMIN_PASSWORD,
   };
   console.log(
     "Admin user will be created with email:",
-    process.env.ADMIN_EMAIL
+    process.env.SERVER_ADMIN_EMAIL
   );
 } else {
   console.log("Admin user configuration skipped - email or password not set");
