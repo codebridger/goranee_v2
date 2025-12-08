@@ -295,7 +295,17 @@ jobs:
             echo "Step 1: Pulling new images (containers still running)..."
             docker-compose pull
 
-            # Step 2: Start new containers with new images (docker-compose will recreate containers)
+            # Step 1.5: Remove stopped containers to avoid ContainerConfig errors
+            # This prevents KeyError: 'ContainerConfig' when docker-compose tries to inspect old stopped containers
+            echo "Step 1.5: Cleaning up stopped containers..."
+            STOPPED_SERVER=$(docker ps -a --filter "status=exited" --filter "name=server" --format "{{.ID}}" | head -1)
+            if [ -n "$STOPPED_SERVER" ]; then docker rm -f "$STOPPED_SERVER" || true; fi
+            STOPPED_END_USER=$(docker ps -a --filter "status=exited" --filter "name=end_user" --format "{{.ID}}" | head -1)
+            if [ -n "$STOPPED_END_USER" ]; then docker rm -f "$STOPPED_END_USER" || true; fi
+            STOPPED_NGINX=$(docker ps -a --filter "status=exited" --filter "name=nginx" --format "{{.ID}}" | head -1)
+            if [ -n "$STOPPED_NGINX" ]; then docker rm -f "$STOPPED_NGINX" || true; fi
+
+            # Step 2: Start new containers with new images (docker-compose will recreate running containers)
             echo "Step 2: Starting new containers with new images..."
             docker-compose up --remove-orphans -d
 
