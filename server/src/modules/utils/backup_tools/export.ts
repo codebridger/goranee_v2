@@ -1,10 +1,19 @@
 import { config } from "@modular-rest/server/dist/config";
 import { exec } from "child_process";
 import * as path from "path";
+import * as fs from "fs";
+
+declare global {
+  var rootPath: string;
+}
+
+// Fallback if rootPath is not defined
+const getRootPath = () => global.rootPath || process.cwd();
 
 // let title = 'Goranee';
 // let date = new Date();
-let outputDir = path.join(__dirname, `../collections`);
+// Use server root path instead of __dirname to ensure consistent path structure in zip files
+let outputDir = path.join(getRootPath(), "collections");
 let mongoBaseConnectionString = process.env.MONGODB_URL;
 
 interface DbDetail {
@@ -74,6 +83,11 @@ function makeBackupFromCollection(
 export function startBackUp(): Promise<string> {
   return new Promise(async (done, reject) => {
     try {
+      // Ensure collections directory exists
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
       for (let index in dbList) {
         let dbDetail = dbList[index];
         for (let colectionIndex in dbDetail.collections) {
