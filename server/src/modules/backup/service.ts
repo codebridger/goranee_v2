@@ -79,8 +79,41 @@ export const getBackupList = async () => {
 };
 
 export const insertBackup = async (file: any) => {
+  // Validate file object and required properties
+  if (!file) {
+    throw {
+      message: "File object is required",
+      step: "validation",
+    };
+  }
+
+  if (!file.path) {
+    throw {
+      message:
+        "File path is missing. The uploaded file may not have been processed correctly.",
+      step: "validation",
+    };
+  }
+
+  if (!file.originalFilename) {
+    throw {
+      message: "File original filename is missing",
+      step: "validation",
+    };
+  }
+
   const name = file.originalFilename.split(" ").join("-");
-  return moveFile(file.path, "./backups", name);
+
+  try {
+    await moveFile(file.path, "./backups", name);
+  } catch (error: any) {
+    // Re-throw with proper formatting if not already formatted
+    throw {
+      message: error.message || "Failed to move backup file",
+      step: error.step || "file_move",
+      originalError: error.originalError || error,
+    };
+  }
 };
 
 export const restore = (filename: string): Promise<void> => {
