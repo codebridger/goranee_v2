@@ -4,6 +4,7 @@ import {
   schemas,
   Permission,
 } from "@modular-rest/server";
+import { getSongTriggers } from "./db_events";
 
 let SongChordSchema = new Schema({
   rowIndex: Number,
@@ -150,5 +151,6 @@ export default [
         read: true,
       }),
     ],
+    triggers: getSongTriggers(),
   }),
 ];
