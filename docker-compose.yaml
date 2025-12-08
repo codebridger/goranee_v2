@@ -29,7 +29,7 @@ services:
       - ./public_assets:/server/uploads
       - ./backups:/server/backups
     environment:
-      - SERVER_ADMIN_PASSWORD=${SERVER_ADMIN_EMAIL:-admin@mail.com}
+      - SERVER_ADMIN_EMAIL=${SERVER_ADMIN_EMAIL:-admin@mail.com}
       - SERVER_ADMIN_PASSWORD=${SERVER_ADMIN_PASSWORD:-admin}
       - NODE_ENV=production
       - MONGODB_URL=mongodb://mongo:27017
