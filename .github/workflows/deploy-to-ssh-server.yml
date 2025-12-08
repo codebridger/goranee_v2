@@ -10,6 +10,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   IMAGE_TAG_SERVER: SERVER-${{ github.sha }}
   IMAGE_TAG_END_USER: END_USER-${{ github.sha }}
