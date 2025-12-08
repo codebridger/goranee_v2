@@ -18,7 +18,7 @@ env:
   IMAGE_TAG_SERVER: SERVER-${{ github.sha }}
   IMAGE_TAG_END_USER: END_USER-${{ github.sha }}
   REGISTRY: ghcr.io
-  IMAGE_NAME: navidshad/goranee_v2
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   cleanup-old-images:
@@ -29,23 +29,37 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const repoName = context.repo.repo;
             const packages = [
-              'goranee_v2_server',
-              'goranee_v2_end_user',
-              'goranee_v2_nginx'
+              `${repoName}_server`,
+              `${repoName}_end_user`,
+              `${repoName}_nginx`
             ];
 
             const keepVersions = 10; // Keep the latest 10 versions
 
             for (const packageName of packages) {
               try {
-                // Get all package versions
-                const { data: versions } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
-                  package_type: 'container',
-                  package_name: packageName,
-                  username: context.repo.owner,
-                  per_page: 100
-                });
+                // Get all package versions (works for both user and org packages)
+                let versionsResponse;
+                try {
+                  // Try organization first (if repo is under an org)
+                  versionsResponse = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                    package_type: 'container',
+                    package_name: packageName,
+                    org: context.repo.owner,
+                    per_page: 100
+                  });
+                } catch (orgError) {
+                  // Fallback to user packages
+                  versionsResponse = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
+                    package_type: 'container',
+                    package_name: packageName,
+                    username: context.repo.owner,
+                    per_page: 100
+                  });
+                }
+                const versions = versionsResponse.data;
                 
                 if (!versions || versions.length === 0) {
                   console.log(`No versions found for ${packageName}`);
@@ -67,12 +81,22 @@ jobs:
                 
                 for (const version of versionsToDelete) {
                   try {
-                    await github.rest.packages.deletePackageVersionForUser({
-                      package_type: 'container',
-                      package_name: packageName,
-                      username: context.repo.owner,
-                      package_version_id: version.id
-                    });
+                    // Try organization first, then user
+                    try {
+                      await github.rest.packages.deletePackageVersionForOrg({
+                        package_type: 'container',
+                        package_name: packageName,
+                        org: context.repo.owner,
+                        package_version_id: version.id
+                      });
+                    } catch (orgError) {
+                      await github.rest.packages.deletePackageVersionForUser({
+                        package_type: 'container',
+                        package_name: packageName,
+                        username: context.repo.owner,
+                        package_version_id: version.id
+                      });
+                    }
                     console.log(`✓ Deleted ${packageName} version ${version.id} (${version.name || 'untagged'})`);
                   } catch (error) {
                     console.log(`✗ Failed to delete ${packageName} version ${version.id}: ${error.message}`);
@@ -106,25 +130,6 @@ jobs:
           npm install
           npm run generate
 
-      - name: Link package to repository (if needed)
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              await github.rest.packages.linkPackageToRepository({
-                package_type: 'container',
-                package_name: 'goranee_v2_nginx',
-                username: context.repo.owner,
-                repository_id: context.repo.id
-              });
-              console.log('Package linked to repository');
-            } catch (error) {
-              // Package might not exist yet or already linked, which is fine
-              console.log(`Package link check: ${error.message}`);
-            }
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -133,44 +138,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Nginx Image
-        id: push-nginx
-        continue-on-error: true
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest -f nginx.Dockerfile .
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
         working-directory: .
-
-      - name: Link package to repository (if push failed)
-        if: steps.push-nginx.outcome == 'failure'
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              // Get repository ID
-              const { data: repo } = await github.rest.repos.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              
-              // Try to link package to repository
-              await github.rest.packages.linkPackageToRepository({
-                package_type: 'container',
-                package_name: 'goranee_v2_nginx',
-                username: context.repo.owner,
-                repository_id: repo.id
-              });
-              
-              console.log('Package linked to repository. Please retry the workflow.');
-            } catch (error) {
-              console.log('⚠️ Package linking failed. Please manually link the package:');
-              console.log('1. Go to https://github.com/' + context.repo.owner + '?tab=packages');
-              console.log('2. Find package: goranee_v2_nginx');
-              console.log('3. Go to Package settings > Manage Actions access');
-              console.log('4. Add repository: ' + context.repo.owner + '/' + context.repo.repo + ' with Write access');
-              console.log('Error: ' + error.message);
-            }
 
   build-server:
     runs-on: ubuntu-latest
@@ -186,43 +157,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Server Image
-        id: push-server
-        continue-on-error: true
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }} -f server/Dockerfile ./server
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
-
-      - name: Link package to repository (if push failed)
-        if: steps.push-server.outcome == 'failure'
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              // Get repository ID
-              const { data: repo } = await github.rest.repos.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              
-              // Try to link package to repository
-              await github.rest.packages.linkPackageToRepository({
-                package_type: 'container',
-                package_name: 'goranee_v2_server',
-                username: context.repo.owner,
-                repository_id: repo.id
-              });
-              
-              console.log('Package linked to repository. Please retry the workflow.');
-            } catch (error) {
-              console.log('⚠️ Package linking failed. Please manually link the package:');
-              console.log('1. Go to https://github.com/' + context.repo.owner + '?tab=packages');
-              console.log('2. Find package: goranee_v2_server');
-              console.log('3. Go to Package settings > Manage Actions access');
-              console.log('4. Add repository: ' + context.repo.owner + '/' + context.repo.repo + ' with Write access');
-              console.log('Error: ' + error.message);
-            }
 
   build-end-user:
     runs-on: ubuntu-latest
@@ -241,25 +178,6 @@ jobs:
           npm install
           npm run build
 
-      - name: Link package to repository (if needed)
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              await github.rest.packages.linkPackageToRepository({
-                package_type: 'container',
-                package_name: 'goranee_v2_end_user',
-                username: context.repo.owner,
-                repository_id: context.repo.id
-              });
-              console.log('Package linked to repository');
-            } catch (error) {
-              // Package might not exist yet or already linked, which is fine
-              console.log(`Package link check: ${error.message}`);
-            }
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -268,43 +186,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push End User Image
-        id: push-end-user
-        continue-on-error: true
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }} -f end_user/Dockerfile ./end_user
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
-
-      - name: Link package to repository (if push failed)
-        if: steps.push-end-user.outcome == 'failure'
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            try {
-              // Get repository ID
-              const { data: repo } = await github.rest.repos.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              
-              // Try to link package to repository
-              await github.rest.packages.linkPackageToRepository({
-                package_type: 'container',
-                package_name: 'goranee_v2_end_user',
-                username: context.repo.owner,
-                repository_id: repo.id
-              });
-              
-              console.log('Package linked to repository. Please retry the workflow.');
-            } catch (error) {
-              console.log('⚠️ Package linking failed. Please manually link the package:');
-              console.log('1. Go to https://github.com/' + context.repo.owner + '?tab=packages');
-              console.log('2. Find package: goranee_v2_end_user');
-              console.log('3. Go to Package settings > Manage Actions access');
-              console.log('4. Add repository: ' + context.repo.owner + '/' + context.repo.repo + ' with Write access');
-              console.log('Error: ' + error.message);
-            }
 
   deploy:
     runs-on: ubuntu-latest
