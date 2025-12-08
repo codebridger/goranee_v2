@@ -15,7 +15,8 @@ function ImportFile(
     // Try to find mongoimport in common locations if strictly not found in PATH,
     // but usually fixing the PATH or just relying on the command is better.
     // For now, we stick to "mongoimport" but ensure the URL is correct.
-    let command = `mongoimport --uri="${url}" --collection="${coll}" --file="${fileDir}"`;
+    // --drop flag ensures the collection is dropped before import, guaranteeing a complete reset
+    let command = `mongoimport --uri="${url}" --collection="${coll}" --file="${fileDir}" --drop`;
 
     // Note: If mongoimport is not found, ensure it is installed and in the system PATH.
     // On macOS with Homebrew, it might be at /opt/homebrew/bin/mongoimport
