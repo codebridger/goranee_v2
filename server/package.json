@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "description": "A fantastic server app based modular-rest",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "npm run build && ts-node src/index.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modular-rest/server": "^1.19.0",
+    "dotenv": "^16.4.5",
+    "koa-router": "^7.4.0",
+    "nodemailer": "^7.0.11"
+  },
+  "devDependencies": {
+    "@types/koa-router": "^7.4.8",
+    "@types/node": "^22.7.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

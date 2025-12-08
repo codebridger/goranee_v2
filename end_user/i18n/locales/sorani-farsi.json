@@ -1,0 +1,283 @@
+{
+	"navbar": {
+		"logo": "گۆرانی",
+		"searchPlaceholder": "گەڕان بۆ گۆرانی، هونەرمەند...",
+		"links": {
+			"discovery": "دۆزینەوە",
+			"artists": "هونەرمەندان",
+			"community": "کۆمەڵگە"
+		},
+		"login": "چوونەژوور",
+		"explore": "گەڕان",
+		"viewAllResults": "بینینی هەموو ئەنجامەکان",
+		"noResults": "هیچ ئەنجامێک بۆ \"{query}\" نەدۆزرایەوە",
+		"loading": "باردەکات..."
+	},
+	"pages": {
+		"discovery": {
+			"title": "دۆزینەوە",
+			"subtitle": "گۆرانی و هونەرمەندی دڵخوازت بدۆزەوە.",
+			"searchResults": "ئەنجامی گەڕان بۆ:",
+			"placeholder": "باری گەڕان بەکاربهێنە یان بەشەکان بگەڕێ.",
+			"filters": "فیلتەرەکان",
+			"genre": "چەشن",
+			"allGenres": "هەموو چەشنەکان",
+			"key": "پلی دەنگ",
+			"allKeys": "هەموو پلەکان",
+			"major": "ماجۆر",
+			"minor": "مینۆر",
+			"rhythm": "ڕیتم",
+			"sortBy": "ڕیزکردن بە",
+			"newest": "نوێترین",
+			"oldest": "کۆنترین",
+			"aToZ": "ئ-ی",
+			"zToA": "ی-ئ",
+			"clearFilters": "سڕینەوەی فیلتەرەکان",
+			"resultsCount": "{count} گۆرانی دۆزرایەوە",
+			"noResults": "هیچ گۆرانییەک نەدۆزرایەوە",
+			"noResultsDescription": "هەوڵ بدە فیلتەرەکان یان وشەی گەڕانەکە بگۆڕی",
+			"requestSong": "داواکردنی گۆرانی",
+			"loading": "بارکردنی ئەنجامەکان...",
+			"error": "هەڵەیەک ڕوویدا",
+			"retry": "هەوڵدانەوە",
+			"showFilters": "نیشاندانی فیلتەرەکان",
+			"hideFilters": "شاردنەوەی فیلتەرەکان",
+			"previous": "پێشوو",
+			"next": "دواتر",
+			"page": "پەڕە"
+		},
+		"artists": {
+			"title": "هونەرمەندان",
+			"subtitle": "گەڕان لە ناو هەموو هونەرمەندان.",
+			"sortBy": "ڕیزکردن بە",
+			"name": "ناو",
+			"popularity": "ناوبانگ",
+			"artistsCount": "{count} هونەرمەند",
+			"noArtists": "هیچ هونەرمەندێک نەدۆزرایەوە",
+			"searchPlaceholder": "گەڕان بۆ هونەرمەندان..."
+		},
+		"community": {
+			"title": "کۆمەڵگە",
+			"subtitle": "بەشداری گفتوگۆ بکە."
+		}
+	},
+	"hero": {
+		"badge": "پلاتفۆرمی یەکەمی کۆردەکانی کوردی",
+		"title": "میلۆدییەکە",
+		"titleHighlight": "لێبدە",
+		"titleLine2": "هەست بە ڕیتم بکە.",
+		"description": "دەستڕاگەیشتن بە هەزاران کۆرد، تێکست، و ڕیتمی ڕەسەنی کوردی. ئەمڕۆ پەیوەندی بە کۆمەڵگەی مۆزیسیانەکانەوە بکە.",
+		"startPlaying": "دەستپێکردنی لێدان",
+		"featuredArtist": "هونەرمەندی هەڵبژێردراو",
+		"trendingNow": "ترێندی ئێستا"
+	},
+	"home": {
+		"loadingToggle": {
+			"viewContent": "بینینی ناوەڕۆک",
+			"previewLoading": "پێشبینینی باری بارکردن"
+		},
+		"themeToggle": {
+			"switchToLight": "گۆڕین بۆ ڕوون",
+			"switchToDark": "گۆڕین بۆ تاریک"
+		},
+		"discovery": {
+			"title": "دۆزینەوە",
+			"subtitle": "کۆردە نوێکانی ئەم هەفتەیە",
+			"emptyState": "هیچ گۆرانییەک نەدۆزرایەوە. یەکەم کەس بە کە دایبنێی!",
+			"tabs": {
+				"all": "هەموو",
+				"pop": "پۆپ",
+				"folklore": "فۆلکلۆر",
+				"slow": "خاو",
+				"halparke": "هەڵپەڕکێ"
+			}
+		},
+		"artists": {
+			"title": "هونەرمەندە هەڵبژێردراوەکان",
+			"viewAll": "بینینی هەموو",
+			"songs": "گۆرانی",
+			"emptyState": "هێشتا هیچ هونەرمەندێک هەڵنەبژێردراوە."
+		}
+	},
+	"community": {
+		"title": "پەیوەندی بە کۆمەڵگە بکە",
+		"description": "کۆردەکانی خۆت باربکە، داوای گۆرانی بکە، و پەیوەندی بە مۆزیسیانانی تری کوردیەوە بکە.",
+		"descriptionHighlight": "ئەمڕۆ تەڤلی ١٥,٠٠٠+ ئەندام بە.",
+		"button": "دروستکردنی ئەکاونتی بێبەرامبەر",
+		"justHappened": "تازە ڕوویدا",
+		"activities": {
+			"commentedOn": "کۆمێنتی نووسی لەسەر",
+			"uploaded": "باریکرد",
+			"requested": "داوای کرد"
+		}
+	},
+	"footer": {
+		"description": "پلاتفۆرمی سەرەکی بۆ کۆردی مۆزیکی کوردی، تێکست، و پەیوەندییەکانی کۆمەڵگە.",
+		"sections": {
+			"discover": {
+				"title": "دۆزینەوە",
+				"newArrivals": "نوێکان",
+				"trendingCharts": "چارتە ترێندەکان",
+				"featuredArtists": "هونەرمەندە هەڵبژێردراوەکان",
+				"songRequests": "داواکارییە گۆرانییەکان"
+			},
+			"community": {
+				"title": "کۆمەڵگە",
+				"signUpLogin": "تۆمارکردن / چوونەژوور",
+				"submitChord": "ناردنی کۆرد",
+				"topContributors": "بەشداربووە سەرەکییەکان",
+				"discordServer": "سێرڤەری دیسکۆرد"
+			},
+			"legal": {
+				"title": "یاسایی",
+				"privacyPolicy": "سیاسەتی تایبەتی",
+				"termsOfService": "مەرجەکانی بەکارهێنان",
+				"dmcaGuidelines": "ڕێنماییەکانی DMCA"
+			}
+		},
+		"copyright": "© ٢٠٢٥ Goranee.ir. هەموو مافەکان پارێزراوە.",
+		"designSystem": "v1.1"
+	},
+	"showcase": {
+		"title": "NeoBeat UI Kit",
+		"subtitle": "سیستەمی دیزاین بۆ Goranee.ir",
+		"sections": {
+			"colors": {
+				"title": "٠١. پالێتی ڕەنگ",
+				"subtitle": "پالێتی گونجاو: {mode}",
+				"modes": {
+					"darkMode": "مۆدی تاریک چالاکە",
+					"lightMode": "مۆدی ڕوون"
+				},
+				"labels": {
+					"canvasBackground": "پاشخانەی کانڤاس",
+					"primaryText": "دەقی سەرەکی",
+					"cardSurface": "ڕووی کارت",
+					"electricGradient": "گرادیانی ئەلکتریکی"
+				}
+			},
+			"typography": {
+				"title": "٠٢. تایپۆگرافی",
+				"subtitle": "سەردێڕەکان بە Sans-Serif، کۆردەکان بە Monospace.",
+				"displayH1": "نیشاندانی H1",
+				"headingH2": "سەردێڕی H2",
+				"bodyText": "دەقی ناوەڕۆک",
+				"chordSheetPreview": "پێشبینینی پەڕەی کۆرد",
+				"sampleText": "گۆرانی پلاتفۆرمێکی کۆمەڵگەیییە. دەستڕاگەیشتن بە هەزاران کۆردی کوردی، تێکست، و ڕیتم. تەڤلیمان بە بۆ پارڤە کردنی زانیاری مۆزیکت."
+			},
+			"buttons": {
+				"title": "٠٣. دوگمەکان & کارلێکەکان",
+				"subtitle": "سەرەکییەکانی گرادیان، دووەمینەکانی Ghost.",
+				"primaryAction": "کرداری سەرەکی",
+				"secondaryAction": "کرداری دووەمین",
+				"textLink": "لینکی دەق"
+			},
+			"cards": {
+				"title": "٠٤. پێکهاتە: کارتەکان",
+				"subtitle": "قاپی دووبارە بەکارهاتوو بۆ ناوەڕۆک."
+			},
+			"tags": {
+				"title": "٠٤.٥ تاگ & دوگمەی ئایکۆن",
+				"subtitle": "ئێلێمێنتی UI بچووک بۆ مێتاداتا و کردارەکان.",
+				"tagsChips": "تاگ / چیپ",
+				"iconButtons": "دوگمەی ئایکۆن",
+				"key": "پلی دەنگ: Am",
+				"rhythm": "ڕیتم: ٧/٨",
+				"slow": "خاو",
+				"popular": "بەربڵاو"
+			},
+			"chordSheet": {
+				"title": "٠٤.٦ پەڕەی کۆرد",
+				"subtitle": "نیشاندانی کۆرد لەگەڵ تێکست."
+			},
+			"navigation": {
+				"title": "٠٥. ناڤیگاسیۆن",
+				"subtitle": "هێدەری 'Glassmorphism'ی چەسپاو."
+			},
+			"toolbox": {
+				"title": "٠٦. سندوقی ئامێری مۆزیسیان",
+				"subtitle": "کۆنترۆڵی چەسپاو بۆ پەڕەی بینینی کۆرد.",
+				"pageContent": "ناوچەی ناوەڕۆکی پەڕە..."
+			},
+			"marketing": {
+				"title": "٠٧. بلۆکەکانی مارکێتینگ",
+				"subtitle": "بانگهێشت بۆ کردار & فووتەر.",
+				"cta": {
+					"title": "ئامادەی بۆ ژەنین؟",
+					"description": "تەڤلی ١٥,٠٠٠+ مۆزیسیانی کورد بە کە ڕۆژانە کۆرد و تێکست پارڤە دەکەن.",
+					"button": "دروستکردنی ئەکاونتی بێبەرامبەر"
+				}
+			}
+		},
+		"themeToggle": {
+			"switchToLight": "گۆڕین بۆ ڕوون",
+			"switchToDark": "گۆڕین بۆ تاریک"
+		},
+		"ariaLabels": {
+			"playSong": "لێدانی گۆرانی",
+			"likeSong": "گۆرانی بەدڵبوون",
+			"share": "پارڤەکردن",
+			"settings": "ڕێکخستنەکان"
+		}
+	},
+	"common": {
+		"songs": "گۆرانی",
+		"plays": "لێدانەکان",
+		"popular": "بەربڵاو",
+		"discography": "دیسکۆگرافی",
+		"noSongsFound": "هیچ گۆرانییەک بۆ ئەم هونەرمەندە نەدۆزرایەوە.",
+		"fansAlsoLike": "هەواداران هەروەها حەز دەکەن",
+		"artistNotFound": "هونەرمەند نەدۆزرایەوە",
+		"goHome": "گەڕانەوە بۆ سەرەتا",
+		"artist": "پرۆفایلی هونەرمەند",
+		"follow": "دوا کەوتن",
+		"showLess": "کەمتر نیشان بدە",
+		"readMore": "زیاتر بخوێنەوە",
+		"ago": "پێش ئێستا",
+		"hours": "ک",
+		"minutes": "خ",
+		"days": "ڕ",
+		"unknownArtist": "هونەرمەندی نەناسراو",
+		"of": "لە"
+	},
+	"song": {
+		"metadata": {
+			"key": "پلی دەنگ",
+			"rhythm": "ڕیتم",
+			"difficulty": "زەحمەتی"
+		}
+	},
+	"toolbox": {
+		"transpose": "گۆڕینی دەنگ",
+		"original": "ئۆرجیناڵ",
+		"autoScroll": "خوەسوڕێن",
+		"stop": "ڕاوەستان",
+		"start": "دەستپێکردن",
+		"spacebarHint": "Space لێبدە بۆ گۆڕین",
+		"speed": "خێرایی",
+		"fontSize": "قەبارەی فونت",
+		"layout": "ڕووکار",
+		"list": "لیست",
+		"grid": "تۆڕ",
+		"columns": "ئەستوونەکان",
+		"transposeKey": "گۆڕینی پلی دەنگ",
+		"recommendedCapo": "کاپۆ پێشنیارکراو",
+		"none": "هیچ",
+		"autoScrollSpeed": "خێرایی خوەسوڕێن",
+		"slow": "خاو",
+		"fast": "خێرا",
+		"close": "داخستن",
+		"ariaLabels": {
+			"decreaseTranspose": "کەمکردنی پلی دەنگ",
+			"increaseTranspose": "زیادکردنی پلی دەنگ",
+			"stopScrolling": "ڕاوەستانی سوڕان",
+			"startScrolling": "دەستپێکردنی سوڕان",
+			"decreaseFontSize": "کەمکردنی قەبارەی فونت",
+			"increaseFontSize": "زیادکردنی قەبارەی فونت",
+			"decreaseSpeed": "کەمکردنی خێرایی",
+			"increaseSpeed": "زیادکردنی خێرایی",
+			"scrollLeft": "سوڕان بۆ چەپ",
+			"scrollRight": "سوڕان بۆ ڕاست"
+		}
+	}
+}

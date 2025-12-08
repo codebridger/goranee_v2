@@ -1,0 +1,284 @@
+{
+	"navbar": {
+		"logo": "Goranee",
+		"searchPlaceholder": "Lêgerîn bo stran, hunermend...",
+		"links": {
+			"discovery": "Dîtin",
+			"artists": "Hunermend",
+			"community": "Komele"
+		},
+		"login": "Têketin",
+		"explore": "Lêgerîn",
+		"viewAllResults": "Hemû encamên bibîne",
+		"noResults": "Ji bo \"{query}\" encam nehate dîtin",
+		"loading": "Tê barkirin..."
+	},
+	"pages": {
+		"discovery": {
+			"title": "Dîtin",
+			"subtitle": "Stran û hunermendên xwe yên bijarte bibînin.",
+			"searchResults": "Encamên lêgerînê ji bo:",
+			"placeholder": "Bara lêgerînê bi kar bînin an kategoriyan bigerin.",
+			"filters": "Fîltre",
+			"genre": "Cure",
+			"allGenres": "Hemû cureyan",
+			"key": "Kî",
+			"allKeys": "Hemû kîyan",
+			"major": "Major",
+			"minor": "Minor",
+			"rhythm": "Rîtm",
+			"sortBy": "Li gorî rêz bike",
+			"newest": "Nûtirîn",
+			"oldest": "Kevntirîn",
+			"aToZ": "A-Z",
+			"zToA": "Z-A",
+			"clearFilters": "Fîltreyan paqij bike",
+			"resultsCount": "{count} stran hatin dîtin",
+			"noResults": "Stran nehate dîtin",
+			"noResultsDescription": "Heke hûn fîltreyan an peyva lêgerînê biguherînin",
+			"requestSong": "Daxwaza Stran",
+			"loading": "Encamên tê barkirin...",
+			"error": "Tiştek çewt çêbû",
+			"retry": "Dîsa biceribîne",
+			"showFilters": "Fîltreyan nîşan bide",
+			"hideFilters": "Fîltreyan veşêre",
+			"previous": "Berê",
+			"next": "Paş",
+			"page": "Rûpel"
+		},
+		"artists": {
+			"title": "Hunermend",
+			"subtitle": "Hemû hunermendan bigerin.",
+			"sortBy": "Li gorî rêz bike",
+			"name": "Nav",
+			"popularity": "Navdarî",
+			"artistsCount": "{count} hunermend",
+			"noArtists": "Hunermend nehate dîtin",
+			"searchPlaceholder": "Lêgerîn bo hunermendan..."
+		},
+		"community": {
+			"title": "Komele",
+			"subtitle": "Beşdarî gotûbêjê bibin."
+		}
+	},
+	"hero": {
+		"badge": "Platforma Yekem a Kordên Kurdî",
+		"title": "Melodiyê",
+		"titleHighlight": "Lêxe",
+		"titleLine2": "Hest bi rîtmê bike.",
+		"description": "Gihîştina bi hezaran kord, gotin û rîtmên orîjînal ên kurdî. Îro beşdarî komeleya muzîkjenan bibin.",
+		"startPlaying": "Destpêkirina Lêxistinê",
+		"featuredArtist": "Hunermendê Bijarte",
+		"trendingNow": "Trenda Niha"
+	},
+	"home": {
+		"loadingToggle": {
+			"viewContent": "Naverokê Bibîne",
+			"previewLoading": "Pêşdîtina Rewşa Barkirinê"
+		},
+		"themeToggle": {
+			"switchToLight": "Guhartin bo Ronahî",
+			"switchToDark": "Guhartin bo Tarîtî"
+		},
+		"discovery": {
+			"title": "Dîtin",
+			"subtitle": "Kordên nû yên vê hefteyê",
+			"emptyState": "Stran nehate dîtin. Yekem kes bibe ku yekê bişîne!",
+			"tabs": {
+				"all": "Hemû",
+				"pop": "Pop",
+				"folklore": "Folklor",
+				"slow": "Hêdî",
+				"halparke": "Halparke"
+			}
+		},
+		"artists": {
+			"title": "Hunermendên Bijarte",
+			"viewAll": "Hemû Bibîne",
+			"songs": "Stran",
+			"emptyState": "Hêj hunermendê bijarte tune."
+		}
+	},
+	"community": {
+		"title": "Beşdarî Komeleyê Bibin",
+		"description": "Kordên xwe bar bike, daxwaza stranê bike, û bi muzîkjenên din ên kurdî re têkilî dayne.",
+		"descriptionHighlight": "Îro beşdarî +15,000 endamên bibin.",
+		"button": "Hesabek Belaş Çêke",
+		"justHappened": "Tiştên Nû",
+		"activities": {
+			"commentedOn": "li ser şîrove kir",
+			"uploaded": "bar kir",
+			"requested": "daxwaz kir"
+		}
+	},
+	"footer": {
+		"description": "Platforma sereke ji bo kordên muzîka kurdî, gotin û têkilîyên komeleyê.",
+		"sections": {
+			"discover": {
+				"title": "Dîtin",
+				"newArrivals": "Nûyên",
+				"trendingCharts": "Grafên Trendê",
+				"featuredArtists": "Hunermendên Bijarte",
+				"songRequests": "Daxwazên Stranê"
+			},
+			"community": {
+				"title": "Komele",
+				"signUpLogin": "Tomar / Têketin",
+				"submitChord": "Kordê Bişîne",
+				"topContributors": "Beşdarên Sereke",
+				"discordServer": "Servera Discord"
+			},
+			"legal": {
+				"title": "Qanûnî",
+				"privacyPolicy": "Polîtîkaya Taybetî",
+				"termsOfService": "Mercên Bikaranînê",
+				"dmcaGuidelines": "Rêbernameyên DMCA"
+			}
+		},
+		"copyright": "© 2025 Goranee.ir. Hemû maf parastî ne.",
+		"designSystem": "v1.1"
+	},
+	"showcase": {
+		"title": "NeoBeat UI Kit",
+		"subtitle": "Sîstema Dîzaynê ji bo Goranee.ir",
+		"sections": {
+			"colors": {
+				"title": "01. Paleta Rengê",
+				"subtitle": "Paleta Guherbar: {mode}",
+				"modes": {
+					"darkMode": "Moda Tarîtî Çalak e",
+					"lightMode": "Moda Ronahî"
+				},
+				"labels": {
+					"canvasBackground": "Paşxaneya Canvas",
+					"primaryText": "Nivîsa Sereke",
+					"cardSurface": "Rûyê Kartê",
+					"electricGradient": "Gradiyenta Elektrîkî"
+				}
+			},
+			"typography": {
+				"title": "02. Tîpografî",
+				"subtitle": "Sernavên bi Sans-Serif, Kordên bi Monospace.",
+				"displayH1": "Nîşandana H1",
+				"headingH2": "Sernavê H2",
+				"bodyText": "Nivîsa Laşê",
+				"chordSheetPreview": "Pêşdîtina Pelê Kordê",
+				"sampleText": "Goranee platformeke komeleyî ye. Gihîştina bi hezaran kordên kurdî, gotin û rîtman. Beşdarî me bibin da ku zanîna muzîka xwe parve bikin."
+			},
+			"buttons": {
+				"title": "03. Bişkok û Têkiliyên",
+				"subtitle": "Yên sereke yên gradiyent, yên duyemîn yên ghost.",
+				"primaryAction": "Çalakiyê Sereke",
+				"secondaryAction": "Çalakiyê Duyemîn",
+				"textLink": "Lînka Nivîsê"
+			},
+			"cards": {
+				"title": "04. Pêkhate: Kartên",
+				"subtitle": "Qapên dîsa bikarhatî ji bo naverokê."
+			},
+			"tags": {
+				"title": "04.5 Tag û Bişkokên Îkon",
+				"subtitle": "Hêmanên UI yên biçûk ji bo metadata û çalakiyan.",
+				"tagsChips": "Tag / Çîp",
+				"iconButtons": "Bişkokên Îkon",
+				"key": "Kî: Am",
+				"rhythm": "Rîtm: 7/8",
+				"slow": "Hêdî",
+				"popular": "Navdar"
+			},
+			"chordSheet": {
+				"title": "04.6 Pelê Kordê",
+				"subtitle": "Nîşandana kordan bi gotinê re."
+			},
+			"navigation": {
+				"title": "05. Navîgasyon",
+				"subtitle": "Headera 'Glassmorphism' a zeliqok."
+			},
+			"toolbox": {
+				"title": "06. Qutiya Amûrên Muzîkjen",
+				"subtitle": "Kontrolên zeliqok ji bo rûpela dîtina kordê.",
+				"pageContent": "Herêma Naveroka Rûpelê..."
+			},
+			"marketing": {
+				"title": "07. Blokên Bazirganiyê",
+				"subtitle": "Bangkirina Çalakiyê & Footer.",
+				"cta": {
+					"title": "Amade ne ku lêbixwînin?",
+					"description": "Beşdarî +15,000 muzîkjenên kurdî bibin ku rojane kord û gotin parve dikin.",
+					"button": "Hesabek Belaş Çêke"
+				}
+			}
+		},
+		"themeToggle": {
+			"switchToLight": "Guhartin bo Ronahî",
+			"switchToDark": "Guhartin bo Tarîtî"
+		},
+		"ariaLabels": {
+			"playSong": "Strana lêxe",
+			"likeSong": "Strana hez bike",
+			"share": "Parve bike",
+			"settings": "Mîhengên"
+		}
+	},
+	"common": {
+		"songs": "Stran",
+		"plays": "Lêxistin",
+		"popular": "Navdar",
+		"discography": "Dîskografî",
+		"noSongsFound": "Ji bo vê hunermendê stran nehate dîtin.",
+		"fansAlsoLike": "Fans jî hez dikin",
+		"artistNotFound": "Hunermend nehate dîtin",
+		"goHome": "Vegere Serê",
+		"artist": "Profîla Hunermend",
+		"follow": "Şop bike",
+		"showLess": "Kêmtir nîşan bide",
+		"readMore": "Zêdetir bixwîne",
+		"ago": "berê",
+		"hours": "s",
+		"minutes": "d",
+		"days": "r",
+		"unknownArtist": "Hunermendê Nenas",
+		"of": "ji"
+	},
+	"song": {
+		"metadata": {
+			"key": "Kî",
+			"rhythm": "Rîtm",
+			"difficulty": "Zehmetî"
+		}
+	},
+	"toolbox": {
+		"transpose": "Guhartina Dengê",
+		"original": "Orîjînal",
+		"autoScroll": "Xweber Xûlî",
+		"stop": "Rawestan",
+		"start": "Destpêkirin",
+		"spacebarHint": "Space lêxe da ku biguherîne",
+		"speed": "Lez",
+		"fontSize": "Mezinahiya Fontê",
+		"layout": "Rûkar",
+		"list": "Lîste",
+		"grid": "Tor",
+		"columns": "Stûnên",
+		"transposeKey": "Guhartina Kîyê",
+		"recommendedCapo": "Capoya Pêşniyarkirî",
+		"none": "Tune",
+		"autoScrollSpeed": "Leza Xweber Xûlî",
+		"slow": "Hêdî",
+		"fast": "Lez",
+		"close": "Bigire",
+		"ariaLabels": {
+			"decreaseTranspose": "Kîyê kêm bike",
+			"increaseTranspose": "Kîyê zêde bike",
+			"stopScrolling": "Xûlî rawestîne",
+			"startScrolling": "Xûlî destpêke",
+			"decreaseFontSize": "Mezinahiya fontê kêm bike",
+			"increaseFontSize": "Mezinahiya fontê zêde bike",
+			"decreaseSpeed": "Lezê kêm bike",
+			"increaseSpeed": "Lezê zêde bike",
+			"scrollLeft": "Xûlî çepê",
+			"scrollRight": "Xûlî rastê"
+		}
+	}
+}
+

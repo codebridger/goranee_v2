@@ -1,11 +1,20 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "fe_enduser"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "server"
+    },
+    {
+      "path": "end_user"
+    },
+    {
+      "path": "admin_panel"
+    },
+    {
+      "name": "chord_library",
+      "path": "/Users/navid-shad/Projects/Personal/chord_library"
+    }
+  ]
 }

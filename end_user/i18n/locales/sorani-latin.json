@@ -1,0 +1,283 @@
+{
+	"navbar": {
+		"logo": "Goranee",
+		"searchPlaceholder": "Gerran bo goranî, hunermend...",
+		"links": {
+			"discovery": "Dozînewe",
+			"artists": "Hunermendan",
+			"community": "Komelgah"
+		},
+		"login": "Chûnezhûr",
+		"explore": "Gerran",
+		"viewAllResults": "Bînînî hemû encamekan",
+		"noResults": "Hîç encamêk nedozrayewe bo \"{query}\"",
+		"loading": "Bardekat..."
+	},
+	"pages": {
+		"discovery": {
+			"title": "Dozînewe",
+			"subtitle": "Goranî û hunermendî dlixwazt bidozewe.",
+			"searchResults": "Encamî gerran bo:",
+			"placeholder": "Barî gerran bekarbhêne yan kategorîyekan bigerrê.",
+			"filters": "Filterekan",
+			"genre": "Janer",
+			"allGenres": "Hemû janerekan",
+			"key": "Pley Deng",
+			"allKeys": "Hemû pleyekan",
+			"major": "Major",
+			"minor": "Minor",
+			"rhythm": "Rîtm",
+			"sortBy": "Rêzkirdin be",
+			"newest": "Nwêtrîn",
+			"oldest": "Kontrîn",
+			"aToZ": "A-Z",
+			"zToA": "Z-A",
+			"clearFilters": "Srrînewey filterekan",
+			"resultsCount": "{count} goranî dozrayewe",
+			"noResults": "Hîç goranîyek nedozrayewe",
+			"noResultsDescription": "Hewł bide filterekan yan wşey gerraneke bgorrî",
+			"requestSong": "Dawakirdinî Goranî",
+			"loading": "Barkirdinî encamekan...",
+			"error": "Hełeyek rûyda",
+			"retry": "Hewłdanewe",
+			"showFilters": "Nîşandanî Filterekan",
+			"hideFilters": "Şardnewey Filterekan",
+			"previous": "Pêşû",
+			"next": "Dwatir",
+			"page": "Perre"
+		},
+		"artists": {
+			"title": "Hunermendan",
+			"subtitle": "Gerran le naw hemû hunermendan.",
+			"sortBy": "Rêzkirdin be",
+			"name": "Naw",
+			"popularity": "Nawbang",
+			"artistsCount": "{count} hunermend",
+			"noArtists": "Hîç hunermendêk nedozrayewe",
+			"searchPlaceholder": "Gerran bo hunermendan..."
+		},
+		"community": {
+			"title": "Komelgah",
+			"subtitle": "Beşdarî guftugo bike."
+		}
+	},
+	"hero": {
+		"badge": "Platformî Yekemî Kordekanî Kurdî",
+		"title": "Melodîyeke",
+		"titleHighlight": "Lêbde",
+		"titleLine2": "Hest be rîtm bike.",
+		"description": "Destiragiştin be hezaran kord, şî'r, û rîtmî resenî Kurdî. Emro peywendî be komelgahî mûzîkjananewe bike.",
+		"startPlaying": "Destpêkirdinî Lêdan",
+		"featuredArtist": "Hunermendî Hełbijêrdraw",
+		"trendingNow": "Trendî Êsta"
+	},
+	"home": {
+		"loadingToggle": {
+			"viewContent": "Bînînî Nawerok",
+			"previewLoading": "Pêşandanî Barî Barkirdin"
+		},
+		"themeToggle": {
+			"switchToLight": "Gorrîn bo Rûn",
+			"switchToDark": "Gorrîn bo Tarîk"
+		},
+		"discovery": {
+			"title": "Dozînewe",
+			"subtitle": "Korde nwêkanî em hefteye",
+			"emptyState": "Hîç goranîyek nedozrayewe. Yekem kes be ke dainêy!",
+			"tabs": {
+				"all": "Hemû",
+				"pop": "Pop",
+				"folklore": "Folklore",
+				"slow": "Xaw",
+				"halparke": "Hełperrkê"
+			}
+		},
+		"artists": {
+			"title": "Hunermende Hełbijêrdrawekan",
+			"viewAll": "Bînînî Hemû",
+			"songs": "Goranîyekan",
+			"emptyState": "Hêşta hîç hunermendêk hełnebijêrdrawe."
+		}
+	},
+	"community": {
+		"title": "Peywendî be Komelgah bike",
+		"description": "Kordekanî xot barbike, dawai goranî bike, û peywendî be mûzîkjananî trî Kurdewe bike.",
+		"descriptionHighlight": "Emro tevlî +15,000 endam be.",
+		"button": "Dirustkirdinî Ekauntî Bêberamber",
+		"justHappened": "Taze Rûyda",
+		"activities": {
+			"commentedOn": "komêntî nûsî le ser",
+			"uploaded": "barikird",
+			"requested": "dawai kird"
+		}
+	},
+	"footer": {
+		"description": "Platformî serekî bo kordî mûzîkî Kurdî, şî'r, û peywendîyekanî komelgah.",
+		"sections": {
+			"discover": {
+				"title": "Dozînewe",
+				"newArrivals": "Nwêkan",
+				"trendingCharts": "Çarte Trendekan",
+				"featuredArtists": "Hunermende Hełbijêrdrawekan",
+				"songRequests": "Dawakariye Goranîyekan"
+			},
+			"community": {
+				"title": "Komelgah",
+				"signUpLogin": "Tomalikirdin / Chûnezhûr",
+				"submitChord": "Nardinî Kord",
+				"topContributors": "Beşdarbûwe Serekeyekan",
+				"discordServer": "Sêrverî Discord"
+			},
+			"legal": {
+				"title": "Yasayî",
+				"privacyPolicy": "Siyasetî Taybetî",
+				"termsOfService": "Mercekanî Bekarhênan",
+				"dmcaGuidelines": "Rênmayiyekanî DMCA"
+			}
+		},
+		"copyright": "© 2025 Goranee.ir. Hemû mafekan parêzrawe.",
+		"designSystem": "v1.1"
+	},
+	"showcase": {
+		"title": "NeoBeat UI Kit",
+		"subtitle": "Sîstemî Dîzayn bo Goranee.ir",
+		"sections": {
+			"colors": {
+				"title": "01. Palêtî Reng",
+				"subtitle": "Palêtî Gonjaw: {mode}",
+				"modes": {
+					"darkMode": "Modî Tarîk Çalake",
+					"lightMode": "Modî Rûn"
+				},
+				"labels": {
+					"canvasBackground": "Paşxaney Canvas",
+					"primaryText": "Deqî Serekî",
+					"cardSurface": "Rûy Kart",
+					"electricGradient": "Gradientî Elektrîkî"
+				}
+			},
+			"typography": {
+				"title": "02. Taypografî",
+				"subtitle": "Serdêrekan be Sans-Serif, Kordekan be Monospace.",
+				"displayH1": "Nîşandanî H1",
+				"headingH2": "Serdêrî H2",
+				"bodyText": "Deqî Nawerok",
+				"chordSheetPreview": "Pêşbînînî Perrey Kord",
+				"sampleText": "Goranee platformêkî komelgahîye. Destiragiştin be hezaran kordî Kurdî, şî'r, û rîtm. Tevlîman be bo parve kirdinî zanyarî mûzîkit."
+			},
+			"buttons": {
+				"title": "03. Dugmekan & Karlekyekan",
+				"subtitle": "Serekeyekanî Gradient, Duyeminekanî Ghost.",
+				"primaryAction": "Kirdarî Serekî",
+				"secondaryAction": "Kirdarî Duyemîn",
+				"textLink": "Lînkî Deq"
+			},
+			"cards": {
+				"title": "04. Pêkhate: Kartekan",
+				"subtitle": "Qapî dûbare bekarhatû bo nawerok."
+			},
+			"tags": {
+				"title": "04.5 Tag & Dugmey Aikon",
+				"subtitle": "Elementî UI biçûk bo metadata û kirdarekan.",
+				"tagsChips": "Tag / Çîp",
+				"iconButtons": "Dugmey Aikon",
+				"key": "Pley Deng: Am",
+				"rhythm": "Rîtm: 7/8",
+				"slow": "Xaw",
+				"popular": "Berwbław"
+			},
+			"chordSheet": {
+				"title": "04.6 Perrey Kord",
+				"subtitle": "Nîşandanî kord le gel şî'r."
+			},
+			"navigation": {
+				"title": "05. Navîgasyon",
+				"subtitle": "Headerî 'Glassmorphism'î Çespaw."
+			},
+			"toolbox": {
+				"title": "06. Sindûqî Amûrî Mûzîkjan",
+				"subtitle": "Kontrołî çespaw bo perrey bînînî kord.",
+				"pageContent": "Nawçey Nawerokî Perre..."
+			},
+			"marketing": {
+				"title": "07. Blokekanî Marketing",
+				"subtitle": "Banghêşt bo Kirdar & Footer.",
+				"cta": {
+					"title": "Amadey bo jenîn?",
+					"description": "Tevlî +15,000 mûzîkjanî Kurd be ke rojane kord û şî'r parve deken.",
+					"button": "Dirustkirdinî Ekauntî Bêberamber"
+				}
+			}
+		},
+		"themeToggle": {
+			"switchToLight": "Gorrîn bo Rûn",
+			"switchToDark": "Gorrîn bo Tarîk"
+		},
+		"ariaLabels": {
+			"playSong": "Lêdanî Goranî",
+			"likeSong": "Goranî Bedłbûn",
+			"share": "Parvekirdin",
+			"settings": "Rêkxistinekan"
+		}
+	},
+	"common": {
+		"songs": "Goranîyekan",
+		"plays": "Lêdanekan",
+		"popular": "Berwbław",
+		"discography": "Dîskografî",
+		"noSongsFound": "Hîç goranîyek bo em hunermende nedozrayewe.",
+		"fansAlsoLike": "Heyadaran herweha hez deken",
+		"artistNotFound": "Hunermend nedozrayewe",
+		"goHome": "Gerranewe bo Sereta",
+		"artist": "Profaylî Hunermend",
+		"follow": "Dwa kewtin",
+		"showLess": "Kemtir nîşan bide",
+		"readMore": "Zyatir bxwênewe",
+		"ago": "pêş êsta",
+		"hours": "k",
+		"minutes": "x",
+		"days": "r",
+		"unknownArtist": "Hunermendî Nenasraw",
+		"of": "le"
+	},
+	"song": {
+		"metadata": {
+			"key": "Pley Deng",
+			"rhythm": "Rîtm",
+			"difficulty": "Zehmetî"
+		}
+	},
+	"toolbox": {
+		"transpose": "Gorrînî Deng",
+		"original": "Orjînal",
+		"autoScroll": "Xwesurrîn",
+		"stop": "Rawestan",
+		"start": "Destpêkirdin",
+		"spacebarHint": "Space lêbde bo guherrandin",
+		"speed": "Xêrayî",
+		"fontSize": "Qebarey Pît",
+		"layout": "Rûkar",
+		"list": "Lîst",
+		"grid": "Torr",
+		"columns": "Estûnekan",
+		"transposeKey": "Gorrînî Pley Deng",
+		"recommendedCapo": "Capo Pêşniyarkraw",
+		"none": "Hîç",
+		"autoScrollSpeed": "Xêrayî Xwesurrîn",
+		"slow": "Xaw",
+		"fast": "Xêra",
+		"close": "Daxistin",
+		"ariaLabels": {
+			"decreaseTranspose": "Kemkirdinî Pley Deng",
+			"increaseTranspose": "Ziyadkirdinî Pley Deng",
+			"stopScrolling": "Rawestanî Surrîn",
+			"startScrolling": "Destpêkirdinî Surrîn",
+			"decreaseFontSize": "Kemkirdinî Qebarey Pît",
+			"increaseFontSize": "Ziyadkirdinî Qebarey Pît",
+			"decreaseSpeed": "Kemkirdinî Xêrayî",
+			"increaseSpeed": "Ziyadkirdinî Xêrayî",
+			"scrollLeft": "Surrîn bo Çep",
+			"scrollRight": "Surrîn bo Rast"
+		}
+	}
+}

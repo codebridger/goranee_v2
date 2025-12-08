@@ -1,0 +1,55 @@
+# Local development version that builds admin panel
+# Stage 1: Build admin panel static files
+FROM node:14.21.1-alpine AS admin-builder
+
+# Install build tools needed for fibers (native module)
+RUN apk add --no-cache python3 make g++ && \
+    ln -sf python3 /usr/bin/python
+
+WORKDIR /app
+
+# Copy admin panel package files
+COPY admin_panel/package.json admin_panel/package-lock.json admin_panel/yarn.lock* ./admin_panel/
+
+# Install dependencies
+WORKDIR /app/admin_panel
+RUN npm ci || yarn install --frozen-lockfile
+
+# Copy admin panel source
+COPY admin_panel ./
+
+# Set environment variables for build
+# Use /api as base URL so admin panel talks to nginx proxy instead of direct server
+ENV VUE_APP_BASE_URL=/api
+ENV VUE_APP_BASE_URL_ON_SERVER=http://server:8081
+# Set NUXT_TARGET=static for static generation in Docker
+ENV NUXT_TARGET=static
+# Increase Node.js memory limit for build process
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
+# Build static files (use docker-specific script with memory optimization)
+RUN npm run generate:docker || npm run generate
+
+# Stage 2: Nginx with admin static files
+FROM nginx:alpine
+
+# Copy nginx configuration files
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+# Use local config (no SSL) for local development
+COPY nginx/default.local.conf /etc/nginx/conf.d/default.conf
+
+# Copy static admin panel files from builder
+COPY --from=admin-builder /app/admin_panel/dist /usr/share/nginx/html/admin
+
+# Create index.html symlink for Nuxt 2 static generation (uses 200.html)
+RUN cd /usr/share/nginx/html/admin && \
+    if [ -f 200.html ] && [ ! -f index.html ]; then \
+        cp 200.html index.html; \
+    fi
+
+# Create directories for SSL certificates and certbot
+RUN mkdir -p /etc/nginx/ssl /var/www/certbot
+
+# Expose ports
+EXPOSE 80 443
+

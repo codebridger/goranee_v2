@@ -1,0 +1,64 @@
+---
+description: Guidelines for using and extending the Goranee Design System
+globs: end_user/**/*
+---
+
+# Goranee Design System & UI Consistency Rule
+
+This rule ensures that all frontend work in `end_user/` remains consistent with the NeoBeat design system.
+
+## 1. Core Design Sources
+
+Before implementing any UI, consult these sources:
+
+*   **Canonical Spec:** `docs/design-system_v1.md`
+    *   Defines all tokens: colors, typography, radii, shadows, gradients.
+    *   Defines core patterns: glassmorphism, card styles, chord sheet layout.
+*   **Live Reference:** `end_user/pages/showcase.vue`
+    *   Contains live, copy-pasteable examples of buttons, inputs, cards, typography, and layout patterns.
+    *   Demonstrates correct usage of Tailwind utility classes for the theme.
+*   **Existing Components:**
+    *   `end_user/components/base/*` (Primitives: Button, Input, Tag, Typography, etc.)
+    *   `end_user/components/widget/*` (Composites: SongCard, ArtistCard, Navbar, Hero, ChordSheet, etc.)
+
+## 2. Component Usage Strategy
+
+*   **Reuse First:**
+    *   ALWAYS use `end_user/components/base` components (e.g., `<Button>`, `<Input>`, `<Typography>`, `<Card>`) instead of raw HTML elements with classes.
+    *   ALWAYS check `end_user/components/widget` for higher-level patterns (e.g., `<SongCard>`, `<Navbar>`, `<Hero>`) before building new ones.
+*   **New Base Components:**
+    *   Only create a NEW base component if the pattern is reused across multiple pages AND no existing component can be extended to fit.
+*   **Page Layouts:**
+    *   Implement page-specific layouts (grids, stacks) inline in `pages/` files, but populate them using reusable components.
+
+## 3. Design Tokens & Theming Constraints
+
+*   **Colors & Gradients:**
+    *   Use semantic background classes: `bg-surface-base`, `bg-surface-card`, `bg-surface-glass`.
+    *   Use semantic text classes: `text-text-primary`, `text-text-secondary`, `text-text-accent`.
+    *   Use defined gradients: `bg-grad-primary`, `bg-grad-secondary`.
+    *   **Prohibited:** Do not introduce arbitrary hex colors or new color utility classes without updating the design system docs.
+*   **Typography:**
+    *   Use the `<Typography>` component for all headings and standard body text.
+    *   For chords/lyrics, STRICTLY follow the monospace/bold styling defined in `ChordSheet.vue` and `docs/design-system_v1.md`.
+*   **Spacing & Geometry:**
+    *   Adhere to the 8pt grid system.
+    *   Use standard radii: `rounded-lg`, `rounded-2xl` (for cards), `rounded-full` (for buttons/pills).
+    *   Use standard shadows: `shadow-lg`, `shadow-hover` (custom classes or utilities matching the spec).
+*   **Dark Mode & RTL:**
+    *   Every new UI element MUST support Dark Mode (via `dark:` variants) and RTL (via logical properties or `rtl:` variants).
+    *   Test layouts in both LTR and RTL mental models.
+
+## 4. Documentation & Maintenance
+
+*   **Updating the Showcase:**
+    *   If you create a new **reusable** component or visual pattern, you **MUST** add a minimal example to `end_user/pages/showcase.vue`.
+*   **Updating the Spec:**
+    *   If you introduce a new **design token** (e.g., a new semantic color or shadow depth), you **MUST** document it in `docs/design-system_v1.md`.
+
+## 5. Implementation Behavior
+
+*   **Motion & Interaction:**
+    *   Match existing transition timings (e.g., `duration-300`, `ease-out`) seen in `Hero.vue` and `SongCard.vue`.
+*   **States:**
+    *   Always implement Loading (Skeleton), Empty, and Error states for data-driven components, as described in the PRD.
