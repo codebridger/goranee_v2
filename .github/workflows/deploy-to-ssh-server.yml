@@ -7,8 +7,6 @@ name: Deploy To SSH Server
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -181,7 +179,7 @@ jobs:
             # Remove old SHA-tagged images from this project (keep only current deployment)
             OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/navidshad/goranee_v2_server" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
             OLD_END_USER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/navidshad/goranee_v2_end_user" | grep "END_USER-" | grep -v "$END_USER_IMAGE_TAG" || true)
-            
+
             if [ -n "$OLD_SERVER_IMAGES" ]; then
               echo "$OLD_SERVER_IMAGES" | xargs docker rmi -f || true
             fi
