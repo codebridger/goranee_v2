@@ -21,37 +21,76 @@ env:
   IMAGE_NAME: navidshad/goranee_v2
 
 jobs:
-  check-changes:
+  cleanup-old-images:
     runs-on: ubuntu-latest
-    outputs:
-      nginx: ${{ steps.filter.outputs.nginx }}
-      server: ${{ steps.filter.outputs.server }}
-      admin_panel: ${{ steps.filter.outputs.admin_panel }}
-      end_user: ${{ steps.filter.outputs.end_user }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Cleanup old package versions
+        uses: actions/github-script@v7
         with:
-          fetch-depth: 2
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const packages = [
+              'goranee_v2_server',
+              'goranee_v2_end_user',
+              'goranee_v2_nginx'
+            ];
 
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            nginx:
-              - 'nginx/**'
-              - 'nginx.Dockerfile'
-            server:
-              - 'server/**'
-            admin_panel:
-              - 'admin_panel/**'
-            end_user:
-              - 'end_user/**'
-          list-files: shell
+            const keepVersions = 10; // Keep the latest 10 versions
+
+            for (const packageName of packages) {
+              try {
+                // Get all package versions
+                const { data: versions } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
+                  package_type: 'container',
+                  package_name: packageName,
+                  username: context.repo.owner,
+                  per_page: 100
+                });
+                
+                if (!versions || versions.length === 0) {
+                  console.log(`No versions found for ${packageName}`);
+                  continue;
+                }
+                
+                // Filter out 'latest' tag and sort by creation date (newest first)
+                const sortedVersions = versions
+                  .filter(v => {
+                    const tags = v.metadata?.container?.tags || [];
+                    return !tags.includes('latest');
+                  })
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                // Delete versions beyond the keep limit
+                const versionsToDelete = sortedVersions.slice(keepVersions);
+                
+                console.log(`Processing ${packageName}: ${sortedVersions.length} versions found, keeping ${Math.min(keepVersions, sortedVersions.length)}, deleting ${versionsToDelete.length}`);
+                
+                for (const version of versionsToDelete) {
+                  try {
+                    await github.rest.packages.deletePackageVersionForUser({
+                      package_type: 'container',
+                      package_name: packageName,
+                      username: context.repo.owner,
+                      package_version_id: version.id
+                    });
+                    console.log(`✓ Deleted ${packageName} version ${version.id} (${version.name || 'untagged'})`);
+                  } catch (error) {
+                    console.log(`✗ Failed to delete ${packageName} version ${version.id}: ${error.message}`);
+                  }
+                }
+              } catch (error) {
+                // Package might not exist yet, which is fine
+                if (error.status === 404) {
+                  console.log(`Package ${packageName} does not exist yet, skipping cleanup`);
+                } else {
+                  console.log(`Error processing ${packageName}: ${error.message}`);
+                }
+              }
+            }
 
   build-nginx:
     runs-on: ubuntu-latest
-    needs: check-changes
-    if: needs.check-changes.outputs.nginx == 'true' || needs.check-changes.outputs.admin_panel == 'true'
+    needs: cleanup-old-images
     steps:
       - uses: actions/checkout@v3
 
@@ -82,8 +121,7 @@ jobs:
 
   build-server:
     runs-on: ubuntu-latest
-    needs: check-changes
-    if: needs.check-changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
+    needs: cleanup-old-images
     steps:
       - uses: actions/checkout@v3
 
@@ -101,8 +139,7 @@ jobs:
 
   build-end-user:
     runs-on: ubuntu-latest
-    needs: check-changes
-    if: needs.check-changes.outputs.end_user == 'true' || github.event_name == 'workflow_dispatch'
+    needs: cleanup-old-images
     steps:
       - uses: actions/checkout@v3
 
@@ -131,7 +168,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-server, build-end-user, build-nginx, check-changes]
+    needs: [build-server, build-end-user, build-nginx]
     if: always() && (needs.build-server.result == 'success' || needs.build-server.result == 'skipped') && (needs.build-end-user.result == 'success' || needs.build-end-user.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped')
     steps:
       - uses: actions/checkout@v3
