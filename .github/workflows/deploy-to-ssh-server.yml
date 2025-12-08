@@ -226,22 +226,40 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           envs: SERVER_IMAGE_TAG, END_USER_IMAGE_TAG, SERVER_ADMIN_EMAIL, SERVER_ADMIN_PASSWORD, GITHUB_TOKEN, GITHUB_ACTOR, GITHUB_SHA
           script: |
+            set -e  # Exit on any error
+
             # Login to GitHub Container Registry
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin || true
+            echo "Logging into GitHub Container Registry..."
+            if ! echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin; then
+              echo "ERROR: Failed to login to GitHub Container Registry"
+              exit 1
+            fi
+            echo "Successfully logged into GitHub Container Registry"
 
             # Set image tags (use commit SHA tags or fallback to latest)
             export SERVER_IMAGE_TAG=${SERVER_IMAGE_TAG:-SERVER-${GITHUB_SHA:-latest}}
             export END_USER_IMAGE_TAG=${END_USER_IMAGE_TAG:-END_USER-${GITHUB_SHA:-latest}}
             export NGINX_IMAGE_TAG=latest
 
+            echo "Using image tags:"
+            echo "  SERVER_IMAGE_TAG=$SERVER_IMAGE_TAG"
+            echo "  END_USER_IMAGE_TAG=$END_USER_IMAGE_TAG"
+            echo "  NGINX_IMAGE_TAG=$NGINX_IMAGE_TAG"
+
             # Remove the previous version of the app, if exists
-            docker-compose down
+            echo "Stopping existing containers..."
+            docker-compose down || true
 
             # Pull latest images first
+            echo "Pulling latest images..."
             docker-compose pull
 
             # Start the new version
+            echo "Starting containers..."
             docker-compose up --remove-orphans -d
+
+            echo "Deployment completed successfully"
+            docker-compose ps
 
             # Clean up unused images to save space
             # Remove old SHA-tagged images from this project (keep only current deployment)
