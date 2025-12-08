@@ -26,8 +26,8 @@ services:
     expose:
       - "8081"
     volumes:
-      - ./server/uploads:/server/uploads
-      - ./server/backups:/server/backups
+      - ./public_assets:/server/uploads
+      - ./backups:/server/backups
     environment:
       - ADMIN_EMAIL=${SERVER_ADMIN_EMAIL:-admin@mail.com}
       - ADMIN_PASSWORD=${SERVER_ADMIN_PASSWORD:-admin}
