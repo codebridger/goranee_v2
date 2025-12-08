@@ -110,7 +110,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Nginx Image
@@ -129,7 +129,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Server Image
@@ -158,7 +158,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push End User Image
@@ -191,7 +191,7 @@ jobs:
           SERVER_ADMIN_EMAIL: ${{ secrets.SERVER_ADMIN_EMAIL }}
           SERVER_ADMIN_PASSWORD: ${{ secrets.SERVER_ADMIN_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_ACTOR: ${{ github.repository_owner }}
           GITHUB_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.SSH_HOST }}
