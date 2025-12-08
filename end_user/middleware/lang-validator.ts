@@ -1,7 +1,7 @@
 import type { LanguageCode } from '~/constants/routes'
 
 export default defineNuxtRouteMiddleware((to) => {
-  const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac', 'en']
+  const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'en']
   const lang = to.params.lang as string | string[]
   
   // Handle array case (catch-all route)

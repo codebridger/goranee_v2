@@ -68,7 +68,7 @@ export default {
       let songTitleSeo = ''
 
       if (song.content) {
-        const defaultLang = song.defaultLang || 'ckb-IR'
+        const defaultLang = 'ckb-IR'
         const langContent = song.content[defaultLang] || song.content['ckb-IR']
         songTitle = langContent?.title || ''
         songRhythm = song.rhythm || '' // Rhythm is now in main object
@@ -110,7 +110,7 @@ export default {
     getArtistName(artist) {
       // Extract name from content object (new structure)
       if (artist && artist.content) {
-        const defaultLang = artist.defaultLang || 'ckb-IR'
+        const defaultLang = 'ckb-IR'
         return artist.content[defaultLang]?.name || artist.content['ckb-IR']?.name || ''
       }
       // Fallback to old structure

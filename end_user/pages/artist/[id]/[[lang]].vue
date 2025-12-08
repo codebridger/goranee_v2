@@ -24,7 +24,7 @@ const langCode = computed<LanguageCode>(() => {
 	const lang = route.params.lang as string | string[]
 	// Handle array case (catch-all route)
 	const langStr = Array.isArray(lang) ? lang[0] : lang
-	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac', 'en']
+	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'en']
 	return validLangs.includes(langStr as LanguageCode)
 		? (langStr as LanguageCode)
 		: 'ckb-IR' // Default fallback

@@ -80,7 +80,6 @@ export default {
                 { 'content.ckb-IR.title': { $regex: this.phrase, $options: 'i' } },
                 { 'content.ckb-Latn.title': { $regex: this.phrase, $options: 'i' } },
                 { 'content.kmr.title': { $regex: this.phrase, $options: 'i' } },
-                { 'content.hac.title': { $regex: this.phrase, $options: 'i' } },
               ]
             },
             populates: ["genres", "artists"],
@@ -98,7 +97,6 @@ export default {
                 { 'content.ckb-IR.name': { $regex: this.phrase, $options: 'i' } },
                 { 'content.ckb-Latn.name': { $regex: this.phrase, $options: 'i' } },
                 { 'content.kmr.name': { $regex: this.phrase, $options: 'i' } },
-                { 'content.hac.name': { $regex: this.phrase, $options: 'i' } },
               ]
             },
             options: { sort: "-_id" },
@@ -124,7 +122,7 @@ export default {
         // Extract title from content object (new structure)
         let songTitle = ''
         if (song.content) {
-          const defaultLang = song.defaultLang || 'ckb-IR'
+          const defaultLang = 'ckb-IR'
           songTitle = song.content[defaultLang]?.title || song.content['ckb-IR']?.title || ''
         } else {
           songTitle = song.title || ''
@@ -138,7 +136,7 @@ export default {
 
         // Search in lyrics (sections) - check all language versions
         const contentToSearch = song.content || {}
-        const languages = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+        const languages = ['ckb-IR', 'ckb-Latn', 'kmr']
         
         for (const lang of languages) {
           const langContent = contentToSearch[lang]
@@ -169,7 +167,7 @@ export default {
         // Extract title from content object (new structure)
         let songTitle = ''
         if (song.content) {
-          const defaultLang = song.defaultLang || 'ckb-IR'
+          const defaultLang = 'ckb-IR'
           songTitle = song.content[defaultLang]?.title || song.content['ckb-IR']?.title || ''
         } else {
           songTitle = song.title || ''
@@ -183,7 +181,7 @@ export default {
 
         // Search in lyrics (sections) - check all language versions
         const contentToSearch = song.content || {}
-        const languages = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac']
+        const languages = ['ckb-IR', 'ckb-Latn', 'kmr']
         
         for (const lang of languages) {
           const langContent = contentToSearch[lang]

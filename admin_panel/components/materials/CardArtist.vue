@@ -63,7 +63,7 @@ export default {
     artistName() {
       // Extract name from content object (new structure)
       if (this.artist && this.artist.content) {
-        const defaultLang = this.artist.defaultLang || 'ckb-IR'
+        const defaultLang = 'ckb-IR'
         return this.artist.content[defaultLang]?.name || this.artist.content['ckb-IR']?.name || ''
       }
       // Fallback to old structure

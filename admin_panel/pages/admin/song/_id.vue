@@ -30,9 +30,7 @@
         {{ getLangLabel(lang) }}
         <span v-if="hasLangContent(lang)" class="ml-1 text-green-500">✓</span>
       </button>
-      <button v-if="availableLangs.length < 4" class="px-4 py-2 text-gray-500 hover:text-gray-700" @click="addLanguage">
-        + {{ $t('add-language') || 'Add Language' }}
-      </button>
+
     </div>
 
     <chord-picker class="mt-4" :value="form.chords" @input="form.chords = $event" />
@@ -136,9 +134,7 @@ export default {
           'ckb-IR': null,
           'ckb-Latn': null,
           'kmr': null,
-          'hac': null,
         },
-        defaultLang: 'ckb-IR',
         rhythm: "",
         artists: [],
         genres: [],
@@ -165,7 +161,7 @@ export default {
       return (this.form.chords.vocalNote || {}).note || "";
     },
     availableLangs() {
-      return ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'];
+      return ['ckb-IR', 'ckb-Latn', 'kmr'];
     },
     hasCurrentContent() {
       return this.currentLangForm.title ||
@@ -179,7 +175,6 @@ export default {
         'ckb-IR': 'سورانی (ایران)',
         'ckb-Latn': 'سورانی (لاتین)',
         'kmr': 'کرمانجی',
-        'hac': 'گورانی',
       };
       return labels[lang] || lang;
     },
@@ -210,13 +205,7 @@ export default {
         };
       }
     },
-    addLanguage() {
-      // Find first available language slot
-      const available = this.availableLangs.find(lang => !this.form.content[lang]);
-      if (available) {
-        this.switchLanguage(available);
-      }
-    },
+
     copyLanguage() {
       if (!this.copyFromLang) return;
 
@@ -267,7 +256,6 @@ export default {
           query: { _id: this.id },
           update: {
             content: this.form.content,
-            defaultLang: this.form.defaultLang,
             rhythm: this.form.rhythm,
             artists: this.form.artists,
             genres: this.form.genres,
@@ -305,7 +293,6 @@ export default {
           title_seo: this.song.title_seo || '',
           sections: this.song.sections || [],
         };
-        this.form.defaultLang = 'ckb-IR';
         // Move rhythm from old structure to main object
         this.form.rhythm = this.song.rhythm || '';
       } else if (this.song.content) {
@@ -314,9 +301,7 @@ export default {
           'ckb-IR': this.song.content['ckb-IR'] || null,
           'ckb-Latn': this.song.content['ckb-Latn'] || null,
           'kmr': this.song.content['kmr'] || null,
-          'hac': this.song.content['hac'] || null,
         };
-        this.form.defaultLang = this.song.defaultLang || 'ckb-IR';
       }
 
       // Copy shared fields (including rhythm)
@@ -328,7 +313,7 @@ export default {
       this.form.melodies = this.song.melodies || [];
 
       // Set current language to default language
-      this.currentLang = this.form.defaultLang;
+      this.currentLang = 'ckb-IR';
 
       // Load current language content (without saving first)
       this.isInitializing = true;

@@ -50,7 +50,7 @@ export default {
     songTitle() {
       // Extract title from content object (new structure)
       if (this.song.content) {
-        const defaultLang = this.song.defaultLang || 'ckb-IR'
+        const defaultLang = 'ckb-IR'
         return this.song.content[defaultLang]?.title || this.song.content['ckb-IR']?.title || ''
       }
       // Fallback to old structure
@@ -61,7 +61,7 @@ export default {
     getArtistName(artist) {
       // Extract name from content object (new structure)
       if (artist && artist.content) {
-        const defaultLang = artist.defaultLang || 'ckb-IR'
+        const defaultLang = 'ckb-IR'
         return artist.content[defaultLang]?.name || artist.content['ckb-IR']?.name || ''
       }
       // Fallback to old structure

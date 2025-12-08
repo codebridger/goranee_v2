@@ -83,13 +83,6 @@ export default [
         "ckb-IR": ArtistLanguageContentSchema,
         "ckb-Latn": ArtistLanguageContentSchema,
         kmr: ArtistLanguageContentSchema,
-        hac: ArtistLanguageContentSchema,
-      },
-      // Default language (for backward compatibility and fallback)
-      defaultLang: {
-        type: String,
-        enum: ["ckb-IR", "ckb-Latn", "kmr", "hac"],
-        default: "ckb-IR",
       },
       // Shared content (not language-specific)
       chords: { type: Number, default: 0 },
@@ -117,13 +110,6 @@ export default [
         "ckb-IR": SongLanguageContentSchema,
         "ckb-Latn": SongLanguageContentSchema,
         kmr: SongLanguageContentSchema,
-        hac: SongLanguageContentSchema,
-      },
-      // Default language (for backward compatibility and fallback)
-      defaultLang: {
-        type: String,
-        enum: ["ckb-IR", "ckb-Latn", "kmr", "hac"],
-        default: "ckb-IR",
       },
       // Shared content (not language-specific)
       rhythm: { type: String },

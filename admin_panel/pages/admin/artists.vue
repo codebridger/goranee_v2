@@ -24,7 +24,7 @@ export default {
           mutate: (row) => {
             // Extract name from content object (new structure)
             if (row.content) {
-              const defaultLang = row.defaultLang || 'ckb-IR'
+              const defaultLang = 'ckb-IR'
               return row.content[defaultLang]?.name || row.content['ckb-IR']?.name || ''
             }
             // Fallback to old structure
@@ -37,7 +37,7 @@ export default {
           mutate: (row) => {
             // Extract name_seo from content object (new structure)
             if (row.content) {
-              const defaultLang = row.defaultLang || 'ckb-IR'
+              const defaultLang = 'ckb-IR'
               return row.content[defaultLang]?.name_seo || row.content['ckb-IR']?.name_seo || ''
             }
             // Fallback to old structure

@@ -3,7 +3,7 @@
  * Use these constants instead of hardcoded route paths throughout the application
  */
 
-export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac' | 'en'
+export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'en'
 
 export const ROUTES = {
   HOME: '/',

@@ -32,7 +32,6 @@ export const useTabService = () => {
         'content.ckb-IR.title': 1,
         'content.ckb-Latn.title': 1,
         'content.kmr.title': 1,
-        'content.hac.title': 1,
         rhythm: 1,
         image: 1,
         artists: 1,
@@ -80,7 +79,6 @@ export const useTabService = () => {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
-            'content.hac.title': 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -272,7 +270,6 @@ export const useTabService = () => {
             { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
             { 'content.ckb-Latn.title': { $regex: query, $options: 'i' } },
             { 'content.kmr.title': { $regex: query, $options: 'i' } },
-            { 'content.hac.title': { $regex: query, $options: 'i' } },
           ]
         },
         options: {
@@ -281,7 +278,6 @@ export const useTabService = () => {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
-            'content.hac.title': 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -329,8 +325,7 @@ export const useTabService = () => {
       orConditions.push(
         { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
         { 'content.ckb-Latn.title': { $regex: query, $options: 'i' } },
-        { 'content.kmr.title': { $regex: query, $options: 'i' } },
-        { 'content.hac.title': { $regex: query, $options: 'i' } }
+        { 'content.kmr.title': { $regex: query, $options: 'i' } }
       )
     }
 
@@ -386,7 +381,6 @@ export const useTabService = () => {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
-            'content.hac.title': 1,
             rhythm: 1,
             image: 1,
             artists: 1,
@@ -433,7 +427,6 @@ export const useTabService = () => {
         { 'content.ckb-IR.name': { $regex: search, $options: 'i' } },
         { 'content.ckb-Latn.name': { $regex: search, $options: 'i' } },
         { 'content.kmr.name': { $regex: search, $options: 'i' } },
-        { 'content.hac.name': { $regex: search, $options: 'i' } },
       ]
     }
 
@@ -541,7 +534,6 @@ export const useTabService = () => {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
-            'content.hac.title': 1,
             rhythm: 1,
             image: 1,
             artists: 1,

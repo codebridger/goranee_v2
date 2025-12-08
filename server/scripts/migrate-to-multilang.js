@@ -82,9 +82,7 @@ function migrateSong(song) {
         "ckb-IR": defaultContent,
         "ckb-Latn": null,
         kmr: null,
-        hac: null,
       },
-      defaultLang: "ckb-IR",
       // Keep rhythm in main object (it's not language-specific)
       rhythm: song.rhythm || null,
       updatedAt: new Date(),
@@ -123,9 +121,7 @@ function migrateArtist(artist) {
         "ckb-IR": defaultContent,
         "ckb-Latn": null,
         kmr: null,
-        hac: null,
       },
-      defaultLang: "ckb-IR",
       updatedAt: new Date(),
     },
     $unset: {

@@ -26,9 +26,7 @@
         {{ getLangLabel(lang) }}
         <span v-if="hasLangContent(lang)" class="ml-1 text-green-500">✓</span>
       </button>
-      <button v-if="availableLangs.length < 4" class="px-4 py-2 text-gray-500 hover:text-gray-700" @click="addLanguage">
-        + {{ $t('add-language') || 'Add Language' }}
-      </button>
+
     </div>
 
     <card class="p-4 mt-4">
@@ -84,15 +82,13 @@ export default {
     return {
       pending: false,
       currentLang: 'ckb-IR',
-      availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'],
+      availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr'],
       form: {
         content: {
           'ckb-IR': null,
           'ckb-Latn': null,
           'kmr': null,
-          'hac': null,
         },
-        defaultLang: 'ckb-IR',
         image: null,
       },
       currentLangForm: {
@@ -113,7 +109,6 @@ export default {
         'ckb-IR': 'سورانی (ایران)',
         'ckb-Latn': 'سورانی (لاتین)',
         'kmr': 'کرمانجی',
-        'hac': 'گورانی',
       }
       return labels[lang] || lang
     },
@@ -144,13 +139,7 @@ export default {
         }
       }
     },
-    addLanguage() {
-      // Find first available language slot
-      const available = this.availableLangs.find(lang => !this.form.content[lang])
-      if (available) {
-        this.switchLanguage(available)
-      }
-    },
+
     update() {
       // Save current language content before updating
       if (this.currentLangForm.name || this.currentLangForm.name_seo || this.currentLangForm.bio) {
@@ -165,7 +154,6 @@ export default {
           query: { _id: this.id },
           update: {
             content: this.form.content,
-            defaultLang: this.form.defaultLang,
             image: this.form.image,
             updatedAt: new Date(),
           },
@@ -198,11 +186,9 @@ export default {
           name_seo: this.artist.name_seo || '',
           bio: this.artist.bio || '',
         }
-        this.form.defaultLang = 'ckb-IR'
       } else if (this.artist.content) {
         // New structure
         this.form.content = { ...this.artist.content }
-        this.form.defaultLang = this.artist.defaultLang || 'ckb-IR'
       }
 
       // Copy shared fields

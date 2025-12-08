@@ -45,7 +45,7 @@ export default {
     getArtistName(artist) {
       // Extract name from content object (new structure)
       if (artist && artist.content) {
-        const defaultLang = artist.defaultLang || 'ckb-IR'
+        const defaultLang = 'ckb-IR'
         return artist.content[defaultLang]?.name || artist.content['ckb-IR']?.name || ''
       }
       // Fallback to old structure

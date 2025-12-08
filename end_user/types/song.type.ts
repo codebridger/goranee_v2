@@ -1,7 +1,7 @@
 // Type definitions for db_song.js CollectionDefinitions
 
 // Language code type
-export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac' | 'en'
+export type LanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'en'
 
 // File reference type (for Schemas.file)
 export interface FileReference {
@@ -72,7 +72,6 @@ export interface Artist {
     'ckb-IR'?: ArtistLanguageContent
     'ckb-Latn'?: ArtistLanguageContent
     'kmr'?: ArtistLanguageContent
-    'hac'?: ArtistLanguageContent
   }
   chords?: number
   image?: FileReference
@@ -91,7 +90,6 @@ export interface Song {
     'ckb-IR'?: SongLanguageContent
     'ckb-Latn'?: SongLanguageContent
     'kmr'?: SongLanguageContent
-    'hac'?: SongLanguageContent
   }
   // Shared content
   rhythm?: string
@@ -124,7 +122,7 @@ export interface SongWithPopulatedRefs extends Omit<Song, 'artists' | 'genres' |
 }
 
 // Content language code (excludes 'en' as it's not used in content objects)
-export type ContentLanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'
+export type ContentLanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr'
 
 // Helper function to get available languages
 export function getAvailableLangs(song: Song): ContentLanguageCode[] {

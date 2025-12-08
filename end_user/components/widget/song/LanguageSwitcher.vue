@@ -50,7 +50,6 @@ const getLangLabel = (lang: LanguageCode) => {
     'ckb-IR': 'سورانی (ایران)',
     'ckb-Latn': 'سورانی (لاتین)',
     'kmr': 'کرمانجی',
-    'hac': 'گورانی',
   }
   return labels[lang] || lang
 }

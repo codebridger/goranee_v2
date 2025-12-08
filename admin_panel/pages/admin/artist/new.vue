@@ -25,7 +25,7 @@
         <span v-if="hasLangContent(lang)" class="ml-1 text-green-500">✓</span>
       </button>
       <button
-        v-if="availableLangs.length < 4"
+        v-if="availableLangs.length < 3"
         class="px-4 py-2 text-gray-500 hover:text-gray-700"
         @click="addLanguage"
       >
@@ -71,15 +71,13 @@ export default {
     return {
       pending: false,
       currentLang: 'ckb-IR',
-      availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr', 'hac'],
+      availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr'],
       form: {
         content: {
           'ckb-IR': null,
           'ckb-Latn': null,
           'kmr': null,
-          'hac': null,
         },
-        defaultLang: 'ckb-IR',
         image: null,
       },
       currentLangForm: {
@@ -95,7 +93,6 @@ export default {
         'ckb-IR': 'سورانی (ایران)',
         'ckb-Latn': 'سورانی (لاتین)',
         'kmr': 'کرمانجی',
-        'hac': 'گورانی',
       }
       return labels[lang] || lang
     },

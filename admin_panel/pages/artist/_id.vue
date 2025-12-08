@@ -55,7 +55,7 @@ export default {
       if (!this.artist) return '';
       // Handle new structure with content object
       if (this.artist.content) {
-        const defaultLang = this.artist.defaultLang || 'ckb-IR';
+        const defaultLang = 'ckb-IR';
         return this.artist.content[defaultLang]?.name || this.artist.content['ckb-IR']?.name || '';
       }
       // Fallback to old structure
@@ -66,7 +66,7 @@ export default {
     const name = this.artistName;
     let titles = [
       name,
-      ...((this.artist?.content?.[this.artist?.defaultLang || 'ckb-IR']?.name_seo || this.artist?.name_seo || "")).split("\n"),
+      ...((this.artist?.content?.['ckb-IR']?.name_seo || this.artist?.name_seo || "")).split("\n"),
     ];
 
     let metaList = [];

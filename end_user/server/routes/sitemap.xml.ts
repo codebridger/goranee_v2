@@ -133,7 +133,7 @@ ${xDefault}
   
   <!-- Artists with all language versions -->
   ${artists.map((artist: Artist) => {
-    const availableLangs = (Object.keys(artist.content || {}) as Array<'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'>).filter(
+    const availableLangs = (Object.keys(artist.content || {}) as Array<'ckb-IR' | 'ckb-Latn' | 'kmr'>).filter(
       lang => artist.content?.[lang]?.name
     )
     const lastmod = (artist as any).updatedAt 

@@ -10,7 +10,7 @@ import { ROUTES } from '~/constants/routes'
 export type UILanguageOption = 'sorani-latin' | 'sorani-farsi' | 'farsi' | 'english' | 'kmr'
 
 // Content language code (excludes 'en' as it's not used in content objects)
-export type ContentLanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr' | 'hac'
+export type ContentLanguageCode = 'ckb-IR' | 'ckb-Latn' | 'kmr'
 
 // Map UI language option to UI locale and content language
 interface LanguageMapping {
@@ -176,7 +176,7 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
     const langParam = route.params.lang
     if (langParam) {
       const langStr = Array.isArray(langParam) ? langParam[0] : langParam
-      const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'hac', 'en']
+      const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'en']
       if (validLangs.includes(langStr as LanguageCode)) {
         const routeLang = langStr as LanguageCode
         const uiLang = getUILanguageFromContent(routeLang)
