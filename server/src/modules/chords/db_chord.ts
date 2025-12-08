@@ -1,17 +1,37 @@
 import { defineCollection, Schema, Permission } from "@modular-rest/server";
 
-let TableRowSchema = new Schema({
+const TableRowSchema = new Schema({
   major: { type: Schema.Types.ObjectId, ref: "chord", required: true },
   naturalMinor: { type: Schema.Types.ObjectId, ref: "chord", required: true },
   harmonicMinor: { type: Schema.Types.ObjectId, ref: "chord", required: true },
   melodicMinor: { type: Schema.Types.ObjectId, ref: "chord", required: true },
 });
 
-let TableChromaticRowSchema = new Schema({
+const TableChromaticRowSchema = new Schema({
   one: { type: Schema.Types.ObjectId, ref: "chord" },
   two: { type: Schema.Types.ObjectId, ref: "chord" },
   three: { type: Schema.Types.ObjectId, ref: "chord" },
   four: { type: Schema.Types.ObjectId, ref: "chord" },
+});
+
+export const RhythmCollection = defineCollection({
+  database: "chord",
+  collection: "rhythm",
+  schema: new Schema({
+    title: { type: String, unique: true, required: true },
+    description: String,
+  }),
+  permissions: [
+    new Permission({
+      accessType: "god_access",
+      write: true,
+      read: true,
+    }),
+    new Permission({
+      accessType: "anonymous_access",
+      read: true,
+    }),
+  ],
 });
 
 export default [
@@ -102,4 +122,6 @@ export default [
       }),
     ],
   }),
+
+  RhythmCollection,
 ];

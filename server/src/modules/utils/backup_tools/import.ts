@@ -25,22 +25,24 @@ function ImportFile(
       if (err) {
         // Format error with meaningful message
         const errorMessage = err.message || String(err);
-        const isCommandNotFound = errorMessage.includes('command not found') || errorMessage.includes('mongoimport: not found');
-        
+        const isCommandNotFound =
+          errorMessage.includes("command not found") ||
+          errorMessage.includes("mongoimport: not found");
+
         if (isCommandNotFound) {
           reject({
             message: `mongoimport command not found. Please ensure MongoDB Database Tools are installed and in your system PATH.`,
             originalError: errorMessage,
-            step: 'database_import',
-            collection: `${db}.${coll}`
+            step: "database_import",
+            collection: `${db}.${coll}`,
           });
         } else {
           reject({
             message: `Failed to import collection ${db}.${coll}: ${errorMessage}`,
             originalError: errorMessage,
-            step: 'database_import',
+            step: "database_import",
             collection: `${db}.${coll}`,
-            stderr: stderr
+            stderr: stderr,
           });
         }
       } else {
@@ -69,7 +71,9 @@ function clearData(db: string = "", collection: string = ""): any {
   return collectionAdapter.deleteMany({});
 }
 
-export async function importCollections(collectionPaths: string[]): Promise<void> {
+export async function importCollections(
+  collectionPaths: string[]
+): Promise<void> {
   for (let fileDir of collectionPaths) {
     const pathPars = fileDir.split("/");
     const fileName = pathPars[pathPars.length - 1];
@@ -105,14 +109,14 @@ export async function importCollections(collectionPaths: string[]): Promise<void
         " import has not been done."
       );
       console.error(err);
-      
+
       // Re-throw with proper formatting
       throw {
         message: err.message || `Failed to import collection from ${fileName}`,
         originalError: err.originalError || err,
-        step: err.step || 'database_import',
+        step: err.step || "database_import",
         collection: err.collection || `${dbName}.${collection}`,
-        fileName: fileName
+        fileName: fileName,
       };
     }
   }

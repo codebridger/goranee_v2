@@ -5,6 +5,7 @@ import {
   Permission,
 } from "@modular-rest/server";
 import { getSongTriggers } from "./db_events";
+import { RhythmCollection } from "./db_chord";
 
 let SongChordSchema = new Schema({
   rowIndex: Number,
@@ -112,7 +113,7 @@ export default [
         kmr: SongLanguageContentSchema,
       },
       // Shared content (not language-specific)
-      rhythm: { type: String },
+      rhythm: [{ type: Schema.Types.ObjectId, ref: RhythmCollection.model }],
       artists: [{ type: Schema.Types.ObjectId, ref: "artist", default: [] }],
       genres: [{ type: Schema.Types.ObjectId, ref: "genre", default: [] }],
       chords: {

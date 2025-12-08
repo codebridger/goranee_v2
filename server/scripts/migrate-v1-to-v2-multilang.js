@@ -39,13 +39,17 @@ try {
 // Configuration
 const MONGODB_URL = process.env.MONGODB_URL || "mongodb://localhost:27017";
 const DATABASE_NAME = "goranee_tab";
+const DATABASE_CMS = "goranee_cms";
 const COLLECTION_SONGS = "songs";
 const COLLECTION_ARTISTS = "artists";
+const COLLECTION_AUTHS = "auths";
 
 // Statistics
 const stats = {
   songs: { total: 0, migrated: 0, skipped: 0, errors: 0 },
   artists: { total: 0, migrated: 0, skipped: 0, errors: 0 },
+  songCounts: { total: 0, updated: 0, errors: 0 },
+  passwords: { total: 0, migrated: 0, skipped: 0, errors: 0 },
 };
 
 /**
@@ -280,6 +284,236 @@ async function migrateArtists(db) {
 }
 
 /**
+ * Update artist song counts
+ * Recalculates the total number of songs for each artist and updates their chords field
+ */
+async function updateArtistSongCounts(db) {
+  console.log("\n📊 Updating artist song counts...");
+
+  const songsCollection = db.collection(COLLECTION_SONGS);
+  const artistsCollection = db.collection(COLLECTION_ARTISTS);
+  const { ObjectId } = require("mongodb");
+
+  try {
+    // Get all unique artist IDs from all songs
+    const songs = await songsCollection
+      .find({}, { projection: { artists: 1 } })
+      .toArray();
+
+    const uniqueArtistIds = new Set();
+    for (const song of songs) {
+      if (song.artists && Array.isArray(song.artists)) {
+        for (const artistId of song.artists) {
+          // Convert to string for Set uniqueness, handle both ObjectId and string
+          const idString =
+            artistId instanceof ObjectId
+              ? artistId.toString()
+              : String(artistId);
+          uniqueArtistIds.add(idString);
+        }
+      }
+    }
+
+    stats.songCounts.total = uniqueArtistIds.size;
+    console.log(`   Found ${stats.songCounts.total} unique artists with songs`);
+
+    if (stats.songCounts.total === 0) {
+      console.log("   No artists to update");
+      return;
+    }
+
+    // Process artists in batches
+    const batchSize = 50;
+    const artistIdArray = Array.from(uniqueArtistIds);
+    let processed = 0;
+
+    for (let i = 0; i < artistIdArray.length; i += batchSize) {
+      const batch = artistIdArray.slice(i, i + batchSize);
+
+      // Process each artist in batch
+      for (const artistIdString of batch) {
+        try {
+          // Convert string back to ObjectId for query
+          let artistId;
+          try {
+            artistId = new ObjectId(artistIdString);
+          } catch (error) {
+            console.error(
+              `   ⚠️  Invalid artist ID format: ${artistIdString}`,
+              error.message
+            );
+            stats.songCounts.errors++;
+            processed++;
+            continue;
+          }
+
+          // Count all songs where this artist appears in the artists array
+          const songCount = await songsCollection.countDocuments({
+            artists: artistId,
+          });
+
+          // Update the artist's chords field
+          await artistsCollection.updateOne(
+            { _id: artistId },
+            { $set: { chords: songCount } }
+          );
+
+          stats.songCounts.updated++;
+          processed++;
+
+          // Progress update every 50 artists
+          if (processed % 50 === 0) {
+            console.log(`   Progress: ${processed}/${stats.songCounts.total}`);
+          }
+        } catch (error) {
+          console.error(
+            `   ❌ Error updating song count for artist ${artistIdString}:`,
+            error.message
+          );
+          stats.songCounts.errors++;
+          processed++;
+        }
+      }
+    }
+
+    console.log(`   ✓ Updated: ${stats.songCounts.updated}`);
+    if (stats.songCounts.errors > 0) {
+      console.log(`   ❌ Errors: ${stats.songCounts.errors}`);
+    }
+  } catch (error) {
+    console.error("   ❌ Error in updateArtistSongCounts:", error.message);
+    stats.songCounts.errors++;
+  }
+}
+
+/**
+ * Check if a string is already base64 encoded
+ */
+function isBase64(str) {
+  if (!str || typeof str !== "string") {
+    return false;
+  }
+  try {
+    // Base64 strings typically contain only A-Z, a-z, 0-9, +, /, and = (padding)
+    // They are also typically a multiple of 4 in length (after removing padding)
+    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+    if (!base64Regex.test(str)) {
+      return false;
+    }
+    // Try to decode and re-encode to verify
+    const decoded = Buffer.from(str, "base64").toString("utf8");
+    const reEncoded = Buffer.from(decoded, "utf8").toString("base64");
+    // Compare normalized (remove padding for comparison)
+    return str.replace(/=+$/, "") === reEncoded.replace(/=+$/, "");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Migrate passwords to base64 encoding
+ */
+async function migratePasswordsToBase64(client) {
+  console.log("\n🔐 Migrating passwords to base64...");
+
+  const cmsDb = client.db(DATABASE_CMS);
+  const collection = cmsDb.collection(COLLECTION_AUTHS);
+
+  try {
+    // Count total auth documents
+    stats.passwords.total = await collection.countDocuments({
+      password: { $exists: true, $ne: null },
+    });
+    console.log(`   Found ${stats.passwords.total} documents with passwords`);
+
+    if (stats.passwords.total === 0) {
+      console.log("   No passwords to migrate");
+      return;
+    }
+
+    // Process documents in batches
+    const batchSize = 100;
+    let processed = 0;
+    let lastId = null;
+
+    while (true) {
+      // Build query for batch
+      const query = lastId
+        ? { _id: { $gt: lastId }, password: { $exists: true, $ne: null } }
+        : { password: { $exists: true, $ne: null } };
+
+      // Fetch batch
+      const documents = await collection
+        .find(query)
+        .sort({ _id: 1 })
+        .limit(batchSize)
+        .toArray();
+
+      if (documents.length === 0) {
+        break; // No more documents
+      }
+
+      // Process each document in batch
+      for (const doc of documents) {
+        try {
+          if (!doc.password || typeof doc.password !== "string") {
+            stats.passwords.skipped++;
+            processed++;
+            lastId = doc._id;
+            continue;
+          }
+
+          // Check if already base64 encoded
+          if (isBase64(doc.password)) {
+            stats.passwords.skipped++;
+            processed++;
+            lastId = doc._id;
+            continue;
+          }
+
+          // Convert password to base64
+          const base64Password = Buffer.from(doc.password, "utf8").toString(
+            "base64"
+          );
+
+          // Update document
+          await collection.updateOne(
+            { _id: doc._id },
+            { $set: { password: base64Password } }
+          );
+
+          stats.passwords.migrated++;
+          processed++;
+          lastId = doc._id;
+
+          // Progress update every 100 documents
+          if (processed % 100 === 0) {
+            console.log(`   Progress: ${processed}/${stats.passwords.total}`);
+          }
+        } catch (error) {
+          console.error(
+            `   ❌ Error migrating password for document ${doc._id}:`,
+            error.message
+          );
+          stats.passwords.errors++;
+          processed++;
+          lastId = doc._id;
+        }
+      }
+    }
+
+    console.log(`   ✓ Migrated: ${stats.passwords.migrated}`);
+    console.log(`   ⊘ Skipped: ${stats.passwords.skipped}`);
+    if (stats.passwords.errors > 0) {
+      console.log(`   ❌ Errors: ${stats.passwords.errors}`);
+    }
+  } catch (error) {
+    console.error("   ❌ Error in migratePasswordsToBase64:", error.message);
+    stats.passwords.errors++;
+  }
+}
+
+/**
  * Verify migration
  */
 async function verifyMigration(db) {
@@ -342,6 +576,12 @@ async function main() {
     await migrateSongs(db);
     await migrateArtists(db);
 
+    // Update artist song counts
+    await updateArtistSongCounts(db);
+
+    // Migrate passwords to base64
+    await migratePasswordsToBase64(client);
+
     // Verify migration
     await verifyMigration(db);
 
@@ -360,6 +600,19 @@ async function main() {
     console.log(`     Skipped: ${stats.artists.skipped}`);
     if (stats.artists.errors > 0) {
       console.log(`     Errors: ${stats.artists.errors}`);
+    }
+    console.log("   Song Counts:");
+    console.log(`     Total artists processed: ${stats.songCounts.total}`);
+    console.log(`     Updated: ${stats.songCounts.updated}`);
+    if (stats.songCounts.errors > 0) {
+      console.log(`     Errors: ${stats.songCounts.errors}`);
+    }
+    console.log("   Passwords:");
+    console.log(`     Total: ${stats.passwords.total}`);
+    console.log(`     Migrated: ${stats.passwords.migrated}`);
+    console.log(`     Skipped: ${stats.passwords.skipped}`);
+    if (stats.passwords.errors > 0) {
+      console.log(`     Errors: ${stats.passwords.errors}`);
     }
 
     console.log("\n✅ Migration completed successfully!");
@@ -382,4 +635,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = { migrateSongs, migrateArtists, migrateSong, migrateArtist };
+module.exports = {
+  migrateSongs,
+  migrateArtists,
+  migrateSong,
+  migrateArtist,
+  updateArtistSongCounts,
+  migratePasswordsToBase64,
+};

@@ -65,6 +65,12 @@ export interface Genre {
   image?: FileReference
 }
 
+export interface Rhythm {
+  _id?: string
+  title: string
+  description?: string
+}
+
 export interface Artist {
   _id?: string
   // Nested object: lang code is the key
@@ -92,7 +98,7 @@ export interface Song {
     'kmr'?: SongLanguageContent
   }
   // Shared content
-  rhythm?: string
+  rhythm?: Rhythm[] // Array of populated Rhythm objects
   artists?: string[] // ObjectId references
   genres?: string[] // ObjectId references
   chords?: SongChords
@@ -103,20 +109,21 @@ export interface Song {
 }
 
 // Helper type for current language view (flattened for easier use)
-export interface SongWithLang extends Omit<Song, 'content'> {
+export interface SongWithLang extends Omit<Song, 'content' | 'rhythm'> {
   currentLang: LanguageCode
   title: string
   title_seo?: string
-  rhythm?: string
+  rhythm?: string // Comma-separated string of rhythm titles (e.g., "Slow 6/8, Kurdish 7/8") - processed from Song.rhythm (Rhythm[])
   sections?: SongSection[]
 }
 
 // Document types with populated references (optional, for when refs are populated)
-export interface SongWithPopulatedRefs extends Omit<Song, 'artists' | 'genres' | 'content'> {
+export interface SongWithPopulatedRefs extends Omit<Song, 'artists' | 'genres' | 'rhythm' | 'content'> {
   // Flattened title from content (added by _processSongs)
   title?: string
   title_seo?: string
   sections?: SongSection[]
+  rhythm?: string // Processed as comma-separated string from Rhythm[] array
   artists?: Artist[]
   genres?: Genre[]
 }

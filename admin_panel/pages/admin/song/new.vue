@@ -26,7 +26,7 @@
             :value="vocalNote"
             disabled
           />
-          <vs-input
+          <select-rhythm
             class="mt-4"
             block
             :label="$t('song.rhythm')"
@@ -74,7 +74,7 @@ export default {
           'ckb-Latn': null,
           'kmr': null,
         },
-        rhythm: '-',
+        rhythm: [],
         artists: [],
         genres: [],
         chords: {

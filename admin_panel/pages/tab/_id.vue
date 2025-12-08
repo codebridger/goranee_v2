@@ -11,7 +11,7 @@
         </p>
       </div>
       <div dir="rtl">
-        <h3 class="text-sm">{{ $t("song.rhythm") + " " + song.rhythm }}</h3>
+        <h3 class="text-sm">{{ $t("song.rhythm") + " " + (Array.isArray(song.rhythm) ? song.rhythm.map(r => r?.title || '').filter(Boolean).join(', ') : '') }}</h3>
         <h3 class="text-sm text-right">
           {{ $t("song.vocal-from") + " " }}
           <span dir="ltr">{{ vocalNote.note }}</span>
@@ -54,7 +54,7 @@ export default {
         database: "tab",
         collection: "song",
         query: { _id: params.id },
-        populates: ["artists", "genres"],
+        populates: ["artists", "genres", "rhythm"],
       });
     } catch (err) {
       console.error("Error fetching song:", err);
@@ -71,13 +71,19 @@ export default {
         const defaultLang = 'ckb-IR'
         const langContent = song.content[defaultLang] || song.content['ckb-IR']
         songTitle = langContent?.title || ''
-        songRhythm = song.rhythm || '' // Rhythm is now in main object
+        // Rhythm is now an array of Rhythm objects
+        if (Array.isArray(song.rhythm)) {
+          songRhythm = song.rhythm.map(r => r?.title || '').filter(Boolean).join(', ') || ''
+        }
         songSections = langContent?.sections || []
         songTitleSeo = langContent?.title_seo || ''
       } else {
         // Fallback to old structure
         songTitle = song.title || ''
-        songRhythm = song.rhythm || ''
+        // Rhythm is now an array of Rhythm objects
+        if (Array.isArray(song.rhythm)) {
+          songRhythm = song.rhythm.map(r => r?.title || '').filter(Boolean).join(', ') || ''
+        }
         songSections = song.sections || []
         songTitleSeo = song.title_seo || ''
       }

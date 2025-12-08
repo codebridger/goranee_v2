@@ -43,7 +43,7 @@
           <seo-labels v-model="currentLangForm.title_seo"></seo-labels>
 
           <vs-input class="mt-5" block :label="$t('song.vocal-from')" :value="vocalNote" disabled />
-          <vs-input class="mt-5" block :label="$t('song.rhythm')" v-model="form.rhythm" />
+          <select-rhythm class="mt-5" block :label="$t('song.rhythm')" v-model="form.rhythm" />
 
           <!-- Copy from language -->
           <div class="mt-5">
@@ -135,7 +135,7 @@ export default {
           'ckb-Latn': null,
           'kmr': null,
         },
-        rhythm: "",
+        rhythm: [],
         artists: [],
         genres: [],
         chords: {
@@ -293,8 +293,26 @@ export default {
           title_seo: this.song.title_seo || '',
           sections: this.song.sections || [],
         };
-        // Move rhythm from old structure to main object
-        this.form.rhythm = this.song.rhythm || '';
+        // Move rhythm from old structure to main object (convert to array if needed)
+        if (this.song.rhythm) {
+          if (Array.isArray(this.song.rhythm)) {
+            this.form.rhythm = this.song.rhythm.map(r => {
+              // If it's an object with _id, extract the _id
+              if (typeof r === 'object' && r !== null && '_id' in r) {
+                return r._id;
+              }
+              // Otherwise, it's already an ID string
+              return r;
+            });
+          } else {
+            // Single value - extract _id if it's an object
+            if (typeof this.song.rhythm === 'object' && this.song.rhythm !== null && '_id' in this.song.rhythm) {
+              this.form.rhythm = [this.song.rhythm._id];
+            } else {
+              this.form.rhythm = [this.song.rhythm];
+            }
+          }
+        }
       } else if (this.song.content) {
         // New structure - ensure all language keys exist
         this.form.content = {
@@ -305,7 +323,32 @@ export default {
       }
 
       // Copy shared fields (including rhythm)
-      this.form.rhythm = this.song.rhythm || '';
+      // Extract ObjectIds from rhythm array (handle both populated objects and plain IDs)
+      if (Array.isArray(this.song.rhythm)) {
+        if (this.song.rhythm.length > 0) {
+          this.form.rhythm = this.song.rhythm.map(r => {
+            // If it's an object with _id, extract the _id
+            if (typeof r === 'object' && r !== null && '_id' in r) {
+              return r._id;
+            }
+            // Otherwise, it's already an ID string
+            return r;
+          });
+        } else {
+          // Empty array - keep it as empty array
+          this.form.rhythm = [];
+        }
+      } else if (this.song.rhythm) {
+        // Single value (backward compatibility) - extract _id if it's an object
+        if (typeof this.song.rhythm === 'object' && this.song.rhythm !== null && '_id' in this.song.rhythm) {
+          this.form.rhythm = [this.song.rhythm._id];
+        } else {
+          this.form.rhythm = [this.song.rhythm];
+        }
+      } else {
+        // No rhythm - set to empty array
+        this.form.rhythm = [];
+      }
       this.form.artists = this.song.artists || [];
       this.form.genres = this.song.genres || [];
       this.form.chords = this.song.chords || { keySignature: "", list: [], vocalNote: {} };

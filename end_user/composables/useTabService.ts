@@ -47,7 +47,7 @@ export const useTabService = () => {
           limit,
           skip,
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
-          populate: ['artists'],
+          populate: ['artists', 'rhythm'],
           projection: { ...defaultProjection, ...projection },
           sort: sort
         },
@@ -74,7 +74,7 @@ export const useTabService = () => {
         query: query,
         options: {
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
-          populate: ['artists'],
+          populate: ['artists', 'rhythm'],
           projection: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
@@ -163,10 +163,15 @@ export const useTabService = () => {
       if ('title' in song && typeof song.title === 'string') {
       const songWithRefs = song as unknown as SongWithPopulatedRefs
 
-      // Mock rhythm if missing
-      if (!songWithRefs.rhythm) {
+      // Handle rhythm - extract titles from Rhythm[] array
+      if (songWithRefs.rhythm && Array.isArray(songWithRefs.rhythm)) {
+        songWithRefs.rhythm = songWithRefs.rhythm
+          .map(r => r?.title || '')
+          .filter(Boolean)
+          .join(', ') || getRandomElement(MOCK_RHYTHMS)
+      } else {
         songWithRefs.rhythm = getRandomElement(MOCK_RHYTHMS)
-        }
+      }
 
         // Ensure chords object exists and mock key if missing
         if (!songWithRefs.chords) {
@@ -212,7 +217,15 @@ export const useTabService = () => {
           _id: songWithContent._id,
           title: fallbackContent?.title || '',
           title_seo: fallbackContent?.title_seo,
-          rhythm: songWithContent.rhythm || getRandomElement(MOCK_RHYTHMS),
+          rhythm: (() => {
+            if (!songWithContent.rhythm || !Array.isArray(songWithContent.rhythm)) {
+              return getRandomElement(MOCK_RHYTHMS)
+            }
+            return songWithContent.rhythm
+              .map(r => r?.title || '')
+              .filter(Boolean)
+              .join(', ') || getRandomElement(MOCK_RHYTHMS)
+          })(),
           sections: fallbackContent?.sections,
           artists: songWithContent.artists,
           genres: songWithContent.genres,
@@ -227,7 +240,15 @@ export const useTabService = () => {
         _id: songWithContent._id,
         title: langContent.title || '',
         title_seo: langContent.title_seo,
-        rhythm: songWithContent.rhythm || getRandomElement(MOCK_RHYTHMS),
+        rhythm: (() => {
+          if (!songWithContent.rhythm || !Array.isArray(songWithContent.rhythm)) {
+            return getRandomElement(MOCK_RHYTHMS)
+          }
+          return songWithContent.rhythm
+            .map(r => r?.title || '')
+            .filter(Boolean)
+            .join(', ') || getRandomElement(MOCK_RHYTHMS)
+        })(),
         sections: langContent.sections,
         artists: songWithContent.artists,
         genres: songWithContent.genres,
@@ -264,7 +285,7 @@ export const useTabService = () => {
       const songs = await dataProvider.find<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
-        populates: ['artists'],
+        populates: ['artists', 'rhythm'],
         query: {
           $or: [
             { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
@@ -329,9 +350,17 @@ export const useTabService = () => {
       )
     }
 
-    // Rhythm filter - search in main rhythm field (not language-specific)
+    // Rhythm filter - rhythm is now an array of ObjectId references, so filter using $in
     if (rhythm && rhythm.trim().length > 0) {
-      queryObj.rhythm = { $regex: rhythm, $options: 'i' }
+      // If rhythm is a valid ObjectId format, use it with $in operator for array matching
+      // Otherwise, it might be a search term - in that case we'd need to search populated rhythm.title
+      // For now, treat it as ObjectId if it matches ObjectId format, otherwise skip
+      const objectIdRegex = /^[0-9a-fA-F]{24}$/
+      if (objectIdRegex.test(rhythm.trim())) {
+        queryObj.rhythm = { $in: [rhythm.trim()] }
+      }
+      // Note: If searching by rhythm title, we'd need to populate first and filter client-side
+      // or use aggregation pipeline - for now, only ObjectId filtering is supported
     }
 
     // If we have OR conditions, add them to query
@@ -375,7 +404,7 @@ export const useTabService = () => {
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         query: queryObj,
-        populates: ['artists'],
+        populates: ['artists', 'rhythm'],
         options: {
           select: {
             'content.ckb-IR.title': 1,
@@ -525,7 +554,7 @@ export const useTabService = () => {
       const songs = await dataProvider.find<SongWithPopulatedRefs>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
-        populates: ['artists'],
+        populates: ['artists', 'rhythm'],
         query: {
           artists: artistId,
         },
@@ -555,7 +584,7 @@ export const useTabService = () => {
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         // @ts-expect-error: populate is not in the strict type definition but supported by backend
-        populates: ['artists', 'genres'],
+        populates: ['artists', 'genres', 'rhythm'],
         query: { _id: id },
         options: {
           limit: 1,
@@ -582,7 +611,13 @@ export const useTabService = () => {
           currentLang: 'ckb-IR',
           title: defaultContent.title,
           title_seo: defaultContent.title_seo,
-          rhythm: song.rhythm,
+          rhythm: (() => {
+            if (!song.rhythm || !Array.isArray(song.rhythm)) return ''
+            return song.rhythm
+              .map(r => r?.title || '')
+              .filter(Boolean)
+              .join(', ')
+          })(),
           sections: defaultContent.sections,
         } as SongWithLang
       }
@@ -593,7 +628,13 @@ export const useTabService = () => {
         currentLang: targetLang,
         title: langContent.title,
         title_seo: langContent.title_seo,
-        rhythm: song.rhythm,
+        rhythm: (() => {
+          if (!song.rhythm || !Array.isArray(song.rhythm)) return ''
+          return song.rhythm
+            .map(r => r?.title || '')
+            .filter(Boolean)
+            .join(', ')
+        })(),
         sections: langContent.sections,
       } as SongWithLang
     } catch (error) {
