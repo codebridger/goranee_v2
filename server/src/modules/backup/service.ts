@@ -79,7 +79,7 @@ export const getBackupList = async () => {
 };
 
 export const insertBackup = async (file: any) => {
-  let name = file.name.split(" ").join("-");
+  const name = file.originalFilename.split(" ").join("-");
   return moveFile(file.path, "./backups", name);
 };
 

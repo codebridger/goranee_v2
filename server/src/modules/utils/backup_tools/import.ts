@@ -61,7 +61,7 @@ function clearData(db: string = "", collection: string = ""): any {
 
   // Normaliz collection name
   //
-  if (collection.endsWith("s")) {
+  if (collection && collection.endsWith("s")) {
     let cParts = collection.split("");
     cParts.pop();
     collection = cParts.join("");
@@ -77,8 +77,28 @@ export async function importCollections(
   for (let fileDir of collectionPaths) {
     const pathPars = fileDir.split("/");
     const fileName = pathPars[pathPars.length - 1];
-    const dbName = fileName.split(" ")[0];
-    const collection = fileName.split(" ")[1].split(".")[0];
+    const fileNameParts = fileName.split(" ");
+    
+    if (fileNameParts.length < 2) {
+      throw {
+        message: `Invalid backup file format: "${fileName}". Expected format: "dbName collectionName.json"`,
+        step: "database_import",
+        fileName: fileName,
+      };
+    }
+    
+    const dbName = fileNameParts[0];
+    const collectionPart = fileNameParts[1];
+    
+    if (!collectionPart) {
+      throw {
+        message: `Invalid backup file format: "${fileName}". Collection name is missing.`,
+        step: "database_import",
+        fileName: fileName,
+      };
+    }
+    
+    const collection = collectionPart.split(".")[0];
 
     // Remove all data
     // If clearing fails, log warning but continue (data might not exist)

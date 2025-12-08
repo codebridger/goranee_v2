@@ -109,7 +109,10 @@ backup.post("/", async (ctx: any) => {
     result = reply.create("f", {
       message: "file field required",
     });
-  } else if (!file.name.endsWith(".zip")) {
+  } else if (
+    !file.originalFilename ||
+    !file.originalFilename.endsWith(".zip")
+  ) {
     ctx.status = 415;
     result = reply.create("f", {
       message: "Only .zip files are accepted",
