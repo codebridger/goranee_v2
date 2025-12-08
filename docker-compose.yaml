@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: ghcr.io/navidshad/goranee_v2_nginx:${NGINX_IMAGE_TAG:-latest}
+    image: ghcr.io/codebridger/goranee_v2_nginx:${NGINX_IMAGE_TAG:-latest}
     # build:
     #   context: .
     #   dockerfile: nginx.Dockerfile
@@ -18,7 +18,7 @@ services:
       - default
 
   server:
-    image: ghcr.io/navidshad/goranee_v2_server:${SERVER_IMAGE_TAG:-latest}
+    image: ghcr.io/codebridger/goranee_v2_server:${SERVER_IMAGE_TAG:-latest}
     # build:
     #   context: ./server
     #   dockerfile: Dockerfile
@@ -39,7 +39,7 @@ services:
       - default
 
   end_user:
-    image: ghcr.io/navidshad/goranee_v2_end_user:${END_USER_IMAGE_TAG:-latest}
+    image: ghcr.io/codebridger/goranee_v2_end_user:${END_USER_IMAGE_TAG:-latest}
     # build:
     #   context: ./end_user
     #   dockerfile: Dockerfile

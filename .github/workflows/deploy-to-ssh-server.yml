@@ -13,6 +13,7 @@ on:
 permissions:
   contents: read
   packages: write
+  # Note: packages: delete permission is automatically granted for packages: write
 
 env:
   IMAGE_TAG_SERVER: SERVER-${{ github.sha }}
@@ -30,16 +31,22 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const repoName = context.repo.repo;
+            const owner = context.repo.owner;
             const packages = [
               `${repoName}_server`,
               `${repoName}_end_user`,
               `${repoName}_nginx`
             ];
 
-            const keepVersions = 10; // Keep the latest 10 versions
+            const keepVersions = 4; // Keep the latest 4 versions
+
+            console.log(`Starting cleanup for packages in ${owner}/${repoName}`);
+            console.log(`Will keep the latest ${keepVersions} versions per package`);
 
             for (const packageName of packages) {
               try {
+                console.log(`\n=== Processing package: ${packageName} ===`);
+                
                 // Get all package versions (works for both user and org packages)
                 let versionsResponse;
                 try {
@@ -47,70 +54,108 @@ jobs:
                   versionsResponse = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
                     package_type: 'container',
                     package_name: packageName,
-                    org: context.repo.owner,
+                    org: owner,
                     per_page: 100
                   });
+                  console.log(`Found package as organization package`);
                 } catch (orgError) {
                   // Fallback to user packages
                   versionsResponse = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
                     package_type: 'container',
                     package_name: packageName,
-                    username: context.repo.owner,
+                    username: owner,
                     per_page: 100
                   });
+                  console.log(`Found package as user package`);
                 }
+                
                 const versions = versionsResponse.data;
                 
                 if (!versions || versions.length === 0) {
-                  console.log(`No versions found for ${packageName}`);
+                  console.log(`No versions found for ${packageName}, skipping`);
                   continue;
                 }
                 
-                // Filter out 'latest' tag and sort by creation date (newest first)
+                console.log(`Total versions found: ${versions.length}`);
+                
+                // Filter and sort: Keep only SHA-tagged versions (SERVER-* or END_USER-*)
+                // Exclude 'latest' tag from cleanup (it's always kept)
+                // Sort by creation date (newest first)
                 const sortedVersions = versions
                   .filter(v => {
                     const tags = v.metadata?.container?.tags || [];
-                    return !tags.includes('latest');
+                    // Only process versions with SHA tags (SERVER-* or END_USER-*)
+                    // Skip versions that only have 'latest' tag
+                    return tags.some(tag => 
+                      tag.startsWith('SERVER-') || 
+                      tag.startsWith('END_USER-')
+                    );
                   })
                   .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                console.log(`SHA-tagged versions (excluding latest): ${sortedVersions.length}`);
                 
                 // Delete versions beyond the keep limit
                 const versionsToDelete = sortedVersions.slice(keepVersions);
                 
-                console.log(`Processing ${packageName}: ${sortedVersions.length} versions found, keeping ${Math.min(keepVersions, sortedVersions.length)}, deleting ${versionsToDelete.length}`);
+                if (versionsToDelete.length === 0) {
+                  console.log(`✓ No versions to delete for ${packageName} (only ${sortedVersions.length} versions exist)`);
+                  continue;
+                }
                 
+                console.log(`Keeping: ${Math.min(keepVersions, sortedVersions.length)} versions`);
+                console.log(`Deleting: ${versionsToDelete.length} old versions`);
+                
+                // Show what we're keeping
+                const keeping = sortedVersions.slice(0, keepVersions);
+                keeping.forEach(v => {
+                  const tags = v.metadata?.container?.tags || [];
+                  console.log(`  Keeping: ${tags.join(', ') || 'untagged'} (created: ${v.created_at})`);
+                });
+                
+                // Delete old versions
+                let deletedCount = 0;
                 for (const version of versionsToDelete) {
                   try {
+                    const tags = version.metadata?.container?.tags || [];
+                    const tagStr = tags.join(', ') || 'untagged';
+                    
                     // Try organization first, then user
                     try {
                       await github.rest.packages.deletePackageVersionForOrg({
                         package_type: 'container',
                         package_name: packageName,
-                        org: context.repo.owner,
+                        org: owner,
                         package_version_id: version.id
                       });
                     } catch (orgError) {
                       await github.rest.packages.deletePackageVersionForUser({
                         package_type: 'container',
                         package_name: packageName,
-                        username: context.repo.owner,
+                        username: owner,
                         package_version_id: version.id
                       });
                     }
-                    console.log(`✓ Deleted ${packageName} version ${version.id} (${version.name || 'untagged'})`);
+                    console.log(`  ✓ Deleted: ${tagStr} (id: ${version.id})`);
+                    deletedCount++;
                   } catch (error) {
-                    console.log(`✗ Failed to delete ${packageName} version ${version.id}: ${error.message}`);
+                    console.log(`  ✗ Failed to delete version ${version.id}: ${error.message}`);
                   }
                 }
+                
+                console.log(`✓ Cleanup complete for ${packageName}: ${deletedCount}/${versionsToDelete.length} versions deleted`);
               } catch (error) {
                 // Package might not exist yet, which is fine
                 if (error.status === 404) {
                   console.log(`Package ${packageName} does not exist yet, skipping cleanup`);
                 } else {
-                  console.log(`Error processing ${packageName}: ${error.message}`);
+                  console.log(`✗ Error processing ${packageName}: ${error.message}`);
+                  console.log(`  Status: ${error.status}, Response: ${JSON.stringify(error.response?.data || {})}`);
                 }
               }
             }
+
+            console.log(`\n=== Cleanup job completed ===`);
 
   build-nginx:
     runs-on: ubuntu-latest
@@ -264,8 +309,8 @@ jobs:
             # Clean up unused images to save space
             # Remove old SHA-tagged images from this project (keep only current deployment)
             REPO_NAME="${{ github.repository }}"
-            OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_server" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
-            OLD_END_USER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_end_user" | grep "END_USER-" | grep -v "$END_USER_IMAGE_TAG" || true)
+            OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_server:" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
+            OLD_END_USER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_end_user:" | grep "END_USER-" | grep -v "$END_USER_IMAGE_TAG" || true)
 
             if [ -n "$OLD_SERVER_IMAGES" ]; then
               echo "$OLD_SERVER_IMAGES" | xargs docker rmi -f || true
