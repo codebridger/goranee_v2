@@ -106,18 +106,71 @@ jobs:
           npm install
           npm run generate
 
+      - name: Link package to repository (if needed)
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.packages.linkPackageToRepository({
+                package_type: 'container',
+                package_name: 'goranee_v2_nginx',
+                username: context.repo.owner,
+                repository_id: context.repo.id
+              });
+              console.log('Package linked to repository');
+            } catch (error) {
+              // Package might not exist yet or already linked, which is fine
+              console.log(`Package link check: ${error.message}`);
+            }
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Nginx Image
+        id: push-nginx
+        continue-on-error: true
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest -f nginx.Dockerfile .
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
         working-directory: .
+
+      - name: Link package to repository (if push failed)
+        if: steps.push-nginx.outcome == 'failure'
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              // Get repository ID
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              // Try to link package to repository
+              await github.rest.packages.linkPackageToRepository({
+                package_type: 'container',
+                package_name: 'goranee_v2_nginx',
+                username: context.repo.owner,
+                repository_id: repo.id
+              });
+              
+              console.log('Package linked to repository. Please retry the workflow.');
+            } catch (error) {
+              console.log('⚠️ Package linking failed. Please manually link the package:');
+              console.log('1. Go to https://github.com/' + context.repo.owner + '?tab=packages');
+              console.log('2. Find package: goranee_v2_nginx');
+              console.log('3. Go to Package settings > Manage Actions access');
+              console.log('4. Add repository: ' + context.repo.owner + '/' + context.repo.repo + ' with Write access');
+              console.log('Error: ' + error.message);
+            }
 
   build-server:
     runs-on: ubuntu-latest
@@ -129,13 +182,47 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Server Image
+        id: push-server
+        continue-on-error: true
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }} -f server/Dockerfile ./server
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
+
+      - name: Link package to repository (if push failed)
+        if: steps.push-server.outcome == 'failure'
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              // Get repository ID
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              // Try to link package to repository
+              await github.rest.packages.linkPackageToRepository({
+                package_type: 'container',
+                package_name: 'goranee_v2_server',
+                username: context.repo.owner,
+                repository_id: repo.id
+              });
+              
+              console.log('Package linked to repository. Please retry the workflow.');
+            } catch (error) {
+              console.log('⚠️ Package linking failed. Please manually link the package:');
+              console.log('1. Go to https://github.com/' + context.repo.owner + '?tab=packages');
+              console.log('2. Find package: goranee_v2_server');
+              console.log('3. Go to Package settings > Manage Actions access');
+              console.log('4. Add repository: ' + context.repo.owner + '/' + context.repo.repo + ' with Write access');
+              console.log('Error: ' + error.message);
+            }
 
   build-end-user:
     runs-on: ubuntu-latest
@@ -154,17 +241,70 @@ jobs:
           npm install
           npm run build
 
+      - name: Link package to repository (if needed)
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.packages.linkPackageToRepository({
+                package_type: 'container',
+                package_name: 'goranee_v2_end_user',
+                username: context.repo.owner,
+                repository_id: context.repo.id
+              });
+              console.log('Package linked to repository');
+            } catch (error) {
+              // Package might not exist yet or already linked, which is fine
+              console.log(`Package link check: ${error.message}`);
+            }
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push End User Image
+        id: push-end-user
+        continue-on-error: true
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }} -f end_user/Dockerfile ./end_user
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
+
+      - name: Link package to repository (if push failed)
+        if: steps.push-end-user.outcome == 'failure'
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              // Get repository ID
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              // Try to link package to repository
+              await github.rest.packages.linkPackageToRepository({
+                package_type: 'container',
+                package_name: 'goranee_v2_end_user',
+                username: context.repo.owner,
+                repository_id: repo.id
+              });
+              
+              console.log('Package linked to repository. Please retry the workflow.');
+            } catch (error) {
+              console.log('⚠️ Package linking failed. Please manually link the package:');
+              console.log('1. Go to https://github.com/' + context.repo.owner + '?tab=packages');
+              console.log('2. Find package: goranee_v2_end_user');
+              console.log('3. Go to Package settings > Manage Actions access');
+              console.log('4. Add repository: ' + context.repo.owner + '/' + context.repo.repo + ' with Write access');
+              console.log('Error: ' + error.message);
+            }
 
   deploy:
     runs-on: ubuntu-latest
@@ -191,7 +331,7 @@ jobs:
           SERVER_ADMIN_EMAIL: ${{ secrets.SERVER_ADMIN_EMAIL }}
           SERVER_ADMIN_PASSWORD: ${{ secrets.SERVER_ADMIN_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.repository_owner }}
+          GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.SSH_HOST }}
