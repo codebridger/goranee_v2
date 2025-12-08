@@ -291,22 +291,25 @@ jobs:
             echo "  END_USER_IMAGE_TAG=$END_USER_IMAGE_TAG"
             echo "  NGINX_IMAGE_TAG=$NGINX_IMAGE_TAG"
 
-            # Remove the previous version of the app, if exists
-            echo "Stopping existing containers..."
-            docker-compose down || true
-
-            # Pull latest images first
-            echo "Pulling latest images..."
+            # Step 1: Pull new images first (while old containers are still running)
+            echo "Step 1: Pulling new images (containers still running)..."
             docker-compose pull
 
-            # Start the new version
-            echo "Starting containers..."
+            # Step 2: Start new containers with new images (docker-compose will recreate containers)
+            echo "Step 2: Starting new containers with new images..."
             docker-compose up --remove-orphans -d
 
-            echo "Deployment completed successfully"
+            # Wait a moment for containers to start
+            echo "Waiting for containers to be ready..."
+            sleep 5
+
+            # Step 3: Verify new containers are running
+            echo "Step 3: Verifying deployment..."
             docker-compose ps
 
-            # Clean up unused images to save space
+            echo "Deployment completed successfully"
+
+            # Step 4: Clean up unused images to save space (after new containers are running)
             # Remove old SHA-tagged images from this project (keep only current deployment)
             REPO_NAME="${{ github.repository }}"
             OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_server:" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
