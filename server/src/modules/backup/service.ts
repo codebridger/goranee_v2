@@ -57,25 +57,33 @@ export const getBackupList = async () => {
     files = fs.readdirSync(backupDir);
   } catch (error) {}
 
-  let backupList: { title: string; size: number }[] = [];
+  let backupList: { title: string; size: number; date: Date }[] = [];
 
   try {
     for (let i = 0; i < files.length; i++) {
       const file = path.join(backupDir, files[i]);
-      let size = await getSize(file);
 
       if (!file.endsWith(".zip")) continue;
+
+      let size = await getSize(file);
+      let stats = fs.statSync(file);
+      let date = stats.mtime;
 
       backupList.push({
         title: files[i],
         size,
+        date,
       });
     }
   } catch (error) {
     console.log(error);
   }
 
-  return backupList;
+  // Sort by date descending (newest first)
+  backupList.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  // Remove date from return value to maintain API compatibility
+  return backupList.map(({ date, ...rest }) => rest);
 };
 
 export const insertBackup = async (file: any) => {

@@ -66,24 +66,66 @@ export default {
     },
     getList() {
       this.loadingList = true;
-      this.$store.dispatch("backup/getList").finally((_) => {
-        this.loadingList = true;
-      });
+      this.$store
+        .dispatch("backup/getList")
+        .catch((error) => {
+          const message = error?.message || error || "Failed to load backup list";
+          notifier.toast({
+            label: "Failed to load backups",
+            description: message,
+            type: "error",
+          });
+        })
+        .finally((_) => {
+          this.loadingList = false;
+        });
     },
     createBackup() {
       this.pendingBackup = true;
-      this.$store.dispatch("backup/createNewBackup").finally((_) => {
-        this.pendingBackup = false;
-        this.getList();
-      });
+      this.$store
+        .dispatch("backup/createNewBackup")
+        .then((_) => {
+          notifier.toast({
+            label: "Backup created successfully",
+            description: "A new backup has been generated",
+            type: "success",
+          });
+          this.getList();
+        })
+        .catch((error) => {
+          const message = error?.message || error || "Failed to create backup";
+          notifier.toast({
+            label: "Failed to create backup",
+            description: message,
+            type: "error",
+          });
+        })
+        .finally((_) => {
+          this.pendingBackup = false;
+        });
     },
     removeBackup(title) {
       const isAllowed = confirm(`Do you want to remove ${title} backup file?`);
       if (!isAllowed) return;
 
-      this.$store.dispatch("backup/removeBackupfile", title).finally((_) => {
-        this.getList();
-      });
+      this.$store
+        .dispatch("backup/removeBackupfile", title)
+        .then((_) => {
+          notifier.toast({
+            label: "Backup removed",
+            description: title,
+            type: "success",
+          });
+          this.getList();
+        })
+        .catch((error) => {
+          const message = error?.message || error || "Failed to remove backup";
+          notifier.toast({
+            label: "Failed to remove backup",
+            description: message,
+            type: "error",
+          });
+        });
     },
     restore(title) {
       const isAllowed = confirm(
@@ -100,10 +142,10 @@ export default {
             type: "info",
           });
         })
-        .catch((message) => {
-          debugger
+        .catch((error) => {
+          const message = error?.message || error || "Failed to restore backup";
           notifier.toast({
-            label: `Restore failed`,
+            label: "Restore failed",
             description: message,
             type: "error",
           });

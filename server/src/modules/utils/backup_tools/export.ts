@@ -1,4 +1,3 @@
-import { config } from "@modular-rest/server/dist/config";
 import { exec } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
@@ -6,6 +5,8 @@ import * as fs from "fs";
 declare global {
   var rootPath: string;
 }
+
+import { modelRegistry } from "@modular-rest/server/";
 
 // Fallback if rootPath is not defined
 const getRootPath = () => global.rootPath || process.cwd();
@@ -22,23 +23,49 @@ interface DbDetail {
   collections: string[];
 }
 
-let dbList: DbDetail[] = [
-  {
-    name: `${config.mongo?.dbPrefix}cms`,
-    fullUrl: `${mongoBaseConnectionString}/${config.mongo?.dbPrefix}cms`,
-    collections: ["auths", "permissions"],
-  },
-  {
-    name: `${config.mongo?.dbPrefix}chord`,
-    fullUrl: `${mongoBaseConnectionString}/${config.mongo?.dbPrefix}chord`,
-    collections: ["chords", "keysignatures", "tables", "types"],
-  },
-  {
-    name: `${config.mongo?.dbPrefix}tab`,
-    fullUrl: `${mongoBaseConnectionString}/${config.mongo?.dbPrefix}tab`,
-    collections: ["artists", "genres", "songs"],
-  },
-];
+/**
+ * Builds the database list dynamically from collection definitions.
+ * Groups collections by database name.
+ */
+function buildDbList(): DbDetail[] {
+  const collectionDefinitions = modelRegistry.getCollectionDefinitions();
+  const dbMap = new Map<string, Set<string>>();
+
+  // Process all collection definitions from the registry
+  if (collectionDefinitions && Array.isArray(collectionDefinitions)) {
+    for (const definition of collectionDefinitions) {
+      const model = definition.getModel();
+
+      // Get collection name from Mongoose 5 model (most reliable source)
+      const collectionName = model?.collection?.name;
+
+      // Get database name from definition (database property)
+      const dbName = model?.db.name;
+
+      if (dbName && collectionName) {
+        if (!dbMap.has(dbName)) {
+          dbMap.set(dbName, new Set<string>());
+        }
+        dbMap.get(dbName)!.add(collectionName);
+      }
+    }
+  }
+
+  // Build DbDetail array from the map
+  const dbList: DbDetail[] = [];
+
+  // Process each database
+  for (const [dbName, collections] of dbMap.entries()) {
+    dbList.push({
+      name: dbName,
+      fullUrl: `${mongoBaseConnectionString}/${dbName}`,
+      collections: Array.from(collections).sort(),
+    });
+  }
+
+  // Sort databases by name for consistent ordering
+  return dbList.sort((a, b) => a.name.localeCompare(b.name));
+}
 
 function makeBackupFromCollection(
   dbName: string,
@@ -83,6 +110,19 @@ function makeBackupFromCollection(
 export function startBackUp(): Promise<string> {
   return new Promise(async (done, reject) => {
     try {
+      // Build dbList dynamically to ensure all collections are included
+      const dbList = buildDbList();
+
+      // Validate that we have collections to export
+      if (!dbList || dbList.length === 0) {
+        reject({
+          message:
+            "No collections found to export. Check that collection definitions are properly registered.",
+          step: "database_export",
+        });
+        return;
+      }
+
       // Ensure collections directory exists
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
