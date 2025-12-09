@@ -152,8 +152,7 @@ export const useTabService = () => {
       const config = useRuntimeConfig()
       // Use ssrApiBaseUrl only on server context, apiBaseUrl on client
       const baseUrl = config.public.ssrApiBaseUrl 
-      const imgUrl = fileProvider.getFileLink(file, baseUrl as string)
-      return imgUrl
+      return fileProvider.getFileLink(file, baseUrl as string)
   }
 
   // Helper to process songs with mock data and extract default language content
