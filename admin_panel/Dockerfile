@@ -4,10 +4,11 @@ FROM node:14.21.1-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json yarn.lock* ./
+COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci || yarn install --frozen-lockfile
+# Install dependencies (with BuildKit cache mount for npm cache)
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # Copy source code
 COPY . .
