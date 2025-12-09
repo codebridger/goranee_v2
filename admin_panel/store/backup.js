@@ -19,8 +19,10 @@ export default {
     },
 
     REMOVE_FROMlIST(state, fileName) {
-      let index = state.list.findIndex(fileName);
-      state.list.splice(index, 1);
+      let index = state.list.findIndex((item) => item.title === fileName);
+      if (index !== -1) {
+        state.list.splice(index, 1);
+      }
     }
   },
 

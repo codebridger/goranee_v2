@@ -81,11 +81,19 @@ backup.get("/list", async (ctx) => {
  * @param {string} fileName - The name of the file to delete (from the URL parameters).
  * @returns {void} Success message.
  */
-backup.delete("/:fileName", (ctx) => {
+backup.delete("/:fileName", async (ctx) => {
   let fileName = ctx.params.fileName;
-  service.removeBackupFile(fileName);
-
-  ctx.body = reply.create("s");
+  try {
+    await service.removeBackupFile(fileName);
+    ctx.body = reply.create("s");
+  } catch (error: any) {
+    console.error("Backup deletion failed:", error);
+    ctx.status = 500;
+    ctx.body = reply.create("f", {
+      message: error?.message || "Failed to delete backup file",
+      step: error?.step || "backup_deletion",
+    });
+  }
 });
 
 /**

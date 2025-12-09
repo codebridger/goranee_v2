@@ -43,9 +43,21 @@ export const createBackup = async () => {
   );
 };
 
-export const removeBackupFile = (filePath: string) => {
-  let backupFile = path.join(getRootPath(), "backups", filePath);
-  fs.unlink(backupFile, (err) => {});
+export const removeBackupFile = (filePath: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    let backupFile = path.join(getRootPath(), "backups", filePath);
+    fs.unlink(backupFile, (err) => {
+      if (err) {
+        reject({
+          message: err.message || "Failed to delete backup file",
+          step: "file_deletion",
+          originalError: err,
+        });
+      } else {
+        resolve();
+      }
+    });
+  });
 };
 
 export const getBackupList = async () => {
