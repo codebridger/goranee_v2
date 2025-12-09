@@ -12,14 +12,36 @@ const { t } = useI18n()
 const tabService = useTabService()
 const contentLanguageStore = useContentLanguageStore()
 
-const isLoading = ref(true)
-const isListLoading = ref(true)
-const heroSongs = ref<SongWithPopulatedRefs[]>([])
-const trendingSongs = ref<SongWithPopulatedRefs[]>([])
-const featuredArtists = ref<Artist[]>([])
-const genres = ref<Genre[]>([])
+const isListLoading = ref(false)
 const songCache = ref<Record<string, SongWithPopulatedRefs[]>>({})
 const artistCarouselRef = ref<HTMLElement | null>(null)
+
+// Fetch initial data with SSR support
+const { data: homeData, pending: isLoading } = await useAsyncData('home', async () => {
+  const [hero, trending, artists, fetchedGenres] = await Promise.all([
+    tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }, {}, { _id: -1 }),
+    tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
+    tabService.fetchFeaturedArtists(),
+    tabService.fetchGenres(),
+  ])
+
+  return {
+    heroSongs: hero,
+    trendingSongs: trending,
+    featuredArtists: artists,
+    genres: fetchedGenres,
+  }
+})
+
+const heroSongs = computed(() => homeData.value?.heroSongs || [])
+const trendingSongs = ref<SongWithPopulatedRefs[]>(homeData.value?.trendingSongs || [])
+const featuredArtists = computed(() => homeData.value?.featuredArtists || [])
+const genres = computed(() => homeData.value?.genres || [])
+
+// Initialize cache with initial trending songs
+if (homeData.value?.trendingSongs) {
+  songCache.value[t('home.discovery.tabs.all')] = homeData.value.trendingSongs
+}
 
 const tabs = computed(() => [
   t('home.discovery.tabs.all'),
@@ -88,28 +110,10 @@ const handleTabChange = async (tabName: string) => {
   }
 }
 
-onMounted(async () => {
-  isLoading.value = true
-  try {
-    const [hero, trending, artists, fetchedGenres] = await Promise.all([
-      tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }, {}, { _id: -1 }),
-      tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
-      tabService.fetchFeaturedArtists(),
-      tabService.fetchGenres(),
-    ])
-    heroSongs.value = hero
-    trendingSongs.value = trending
-    featuredArtists.value = artists
-    genres.value = fetchedGenres
-
-    // Cache initial "All" tab data
-    songCache.value[t('home.discovery.tabs.all')] = trending
-  } catch (error) {
-    console.error('Failed to load home data:', error)
-  } finally {
-    isLoading.value = false
-    isListLoading.value = false
-  }
+// Client-only: Initialize carousel ref after mount
+onMounted(() => {
+  // Carousel ref is already available in template, no action needed
+  // This onMounted is kept for potential future client-only setup
 })
 </script>
 

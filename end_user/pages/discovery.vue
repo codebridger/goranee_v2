@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Search, Filter, X, Music, AlertCircle } from 'lucide-vue-next'
@@ -24,24 +24,33 @@ const { t } = useI18n()
 const { isRtl } = useI18nRtl()
 const { searchSongsAdvanced, fetchGenres } = useTabService()
 
+// Read initial state from URL (works in SSR)
+const query = route.query.q as string
+const genre = route.query.genre as string
+const key = route.query.key as 'major' | 'minor' | 'all'
+const rhythm = route.query.rhythm as string
+const sort = route.query.sort as 'newest' | 'oldest' | 'a-z' | 'z-a'
+const page = parseInt(route.query.page as string) || 1
+
 // State
-const searchQuery = ref('')
+const searchQuery = ref(query || '')
 const filters = ref<FilterState>({
-  genre: 'all',
-  key: 'all',
-  rhythm: undefined,
-  sort: 'newest',
+  genre: genre || 'all',
+  key: key || 'all',
+  rhythm: rhythm || undefined,
+  sort: sort || 'newest',
 })
 const songs = ref<SongWithPopulatedRefs[]>([])
-const genres = ref<Genre[]>([])
-const isLoading = ref(false)
-const error = ref<string | null>(null)
-const currentPage = ref(1)
 const showFiltersDrawer = ref(false)
 const itemsPerPage = 12
+const currentPage = ref(page)
 const totalResults = ref(0)
 const totalPages = ref(0)
 const paginationController = ref<PaginatedResponseType<SongWithPopulatedRefs> | null>(null)
+
+// Fetch genres with SSR support
+const { data: genresData } = await useAsyncData('discovery-genres', () => fetchGenres())
+const genres = computed(() => genresData.value || [])
 
 // Computed
 const hasResults = computed(() => songs.value.length > 0)
@@ -52,103 +61,101 @@ const hasFilters = computed(() => {
 
 const drawerPosition = computed(() => isRtl.value ? 'right' : 'left')
 
-// Load genres on mount
-onMounted(async () => {
-  genres.value = await fetchGenres()
+// Build search key for useAsyncData
+const getSearchKey = () => {
+  return `discovery-search-${searchQuery.value}-${filters.value.genre}-${filters.value.key}-${filters.value.rhythm}-${filters.value.sort}-${currentPage.value}`
+}
 
-  // Read initial state from URL
-  const query = route.query.q as string
-  const genre = route.query.genre as string
-  const key = route.query.key as 'major' | 'minor' | 'all'
-  const rhythm = route.query.rhythm as string
-  const sort = route.query.sort as 'newest' | 'oldest' | 'a-z' | 'z-a'
-  const page = parseInt(route.query.page as string) || 1
+// Fetch search results with SSR support
+const { data: searchData, pending: isLoading, error: searchError, refresh: refreshSearch } = await useAsyncData(
+  getSearchKey,
+  async () => {
+    // Build search filters object, only including properties that have values
+    const searchFilters: {
+      query?: string
+      genre?: string
+      key?: 'major' | 'minor'
+      rhythm?: string
+      sort?: 'newest' | 'oldest' | 'a-z' | 'z-a'
+      limit: number
+      page: number
+    } = {
+      limit: itemsPerPage,
+      page: currentPage.value,
+    }
 
-  if (query) searchQuery.value = query
-  if (genre) filters.value.genre = genre
-  else filters.value.genre = 'all'
-  if (key) filters.value.key = key
-  if (rhythm) filters.value.rhythm = rhythm
-  if (sort) filters.value.sort = sort
-  currentPage.value = page
+    // Only add query if it has a value
+    if (searchQuery.value.trim()) {
+      searchFilters.query = searchQuery.value.trim()
+    }
 
-  // Always perform initial search to fetch songs
-  await performSearch()
-})
+    // Only add genre if it's not 'all'
+    if (filters.value.genre && filters.value.genre !== 'all') {
+      searchFilters.genre = filters.value.genre
+    }
 
-// Debounced search
+    // Only add key if it's not 'all'
+    if (filters.value.key && filters.value.key !== 'all') {
+      searchFilters.key = filters.value.key
+    }
+
+    // Only add rhythm if it has a value
+    if (filters.value.rhythm?.trim()) {
+      searchFilters.rhythm = filters.value.rhythm.trim()
+    }
+
+    // Add sort (always has a default)
+    searchFilters.sort = filters.value.sort || 'newest'
+
+    // Get pagination controller
+    const controller = await searchSongsAdvanced(searchFilters, (docs) => {
+      songs.value = docs
+    })
+
+    await controller?.updatePagination()
+    await controller?.fetchPage(currentPage.value)
+
+    // Read pagination data from controller after fetching
+    let total = 0
+    let pages = 0
+    if (controller?.pagination) {
+      total = controller.pagination.total || 0
+      pages = controller.pagination.pages || 0
+    }
+
+    paginationController.value = controller
+
+    return {
+      songs: songs.value,
+      totalResults: total,
+      totalPages: pages,
+      controller,
+    }
+  },
+  {
+    immediate: true,
+  }
+)
+
+// Sync searchData to reactive refs
+watch(searchData, (data) => {
+  if (data) {
+    songs.value = data.songs
+    totalResults.value = data.totalResults
+    totalPages.value = data.totalPages
+  }
+}, { immediate: true })
+
+const error = computed(() => searchError.value ? t('pages.discovery.error') : null)
+
+// Debounced search refresh
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const performSearch = async () => {
   if (searchTimeout) clearTimeout(searchTimeout)
 
-
   searchTimeout = setTimeout(async () => {
-    isLoading.value = true
-    error.value = null
-    songs.value = []
-
-    try {
-      // Build search filters object, only including properties that have values
-      const searchFilters: {
-        query?: string
-        genre?: string
-        key?: 'major' | 'minor'
-        rhythm?: string
-        sort?: 'newest' | 'oldest' | 'a-z' | 'z-a'
-        limit: number
-        page: number
-      } = {
-        limit: itemsPerPage,
-        page: currentPage.value,
-      }
-
-      // Only add query if it has a value
-      if (searchQuery.value.trim()) {
-        searchFilters.query = searchQuery.value.trim()
-      }
-
-      // Only add genre if it's not 'all'
-      if (filters.value.genre && filters.value.genre !== 'all') {
-        searchFilters.genre = filters.value.genre
-      }
-
-      // Only add key if it's not 'all'
-      if (filters.value.key && filters.value.key !== 'all') {
-        searchFilters.key = filters.value.key
-      }
-
-      // Only add rhythm if it has a value
-      if (filters.value.rhythm?.trim()) {
-        searchFilters.rhythm = filters.value.rhythm.trim()
-      }
-
-      // Add sort (always has a default)
-      searchFilters.sort = filters.value.sort || 'newest'
-
-      // Get pagination controller
-      paginationController.value = await searchSongsAdvanced(searchFilters, (docs) => {
-        songs.value = docs
-      })
-
-      await paginationController.value?.updatePagination()
-
-      // Fetch the current page
-      await paginationController.value?.fetchPage(currentPage.value)
-
-      // Read pagination data from controller after fetching
-      if (paginationController.value?.pagination) {
-        totalResults.value = paginationController.value.pagination.total || 0
-        totalPages.value = paginationController.value.pagination.pages || 0
-      }
-
-      // Update URL
-      updateURL()
-    } catch (err) {
-      error.value = t('pages.discovery.error')
-      console.error('Search error:', err)
-    } finally {
-      isLoading.value = false
-    }
+    updateURL()
+    await refreshSearch()
   }, 300)
 }
 
@@ -194,29 +201,12 @@ const goToPage = async (page: number) => {
   if (page < 1 || page > totalPages.value) return
 
   currentPage.value = page
-  isLoading.value = true
-  error.value = null
+  updateURL()
+  await refreshSearch()
 
-  try {
-    if (paginationController) {
-      // Fetch the page
-      await paginationController.value?.fetchPage(page)
-
-      // Read pagination data from controller after fetching
-      if (paginationController.value?.pagination) {
-        totalResults.value = paginationController.value.pagination.total || 0
-        totalPages.value = paginationController.value.pagination.pages || 0
-      }
-    } else {
-      await performSearch()
-    }
-    updateURL()
+  // Scroll to top (client-only)
+  if (process.client) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  } catch (err) {
-    error.value = t('pages.discovery.error')
-    console.error('Pagination error:', err)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -280,7 +270,7 @@ const navigateToSong = (id: string) => {
           <div v-else-if="error" class="flex flex-col items-center justify-center py-16">
             <AlertCircle class="w-16 h-16 text-text-error mb-4" />
             <Typography variant="h3" class="mb-2">{{ error }}</Typography>
-            <Button @click="performSearch">
+            <Button @click="refreshSearch">
               {{ t('pages.discovery.retry') }}
             </Button>
           </div>

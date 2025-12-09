@@ -29,37 +29,40 @@ const langCode = computed<LanguageCode>(() => {
 		? (langStr as LanguageCode)
 		: 'ckb-IR' // Default fallback
 });
-const artist = ref<Artist | null>(null);
-const songs = ref<SongWithPopulatedRefs[]>([]);
-const relatedArtists = ref<Artist[]>([]);
-const isLoading = ref(true);
 
-const loadData = async () => {
-	isLoading.value = true;
-	try {
+// Fetch artist data with SSR support
+const { data: artistData, pending: isLoading, refresh: refreshArtistData } = await useAsyncData(
+	() => `artist-${artistId.value}-${langCode.value}`,
+	async () => {
 		const [artistData, songsData, relatedData] = await Promise.all([
 			fetchArtist(artistId.value, langCode.value),
 			fetchSongsByArtist(artistId.value),
 			fetchFeaturedArtists()
 		]);
 
-		artist.value = artistData;
-		songs.value = songsData;
 		// Filter out current artist and limit to 10
-		relatedArtists.value = relatedData
+		const filteredRelatedArtists = relatedData
 			.filter(a => a._id !== artistId.value)
 			.slice(0, 10);
-	} catch (e) {
-		console.error('Error loading artist page:', e);
-	} finally {
-		isLoading.value = false;
-	}
-};
 
+		return {
+			artist: artistData,
+			songs: songsData,
+			relatedArtists: filteredRelatedArtists,
+		}
+	},
+	{
+		watch: [langCode],
+	}
+)
+
+const artist = computed(() => artistData.value?.artist || null);
+const songs = computed(() => artistData.value?.songs || []);
+const relatedArtists = computed(() => artistData.value?.relatedArtists || []);
+
+// Client-only: Sync store with route on mount
 onMounted(() => {
-	// Sync store with route on mount
 	contentLanguageStore.syncWithRoute();
-	loadData();
 });
 
 // Watch for language changes in route
@@ -68,7 +71,7 @@ watch(langCode, async (newLang) => {
 		contentLanguageStore.setContentLanguage(newLang);
 	}
 	if (artistId.value) {
-		await loadData();
+		await refreshArtistData();
 	}
 });
 
