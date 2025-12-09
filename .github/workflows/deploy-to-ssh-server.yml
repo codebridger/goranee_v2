@@ -160,12 +160,24 @@ jobs:
   build-nginx:
     runs-on: ubuntu-latest
     needs: cleanup-old-images
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
+          cache: "npm"
+          cache-dependency-path: admin_panel/package-lock.json
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: admin_panel/node_modules
+          key: ${{ runner.os }}-npm-admin_panel-${{ hashFiles('admin_panel/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-admin_panel-
 
       - name: Build admin panel static files
         run: |
@@ -175,72 +187,90 @@ jobs:
           npm install
           npm run generate
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Nginx Image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest -f nginx.Dockerfile .
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
-        working-directory: .
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./nginx.Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:buildcache,mode=max
 
   build-server:
     runs-on: ubuntu-latest
     needs: cleanup-old-images
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Server Image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }} -f server/Dockerfile ./server
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:buildcache,mode=max
 
   build-end-user:
     runs-on: ubuntu-latest
     needs: cleanup-old-images
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-
-      - name: Build end_user app
-        run: |
-          cd end_user
-          echo "NUXT_API_BASE_URL=/api/" > .env
-          npm install
-          npm run build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push End User Image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }} -f end_user/Dockerfile ./end_user
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./end_user
+          file: ./end_user/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:buildcache,mode=max
+          build-args: |
+            NUXT_API_BASE_URL=/api/
 
   deploy:
     runs-on: ubuntu-latest
     needs: [build-server, build-end-user, build-nginx]
     if: always() && (needs.build-server.result == 'success' || needs.build-server.result == 'skipped') && (needs.build-end-user.result == 'success' || needs.build-end-user.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy docker-compose file to server
         uses: appleboy/scp-action@v0.1.7

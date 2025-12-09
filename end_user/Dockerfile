@@ -3,11 +3,16 @@ FROM node:22.17.1-alpine AS builder
 
 WORKDIR /app
 
+# Build argument for API base URL
+ARG NUXT_API_BASE_URL=/api/
+ENV NUXT_API_BASE_URL=$NUXT_API_BASE_URL
+
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (with BuildKit cache mount for npm cache)
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # Copy source code
 COPY . .
@@ -23,8 +28,9 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install only production dependencies (with BuildKit cache mount for npm cache)
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --only=production
 
 # Copy built output from builder
 COPY --from=builder /app/.output ./.output
