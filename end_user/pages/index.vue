@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ArrowRight, Music } from 'lucide-vue-next'
 
 import { useTabService } from '~/composables/useTabService'
@@ -17,7 +17,7 @@ const songCache = ref<Record<string, SongWithPopulatedRefs[]>>({})
 const artistCarouselRef = ref<HTMLElement | null>(null)
 
 // Fetch initial data with SSR support
-const { data: homeData, pending: isLoading } = await useAsyncData('home', async () => {
+const { data: homeData, pending: isLoading, refresh: refreshHomeData } = await useAsyncData('home', async () => {
   const [hero, trending, artists, fetchedGenres] = await Promise.all([
     tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }, {}, { _id: -1 }),
     tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
@@ -57,6 +57,18 @@ const tabs = computed(() => [
 ])
 
 const activeTab = ref(t('home.discovery.tabs.all'))
+
+// Sync trendingSongs when homeData changes (e.g., when navigating back to page)
+watch(homeData, (newData) => {
+  if (newData?.trendingSongs) {
+    // Always update cache for 'All' tab
+    songCache.value[t('home.discovery.tabs.all')] = newData.trendingSongs
+    // Only update trendingSongs if we're on the 'All' tab
+    if (activeTab.value === t('home.discovery.tabs.all')) {
+      trendingSongs.value = newData.trendingSongs
+    }
+  }
+}, { immediate: true })
 
 // Helper function to get artist name with language support
 const getArtistName = (artist: Artist) => {
@@ -118,10 +130,12 @@ const handleTabChange = async (tabName: string) => {
   }
 }
 
-// Client-only: Initialize carousel ref after mount
-onMounted(() => {
-  // Carousel ref is already available in template, no action needed
-  // This onMounted is kept for potential future client-only setup
+// Client-only: Refresh data if missing when navigating back to page
+onMounted(async () => {
+  // If data is missing or empty when navigating back, refresh it
+  if (process.client && (!homeData.value || !homeData.value.trendingSongs?.length)) {
+    await refreshHomeData()
+  }
 })
 </script>
 
@@ -143,7 +157,7 @@ onMounted(() => {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <template v-if="isListLoading">
+        <template v-if="isClientLoading || isListLoading">
           <SkeletonCard v-for="i in 4" :key="i" />
         </template>
         <template v-else-if="trendingSongs.length > 0">
