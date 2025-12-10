@@ -7,7 +7,8 @@
     </div>
 
     <!-- Content -->
-    <div class="p-8 mt-4 flex justify-between flex-wrap space-y-4">
+    <div class="p-8 mt-4 flex justify-between flex-wrap space-y-4 relative min-h-[200px]">
+      <loading-state :active="pending" />
       <card-chord-table v-for="(table, i) in list" allowEdite :key="i" :table="table" @edit="showEditForm(table)"
         @remove="showRemoveDialog(table)" />
     </div>
@@ -18,8 +19,10 @@
 import { dataProvider } from '@modular-rest/client'
 import notifier from '../../utilities/notifier'
 import CollectionForm from './ChordTableCollectionForm'
+import LoadingState from '../materials/LoadingState.vue'
 
 export default {
+  components: { LoadingState },
   props: {
     title: String,
   },
