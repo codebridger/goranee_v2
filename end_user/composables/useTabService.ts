@@ -150,9 +150,11 @@ export const useTabService = () => {
 
   const getImageUrl = (file: any) => {
       const config = useRuntimeConfig()
-      // Use ssrApiBaseUrl only on server context, apiBaseUrl on client
-      const baseUrl = config.public.ssrApiBaseUrl 
-      const imgUrl = fileProvider.getFileLink(file, baseUrl as string)
+      // Use ssrApiBaseUrl only on server context (SSR), otherwise use GlobalOptions (client)
+      const baseUrl = !process.client && config.public.ssrApiBaseUrl 
+        ? config.public.ssrApiBaseUrl 
+        : undefined
+      const imgUrl = fileProvider.getFileLink(file, baseUrl)
       return imgUrl
   }
 

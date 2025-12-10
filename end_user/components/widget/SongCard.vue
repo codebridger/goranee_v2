@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Play } from 'lucide-vue-next';
-import { fileProvider } from '@modular-rest/client';
+import { useTabService } from '~/composables/useTabService';
 import type { SongWithPopulatedRefs } from '~/types/song.type';
 import { useContentLanguageStore, type ContentLanguageCode } from '~/stores/contentLanguage';
 
@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const contentLanguageStore = useContentLanguageStore();
+const { getImageUrl } = useTabService();
 
 const title = computed(() => props.song.title);
 
@@ -43,7 +44,7 @@ const artist = computed(() => {
 
 
 const imageUrl = computed(() => {
-	return props.song.image ? fileProvider.getFileLink(props.song.image as any) : undefined;
+	return props.song.image ? getImageUrl(props.song.image) : undefined;
 });
 
 const musicalKey = computed(() => props.song.chords?.keySignature);

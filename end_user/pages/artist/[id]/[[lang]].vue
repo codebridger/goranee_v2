@@ -7,7 +7,6 @@ import { useTabService } from '~/composables/useTabService';
 import { useContentLanguageStore } from '~/stores/contentLanguage';
 import type { Artist, SongWithPopulatedRefs } from '~/types/song.type';
 import type { LanguageCode } from '~/constants/routes';
-import { fileProvider } from '@modular-rest/client';
 import SongCard from '~/components/widget/SongCard.vue';
 import ArtistCard from '~/components/widget/ArtistCard.vue';
 import Button from '~/components/base/Button.vue';
@@ -17,7 +16,7 @@ import { ROUTES } from '~/constants/routes';
 const route = useRoute();
 const { t } = useI18n();
 const contentLanguageStore = useContentLanguageStore();
-const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists } = useTabService();
+const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists, getImageUrl } = useTabService();
 
 const artistId = computed(() => route.params.id as string);
 const langCode = computed<LanguageCode>(() => {
@@ -78,7 +77,7 @@ watch(langCode, async (newLang) => {
 });
 
 const artistImage = computed(() => {
-	return artist.value?.image ? fileProvider.getFileLink(artist.value.image as any) : undefined;
+	return artist.value?.image ? getImageUrl(artist.value.image) : undefined;
 });
 
 const gradientClass = computed(() => {
@@ -111,7 +110,7 @@ const getSongMetadata = (song: SongWithPopulatedRefs) => {
 };
 
 const getRelatedArtistAvatarUrl = (related: Artist) => {
-	return related.image ? fileProvider.getFileLink(related.image as any) : undefined;
+	return related.image ? getImageUrl(related.image) : undefined;
 };
 
 const getRelatedArtistSongCount = (related: Artist) => {
