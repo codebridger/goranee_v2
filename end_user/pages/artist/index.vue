@@ -105,21 +105,21 @@ watch(searchQuery, () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     currentPage.value = 1
-    refreshArtists()
+    // useAsyncData will automatically refetch when the key changes (via getArtistsKey function)
   }, 300)
 })
 
 watch(sortBy, () => {
   currentPage.value = 1
-  refreshArtists()
+  // useAsyncData will automatically refetch when the key changes (via getArtistsKey function)
 })
 
 // Pagination
-const goToPage = async (page: number) => {
+const goToPage = (page: number) => {
   if (page < 1 || page > totalPages.value) return
 
   currentPage.value = page
-  await refreshArtists()
+  // useAsyncData will automatically refetch when the key changes (via getArtistsKey function)
 
   // Scroll to top (client-only)
   if (process.client) {
