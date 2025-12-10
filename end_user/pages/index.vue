@@ -31,6 +31,9 @@ const { data: homeData, pending: isLoading } = await useAsyncData('home', async 
     featuredArtists: artists,
     genres: fetchedGenres,
   }
+}, {
+  server: true,
+  lazy: true,
 })
 
 const heroSongs = computed(() => homeData.value?.heroSongs || [])
@@ -129,7 +132,7 @@ onMounted(() => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-            }}</Typography>
+          }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>

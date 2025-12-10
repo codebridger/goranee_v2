@@ -81,10 +81,11 @@ const { data: artistsData, pending: isLoading, refresh: refreshArtists } = await
       artists: artists.value,
       totalResults: total,
       totalPages: pages,
-      controller,
     }
   },
   {
+    server: true,
+    lazy: true,
     immediate: true,
   }
 )

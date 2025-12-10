@@ -86,6 +86,8 @@ const { data: songData, refresh: refreshSongData } = await useAsyncData(
 		}
 	},
 	{
+		server: true,
+		lazy: true,
 		watch: [langCode],
 	}
 )

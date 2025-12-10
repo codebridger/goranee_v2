@@ -49,7 +49,10 @@ const totalPages = ref(0)
 const paginationController = ref<PaginatedResponseType<SongWithPopulatedRefs> | null>(null)
 
 // Fetch genres with SSR support
-const { data: genresData } = await useAsyncData('discovery-genres', () => fetchGenres())
+const { data: genresData } = await useAsyncData('discovery-genres', () => fetchGenres(), {
+  server: true,
+  lazy: true,
+})
 const genres = computed(() => genresData.value || [])
 
 // Computed
@@ -129,10 +132,11 @@ const { data: searchData, pending: isLoading, error: searchError, refresh: refre
       songs: songs.value,
       totalResults: total,
       totalPages: pages,
-      controller,
     }
   },
   {
+    server: true,
+    lazy: true,
     immediate: true,
   }
 )
@@ -150,12 +154,12 @@ const error = computed(() => searchError.value ? t('pages.discovery.error') : nu
 
 // Debounced search refresh
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
-const performSearch = async () => {
+const performSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
 
-  searchTimeout = setTimeout(async () => {
+  searchTimeout = setTimeout(() => {
     updateURL()
-    await refreshSearch()
+    // useAsyncData will automatically refetch when the key changes (via getSearchKey function)
   }, 300)
 }
 
@@ -197,12 +201,12 @@ const clearFilters = () => {
 }
 
 // Pagination
-const goToPage = async (page: number) => {
+const goToPage = (page: number) => {
   if (page < 1 || page > totalPages.value) return
 
   currentPage.value = page
   updateURL()
-  await refreshSearch()
+  // useAsyncData will automatically refetch when the key changes (via getSearchKey function)
 
   // Scroll to top (client-only)
   if (process.client) {

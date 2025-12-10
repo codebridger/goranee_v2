@@ -52,6 +52,8 @@ const { data: artistData, pending: isLoading, refresh: refreshArtistData } = awa
 		}
 	},
 	{
+		server: true,
+		lazy: true,
 		watch: [langCode],
 	}
 )
