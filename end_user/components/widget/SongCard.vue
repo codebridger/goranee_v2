@@ -49,7 +49,10 @@ const imageUrl = computed(() => {
 
 const musicalKey = computed(() => props.song.chords?.keySignature);
 const chordLabels = computed(() => props.song.chords?.list?.map((chord) => chord.title) || []);
-const tempo = computed(() => props.song.rhythm);
+const tempo = computed(() => {
+	const rhythm = props.song.rhythm;
+	return rhythm && typeof rhythm === 'string' && rhythm.trim() ? rhythm : null;
+});
 
 const gradientClass = computed(() => {
 	const mockColor = (props.song as any)._mockColor;
