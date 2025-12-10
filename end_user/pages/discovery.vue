@@ -152,6 +152,11 @@ watch(searchData, (data) => {
 
 const error = computed(() => searchError.value ? t('pages.discovery.error') : null)
 
+// Client-only loading state
+const isClientLoading = computed(() => {
+  return process.client && isLoading.value
+})
+
 // Debounced search refresh
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const performSearch = () => {
@@ -266,7 +271,7 @@ const navigateToSong = (id: string) => {
           </div>
 
           <!-- Loading State -->
-          <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-if="isClientLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <SkeletonCard v-for="i in 8" :key="i" />
           </div>
 

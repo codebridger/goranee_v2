@@ -36,6 +36,11 @@ const { data: homeData, pending: isLoading } = await useAsyncData('home', async 
   lazy: true,
 })
 
+// Client-only loading state
+const isClientLoading = computed(() => {
+  return process.client && isLoading.value
+})
+
 const heroSongs = computed(() => homeData.value?.heroSongs || [])
 const trendingSongs = ref<SongWithPopulatedRefs[]>(homeData.value?.trendingSongs || [])
 const featuredArtists = computed(() => homeData.value?.featuredArtists || [])
@@ -132,7 +137,7 @@ onMounted(() => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-          }}</Typography>
+            }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>
@@ -170,13 +175,13 @@ onMounted(() => {
           </NuxtLink>
         </div>
 
-        <div v-if="isLoading || featuredArtists.length > 0" class="relative">
+        <div v-if="isClientLoading || featuredArtists.length > 0" class="relative">
           <CarouselNav direction="left" size="md" :ariaLabel="t('toolbox.ariaLabels.scrollLeft')"
             @click="scrollCarousel(-1)" />
 
           <div ref="artistCarouselRef"
             class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide scroll-smooth px-10">
-            <template v-if="isLoading">
+            <template v-if="isClientLoading">
               <SkeletonArtistCard v-for="i in 6" :key="i" class="shrink-0 snap-center" />
             </template>
             <template v-else>

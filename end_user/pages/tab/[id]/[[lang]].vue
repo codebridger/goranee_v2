@@ -42,7 +42,7 @@ const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
 const { getOriginalTableIndex, fetchTables } = useTranspose()
 
 // Fetch song data with SSR support
-const { data: songData, refresh: refreshSongData } = await useAsyncData(
+const { data: songData, pending: isLoading, refresh: refreshSongData } = await useAsyncData(
 	() => `song-${songId.value}-${langCode.value}`,
 	async () => {
 		// Fetch song data with language
@@ -96,6 +96,11 @@ const song = computed(() => songData.value?.song || null)
 const fullSong = computed(() => songData.value?.fullSong || null)
 const artistSongs = computed(() => songData.value?.artistSongs || [])
 const similarSongs = ref<SongWithPopulatedRefs[]>([]) // Placeholder for now
+
+// Client-only loading state
+const isClientLoading = computed(() => {
+	return process.client && isLoading.value
+})
 
 const availableLangs = computed(() => {
 	if (!fullSong.value) return song.value ? [song.value.currentLang] : []
@@ -293,7 +298,12 @@ useHead({
 </script>
 
 <template>
-	<div v-if="song" class="min-h-screen bg-surface-base pb-0">
+	<!-- Loading State -->
+	<div v-if="isClientLoading" class="min-h-screen flex items-center justify-center bg-surface-base">
+		<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+	</div>
+
+	<div v-else-if="song" class="min-h-screen bg-surface-base pb-0">
 
 		<div class="container mx-auto px-4 py-4">
 			<!-- Language Switcher -->

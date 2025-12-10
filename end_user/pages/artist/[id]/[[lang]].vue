@@ -61,6 +61,11 @@ const artist = computed(() => artistData.value?.artist || null);
 const songs = computed(() => artistData.value?.songs || []);
 const relatedArtists = computed(() => artistData.value?.relatedArtists || []);
 
+// Client-only loading state
+const isClientLoading = computed(() => {
+	return process.client && isLoading.value
+})
+
 // Client-only: Sync store with route on mount
 onMounted(() => {
 	contentLanguageStore.syncWithRoute();
@@ -204,7 +209,7 @@ useHead({
 	<div class="min-h-screen pb-20 bg-surface-base text-text-primary transition-colors duration-300">
 
 		<!-- Loading State -->
-		<div v-if="isLoading" class="flex items-center justify-center min-h-[50vh]">
+		<div v-if="isClientLoading" class="flex items-center justify-center min-h-[50vh]">
 			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
 		</div>
 

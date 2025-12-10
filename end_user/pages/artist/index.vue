@@ -99,6 +99,11 @@ watch(artistsData, (data) => {
   }
 }, { immediate: true })
 
+// Client-only loading state
+const isClientLoading = computed(() => {
+  return process.client && isLoading.value
+})
+
 // Debounced search
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 watch(searchQuery, () => {
@@ -165,14 +170,14 @@ const getArtistName = (artist: Artist) => {
       </div>
 
       <!-- Results Count -->
-      <div v-if="!isLoading && totalResults > 0" class="mb-6">
+      <div v-if="!isClientLoading && totalResults > 0" class="mb-6">
         <Typography variant="body" class="text-text-secondary">
           {{ t('pages.artists.artistsCount', { count: totalResults }) }}
         </Typography>
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <div v-if="isClientLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
         <SkeletonCard v-for="i in 12" :key="i" />
       </div>
 
