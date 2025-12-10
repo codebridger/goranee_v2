@@ -236,6 +236,23 @@ const handleGridColumns = (columns: GridColumns) => {
 	gridColumns.value = columns
 }
 
+const handleResetTranspose = () => {
+	currentTableIndex.value = originalTableIndex.value
+}
+
+const handleResetScroll = () => {
+	setSpeed(0.5)
+}
+
+const handleResetFontSize = () => {
+	fontSize.value = 1.0
+}
+
+const handleResetLayout = () => {
+	gridMode.value = false
+	gridColumns.value = 2
+}
+
 const getArtistName = () => {
 	if (!song.value?.artists || song.value.artists.length === 0) return 'Unknown Artist'
 	const artist = song.value.artists[0]
@@ -329,7 +346,9 @@ useHead({
 							:grid-mode="gridMode" :grid-columns="gridColumns"
 							@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll"
 							@update:speed="setSpeed" @update:font-size="handleFontSize"
-							@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns" />
+							@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns"
+							@reset:transpose="handleResetTranspose" @reset:scroll="handleResetScroll"
+							@reset:font-size="handleResetFontSize" @reset:layout="handleResetLayout" />
 					</div>
 				</div>
 
@@ -366,7 +385,9 @@ useHead({
 				:key-quality="keyQuality" :is-scrolling="isScrolling" :scroll-speed="speed" :font-size="fontSize"
 				:grid-mode="gridMode" :grid-columns="gridColumns" @update:table-index="handleTableIndexChange"
 				@toggle-scroll="toggleScroll" @update:speed="setSpeed" @update:font-size="handleFontSize"
-				@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns" />
+				@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns"
+				@reset:transpose="handleResetTranspose" @reset:scroll="handleResetScroll"
+				@reset:font-size="handleResetFontSize" @reset:layout="handleResetLayout" />
 		</div>
 
 	</div>

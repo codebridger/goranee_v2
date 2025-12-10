@@ -267,6 +267,7 @@
 		"slow": "Hêdî",
 		"fast": "Lez",
 		"close": "Bigire",
+		"reset": "Reset",
 		"ariaLabels": {
 			"decreaseTranspose": "Kîyê kêm bike",
 			"increaseTranspose": "Kîyê zêde bike",
@@ -281,4 +282,3 @@
 		}
 	}
 }
-

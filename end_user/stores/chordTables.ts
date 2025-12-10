@@ -73,21 +73,18 @@ export const useChordTablesStore = defineStore('chordTables', () => {
         database: CHORD_DATABASE_NAME,
         collection: CHORD_COLLECTION_NAME.TABLE,
         query: {},
-        options: {
-          // @ts-expect-error: populate is supported by backend
-          populate: [
-            'keySignature',
-            'type',
-            'rows.major',
-            'rows.naturalMinor',
-            'rows.harmonicMinor',
-            'rows.melodicMinor',
-            'chromaticRows.one',
-            'chromaticRows.two',
-            'chromaticRows.three',
-            'chromaticRows.four',
-          ],
-        },
+        populates: [
+          'keySignature',
+          'type',
+          'rows.major',
+          'rows.naturalMinor',
+          'rows.harmonicMinor',
+          'rows.melodicMinor',
+          'chromaticRows.one',
+          'chromaticRows.two',
+          'chromaticRows.three',
+          'chromaticRows.four',
+        ],
       })
 
       if (fetchedTables && fetchedTables.length > 0) {

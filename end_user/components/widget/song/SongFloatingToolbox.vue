@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight, LayoutGrid, AlignJustify } from 'lucide-vue-next'
+import { Music, Play, Pause, Zap, Minus, Plus, ChevronLeft, ChevronRight, LayoutGrid, AlignJustify, RotateCcw } from 'lucide-vue-next'
 import { useTranspose } from '~/composables/useTranspose'
 import IconButton from '~/components/base/IconButton.vue'
 import Stepper from '~/components/base/Stepper.vue'
@@ -34,6 +34,10 @@ const emit = defineEmits<{
   (e: 'update:fontSize', value: number): void
   (e: 'update:gridMode', value: boolean): void
   (e: 'update:gridColumns', value: GridColumns): void
+  (e: 'reset:transpose'): void
+  (e: 'reset:scroll'): void
+  (e: 'reset:fontSize'): void
+  (e: 'reset:layout'): void
 }>()
 
 // Column options for grid
@@ -178,8 +182,13 @@ const closeDrawer = () => {
     <div class="hidden lg:flex flex-col gap-6 sticky top-24">
       <!-- Transpose Card -->
       <Card variant="section" :title="t('toolbox.transpose')">
+        <template #header-action>
+          <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+            :title="t('toolbox.reset')" @click="emit('reset:transpose')" />
+        </template>
         <!-- +/- Controls -->
-        <div class="mb-3">
+        <!-- Note: dir="ltr" is mandatory here to ensure correct order of +/- controls regardless of app direction -->
+        <div class="mb-3" dir="ltr">
           <Stepper :model-value="currentTableIndex" :min="0" :max="11" :step="1" :format-value="formatKeyName"
             :decrease-aria-label="t('toolbox.ariaLabels.decreaseTranspose')"
             :increase-aria-label="t('toolbox.ariaLabels.increaseTranspose')" size="md" variant="compact"
@@ -192,7 +201,8 @@ const closeDrawer = () => {
             @click="scrollCarousel(carouselRef, -1)" />
 
           <!-- Carousel Container -->
-          <div ref="carouselRef" class="flex gap-1 overflow-x-auto scrollbar-hide scroll-smooth px-7 py-1"
+          <!-- Note: dir="ltr" is mandatory here to ensure correct order of keys regardless of app direction -->
+          <div ref="carouselRef" dir="ltr" class="flex gap-1 overflow-x-auto scrollbar-hide scroll-smooth px-7 py-1"
             style="scrollbar-width: none; -ms-overflow-style: none;">
             <button v-for="key in keySignatures" :key="key.index" :data-key-index="key.index"
               class="flex-shrink-0 w-9 h-9 rounded-lg font-mono text-sm font-bold transition-all cursor-pointer" :class="[
@@ -218,6 +228,10 @@ const closeDrawer = () => {
 
       <!-- Auto Scroll Card -->
       <Card variant="section" :title="t('toolbox.autoScroll')">
+        <template #header-action>
+          <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+            :title="t('toolbox.reset')" @click="emit('reset:scroll')" />
+        </template>
         <div class="relative group">
           <button
             class="w-full px-4 py-2 rounded-lg font-bold transition-colors flex items-center justify-center mb-3 cursor-pointer"
@@ -233,22 +247,36 @@ const closeDrawer = () => {
         </div>
 
         <div class="text-xs text-text-muted mb-2">{{ t('toolbox.speed') }}</div>
-        <Stepper :model-value="scrollSpeed" :min="MIN_SPEED" :max="MAX_SPEED" :step="SPEED_STEP"
-          :format-value="formatSpeed" :decrease-aria-label="t('toolbox.ariaLabels.decreaseSpeed')"
-          :increase-aria-label="t('toolbox.ariaLabels.increaseSpeed')" size="md" variant="compact"
-          @update:model-value="(val) => emit('update:speed', val)" />
+        <!-- Note: dir="ltr" is mandatory here to ensure correct order of +/- controls regardless of app direction -->
+        <div dir="ltr">
+          <Stepper :model-value="scrollSpeed" :min="MIN_SPEED" :max="MAX_SPEED" :step="SPEED_STEP"
+            :format-value="formatSpeed" :decrease-aria-label="t('toolbox.ariaLabels.decreaseSpeed')"
+            :increase-aria-label="t('toolbox.ariaLabels.increaseSpeed')" size="md" variant="compact"
+            @update:model-value="(val) => emit('update:speed', val)" />
+        </div>
       </Card>
 
       <!-- Font Size Card -->
       <Card variant="section" :title="t('toolbox.fontSize')">
-        <Stepper :model-value="fontSize" :min="0.8" :max="2.0" :step="0.1" :format-value="formatFontSize"
-          :decrease-aria-label="t('toolbox.ariaLabels.decreaseFontSize')"
-          :increase-aria-label="t('toolbox.ariaLabels.increaseFontSize')" size="md" variant="compact"
-          @update:model-value="(val) => emit('update:fontSize', val)" />
+        <template #header-action>
+          <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+            :title="t('toolbox.reset')" @click="emit('reset:fontSize')" />
+        </template>
+        <!-- Note: dir="ltr" is mandatory here to ensure correct order of +/- controls regardless of app direction -->
+        <div dir="ltr">
+          <Stepper :model-value="fontSize" :min="0.8" :max="2.0" :step="0.1" :format-value="formatFontSize"
+            :decrease-aria-label="t('toolbox.ariaLabels.decreaseFontSize')"
+            :increase-aria-label="t('toolbox.ariaLabels.increaseFontSize')" size="md" variant="compact"
+            @update:model-value="(val) => emit('update:fontSize', val)" />
+        </div>
       </Card>
 
       <!-- Layout Card (Grid Toggle) -->
       <Card variant="section" :title="t('toolbox.layout')">
+        <template #header-action>
+          <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+            :title="t('toolbox.reset')" @click="emit('reset:layout')" />
+        </template>
         <div class="mb-3">
           <SegmentedControl :model-value="gridMode" :options="gridModeOptions" size="md" variant="default"
             @update:model-value="(val) => emit('update:gridMode', val)" />
@@ -303,10 +331,17 @@ const closeDrawer = () => {
 
       <!-- Transpose Tab -->
       <div v-if="activeTab === 'transpose'" class="space-y-6">
-        <h3 class="text-lg font-bold text-center">{{ t('toolbox.transposeKey') }}</h3>
+        <div class="flex items-center justify-center relative">
+          <h3 class="text-lg font-bold text-center">{{ t('toolbox.transposeKey') }}</h3>
+          <div class="absolute right-0">
+            <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+              :title="t('toolbox.reset')" @click="emit('reset:transpose')" />
+          </div>
+        </div>
 
         <!-- +/- Controls with Current Key -->
-        <div class="flex items-center justify-center gap-6">
+        <!-- Note: dir="ltr" is mandatory here to ensure correct order of +/- controls regardless of app direction -->
+        <div class="flex items-center justify-center gap-6" dir="ltr">
           <IconButton :icon="Minus" variant="secondary" size="sm" :ariaLabel="t('toolbox.ariaLabels.decreaseTranspose')"
             @click="stepKey(-1)" />
 
@@ -325,7 +360,9 @@ const closeDrawer = () => {
             @click="scrollCarousel(mobileCarouselRef, -1)" />
 
           <!-- Carousel Container -->
-          <div ref="mobileCarouselRef" class="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-10 py-2"
+          <!-- Note: dir="ltr" is mandatory here to ensure correct order of keys regardless of app direction -->
+          <div ref="mobileCarouselRef" dir="ltr"
+            class="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-10 py-2"
             style="scrollbar-width: none; -ms-overflow-style: none;">
             <button v-for="key in keySignatures" :key="key.index" :data-key-index="key.index"
               class="flex-shrink-0 w-12 h-12 rounded-xl font-mono text-base font-bold transition-all cursor-pointer"
@@ -353,9 +390,16 @@ const closeDrawer = () => {
 
       <!-- Scroll/Speed Tab -->
       <div v-else-if="activeTab === 'scroll'" class="space-y-6">
-        <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
+        <div class="flex items-center justify-center relative">
+          <h3 class="text-lg font-bold text-center">{{ t('toolbox.autoScrollSpeed') }}</h3>
+          <div class="absolute right-0">
+            <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+              :title="t('toolbox.reset')" @click="emit('reset:scroll')" />
+          </div>
+        </div>
 
-        <div class="flex items-center justify-center gap-6">
+        <!-- Note: dir="ltr" is mandatory here to ensure correct order of +/- controls regardless of app direction -->
+        <div class="flex items-center justify-center gap-6" dir="ltr">
           <IconButton :icon="Minus" variant="secondary" size="sm" :disabled="scrollSpeed <= MIN_SPEED"
             :ariaLabel="t('toolbox.ariaLabels.decreaseSpeed')" @click="stepSpeed(-1)" />
 
@@ -368,18 +412,29 @@ const closeDrawer = () => {
         </div>
 
         <div class="flex items-center justify-between bg-surface-muted rounded-xl p-4">
-          <span class="text-sm font-bold">{{ t('toolbox.fontSize') }}</span>
-          <Stepper :model-value="fontSize" :min="0.8" :max="2.0" :step="0.1" :format-value="formatFontSize"
-            :decrease-aria-label="t('toolbox.ariaLabels.decreaseFontSize')"
-            :increase-aria-label="t('toolbox.ariaLabels.increaseFontSize')" size="sm" variant="compact"
-            @update:model-value="(val) => emit('update:fontSize', val)" />
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold">{{ t('toolbox.fontSize') }}</span>
+            <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+              :title="t('toolbox.reset')" @click="emit('reset:fontSize')" />
+          </div>
+          <!-- Note: dir="ltr" is mandatory here to ensure correct order of +/- controls regardless of app direction -->
+          <div dir="ltr">
+            <Stepper :model-value="fontSize" :min="0.8" :max="2.0" :step="0.1" :format-value="formatFontSize"
+              :decrease-aria-label="t('toolbox.ariaLabels.decreaseFontSize')"
+              :increase-aria-label="t('toolbox.ariaLabels.increaseFontSize')" size="sm" variant="compact"
+              @update:model-value="(val) => emit('update:fontSize', val)" />
+          </div>
         </div>
 
         <!-- Grid Layout & Columns Combined (Mobile) -->
         <div class="bg-surface-muted rounded-xl p-4 space-y-3">
           <!-- Layout Toggle Row -->
           <div class="flex items-center justify-between">
-            <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold">{{ t('toolbox.layout') }}</span>
+              <IconButton :icon="RotateCcw" variant="ghost" size="xs" :ariaLabel="t('toolbox.reset')"
+                :title="t('toolbox.reset')" @click="emit('reset:layout')" />
+            </div>
             <SegmentedControl :model-value="gridMode" :options="gridModeOptions" size="lg" variant="compact"
               @update:model-value="(val) => emit('update:gridMode', val)" />
           </div>

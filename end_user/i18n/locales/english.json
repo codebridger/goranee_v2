@@ -267,6 +267,7 @@
 		"slow": "Slow",
 		"fast": "Fast",
 		"close": "Close",
+		"reset": "Reset",
 		"ariaLabels": {
 			"decreaseTranspose": "Decrease transpose",
 			"increaseTranspose": "Increase transpose",

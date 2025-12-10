@@ -267,6 +267,7 @@
 		"slow": "آهسته",
 		"fast": "سریع",
 		"close": "بستن",
+		"reset": "بازنشانی",
 		"ariaLabels": {
 			"decreaseTranspose": "کاهش ترنسپوز",
 			"increaseTranspose": "افزایش ترنسپوز",
