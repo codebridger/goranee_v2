@@ -254,12 +254,12 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                 <div class="w-full mb-4 relative z-40 shrink-0 px-8 group">
                     <div class="relative">
                         <div
-                            class="absolute start-4 top-1/2 -translate-y-1/2 text-white/60 group-focus-within:text-white transition-colors pointer-events-none">
-                            <Search class="w-5 h-5" />
+                            class="absolute end-4 top-1/2 -translate-y-1/2 text-white/70 group-focus-within:text-white transition-colors pointer-events-none z-10">
+                            <Search class="w-5 h-5 stroke-current" :stroke-width="2" />
                         </div>
                         <input type="text" v-model="searchQuery" @input="performSearch"
                             @keydown.enter="handleSearchSubmit" :placeholder="t('navbar.searchPlaceholder')"
-                            class="w-full bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/40 focus:ring-2 focus:ring-white/20 rounded-full py-3 px-6 ps-12 text-white placeholder-white/50 outline-none transition-all duration-300" />
+                            class="w-full bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/40 focus:ring-2 focus:ring-white/20 rounded-full py-3 px-6 pe-12 text-white placeholder-white/50 outline-none transition-all duration-300" />
                     </div>
 
                     <!-- Search Dropdown -->
