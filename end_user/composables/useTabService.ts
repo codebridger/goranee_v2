@@ -150,10 +150,32 @@ export const useTabService = () => {
 
   const getImageUrl = (file: any) => {
       const config = useRuntimeConfig()
-      // Use ssrApiBaseUrl only on server context (SSR), otherwise use GlobalOptions (client)
-      const baseUrl = !process.client && config.public.ssrApiBaseUrl 
-        ? config.public.ssrApiBaseUrl 
-        : undefined
+      let baseUrl: string | undefined = undefined
+      
+      if (!process.client) {
+        // Server-side (SSR): Use ssrApiBaseUrl for public-facing URLs
+        // This ensures file URLs are accessible to clients, not internal Docker URLs
+        const ssrBaseUrl = config.public.ssrApiBaseUrl
+        if (ssrBaseUrl && typeof ssrBaseUrl === 'string' && ssrBaseUrl.trim()) {
+          baseUrl = ssrBaseUrl.trim().replace(/\/$/, '')
+        } else {
+          // If not configured, try to construct from request URL as fallback
+          try {
+            const requestURL = useRequestURL()
+            if (requestURL) {
+              baseUrl = `${requestURL.protocol}//${requestURL.host}/api/`.replace(/\/$/, '')
+            } else {
+              console.warn('[useTabService] NUXT_SSR_API_BASE_URL is not configured. Please set it in your environment variables.')
+            }
+          } catch (error) {
+            // If request URL is not available, log warning
+            console.warn('[useTabService] NUXT_SSR_API_BASE_URL is not configured and cannot determine base URL from request. File URLs may use internal Docker URL.')
+          }
+        }
+      }
+      // Client-side: baseUrl is undefined, so fileProvider will use GlobalOptions.host
+      // which is set to window.location.origin + /api/ in the plugin
+      
       const imgUrl = fileProvider.getFileLink(file, baseUrl)
       return imgUrl
   }
