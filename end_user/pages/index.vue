@@ -19,7 +19,11 @@ const artistCarouselRef = ref<HTMLElement | null>(null)
 // Fetch initial data with SSR support
 const { data: homeData, pending: isLoading, refresh: refreshHomeData } = await useAsyncData('home', async () => {
   const [hero, trending, artists, fetchedGenres] = await Promise.all([
-    tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }, {}, { _id: -1 }),
+    tabService.fetchSongs(5, 0, {
+      'content.ckb-IR.sections': { $slice: 1 },
+      'content.ckb-Latn.sections': { $slice: 1 },
+      'content.kmr.sections': { $slice: 1 }
+    }, {}, { _id: -1 }),
     tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
     tabService.fetchFeaturedArtists(),
     tabService.fetchGenres(),
@@ -151,7 +155,7 @@ onMounted(async () => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-            }}</Typography>
+          }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>

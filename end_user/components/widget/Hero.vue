@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Play, ChevronRight, ChevronLeft, Search, Music, Loader2 } from 'lucide-vue-next'
 import Button from '../base/Button.vue'
-import Input from '../base/Input.vue'
+import LyricSection from './song/LyricSection.vue'
 import type { SongWithPopulatedRefs } from '~/types/song.type'
 import { useTabService } from '~/composables/useTabService'
 import { useContentLanguageStore } from '~/stores/contentLanguage'
@@ -112,12 +112,27 @@ onUnmounted(() => {
     if (searchTimeout) clearTimeout(searchTimeout)
 })
 
-// Helper to extract lyrics with chord notation
-const getChordPreview = (song: SongWithPopulatedRefs) => {
-    if (!song.sections || song.sections.length === 0) return []
+// Get first section with lines for preview
+const getFirstSection = (song: SongWithPopulatedRefs | undefined) => {
+    if (!song || !song.sections || song.sections.length === 0) return null
     const section = song.sections.find(s => s.lines && s.lines.length > 0)
-    return section?.lines?.slice(0, 2) || []
+    return section || null
 }
+
+const activeSection = computed(() => {
+    if (!activeSong.value) return null
+    const section = getFirstSection(activeSong.value)
+    // Debug: log if no section found
+    if (!section && activeSong.value) {
+        console.debug('Hero: No section found for song', {
+            songId: activeSong.value._id,
+            title: activeSong.value.title,
+            sectionsCount: activeSong.value.sections?.length || 0,
+            sections: activeSong.value.sections
+        })
+    }
+    return section
+})
 
 const getArtistName = (song: SongWithPopulatedRefs) => {
     if (!song.artists || !song.artists[0]) {
@@ -357,14 +372,8 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                         'text-sm',
                                         'bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/5 mt-2'
                                     ]">
-                                        <template v-if="getChordPreview(activeSong).length > 0">
-                                            <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
-                                                class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
-                                                <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                                }}]</span>
-                                                <span class="text-gray-100 ms-1">{{ line.text }}</span>
-                                            </div>
-                                        </template>
+                                        <LyricSection v-if="activeSection" :section="activeSection" :max-lines="2"
+                                            :font-size="1.2" variant="compact" :key="activeSong._id" />
                                         <template v-else>
                                             <div class="text-gray-200">
                                                 <span class="text-base font-bold">[Cm]</span>
@@ -455,14 +464,8 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                         <div
                             class="w-full text-center bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/5">
                             <div class="font-mono space-y-2 text-gray-200 text-base">
-                                <template v-if="getChordPreview(activeSong).length > 0">
-                                    <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
-                                        class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
-                                        <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
-                                        <span class="text-gray-100 ms-1">{{ line.text }}</span>
-                                    </div>
-                                </template>
+                                <LyricSection v-if="activeSection" :section="activeSection" :max-lines="2"
+                                    :font-size="1.3" variant="compact" :key="activeSong._id" />
                                 <template v-else>
                                     <div class="text-gray-200">
                                         <span class="text-base font-bold">[Cm]</span>
@@ -563,14 +566,8 @@ const getArtistImage = (song: SongWithPopulatedRefs) => {
                                 'text-lg md:text-xl lg:text-2xl xl:text-3xl',
                                 'bg-white/5 rounded-xl p-6 backdrop-blur-sm border border-white/5'
                             ]">
-                                <template v-if="getChordPreview(activeSong).length > 0">
-                                    <div v-for="(line, idx) in getChordPreview(activeSong)" :key="idx"
-                                        class="leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
-                                        <span class="text-base font-bold" v-if="line.chords">[{{ line.chords
-                                            }}]</span>
-                                        <span class="text-gray-100 ms-1">{{ line.text }}</span>
-                                    </div>
-                                </template>
+                                <LyricSection v-if="activeSection" :section="activeSection" :max-lines="2"
+                                    :font-size="1.5" variant="compact" :key="activeSong._id" />
                                 <template v-else>
                                     <div class="text-gray-200">
                                         <span class="text-base font-bold">[Cm]</span>
