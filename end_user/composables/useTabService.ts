@@ -1,7 +1,8 @@
-import { dataProvider, fileProvider } from '@modular-rest/client'
+import { dataProvider } from '@modular-rest/client'
 import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
 import type { SongWithPopulatedRefs, Artist, Song, Genre, SongWithLang, LanguageCode } from '~/types/song.type'
 import { getAvailableLangs } from '~/types/song.type'
+import { useImageUrl } from './useImageUrl'
 
 // Mock constants for fallbacks (only for filling gaps in real data)
 const MOCK_RHYTHMS = ['Slow 6/8', 'Kurdish 7/8', '4/4 Pop', 'Georgina', 'Waz Waz', 'Garyan']
@@ -148,36 +149,11 @@ export const useTabService = () => {
     }
   }
 
+  // Note: getImageUrl has been moved to useImageUrl composable
+  // This is kept for backward compatibility but delegates to useImageUrl
   const getImageUrl = (file: any) => {
-      const config = useRuntimeConfig()
-      let baseUrl: string | undefined = undefined
-      
-      if (!process.client) {
-        // Server-side (SSR): Use ssrApiBaseUrl for public-facing URLs
-        // This ensures file URLs are accessible to clients, not internal Docker URLs
-        const ssrBaseUrl = config.public.ssrApiBaseUrl
-        if (ssrBaseUrl && typeof ssrBaseUrl === 'string' && ssrBaseUrl.trim()) {
-          baseUrl = ssrBaseUrl.trim().replace(/\/$/, '')
-        } else {
-          // If not configured, try to construct from request URL as fallback
-          try {
-            const requestURL = useRequestURL()
-            if (requestURL) {
-              baseUrl = `${requestURL.protocol}//${requestURL.host}/api/`.replace(/\/$/, '')
-            } else {
-              console.warn('[useTabService] NUXT_SSR_API_BASE_URL is not configured. Please set it in your environment variables.')
-            }
-          } catch (error) {
-            // If request URL is not available, log warning
-            console.warn('[useTabService] NUXT_SSR_API_BASE_URL is not configured and cannot determine base URL from request. File URLs may use internal Docker URL.')
-          }
-        }
-      }
-      // Client-side: baseUrl is undefined, so fileProvider will use GlobalOptions.host
-      // which is set to window.location.origin + /api/ in the plugin
-      
-      const imgUrl = fileProvider.getFileLink(file, baseUrl)
-      return imgUrl
+    const { getImageUrl: getImageUrlFromComposable } = useImageUrl()
+    return getImageUrlFromComposable(file)
   }
 
   // Helper to process songs with mock data and extract default language content
