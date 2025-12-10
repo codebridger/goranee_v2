@@ -6,9 +6,11 @@ WORKDIR /app
 # Enable corepack and use Yarn 1.x (classic) to match existing lockfile format
 RUN corepack enable && corepack prepare yarn@1.22.22 --activate
 
-# Build argument for API base URL
+# Build arguments for API base URLs
 ARG NUXT_API_BASE_URL=/api/
+ARG NUXT_SSR_API_BASE_URL
 ENV NUXT_API_BASE_URL=$NUXT_API_BASE_URL
+ENV NUXT_SSR_API_BASE_URL=$NUXT_SSR_API_BASE_URL
 
 # Copy package files
 COPY package.json yarn.lock ./

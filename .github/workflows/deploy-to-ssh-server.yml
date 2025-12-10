@@ -264,6 +264,7 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:buildcache,mode=max
           build-args: |
             NUXT_API_BASE_URL=/api/
+            NUXT_SSR_API_BASE_URL=${{ vars.NUXT_SSR_API_BASE_URL || 'https://goranee.ir/api/' }}
 
   deploy:
     runs-on: ubuntu-latest
