@@ -4,7 +4,6 @@ import { Languages } from 'lucide-vue-next'
 import type { UILanguageOption } from '~/stores/contentLanguage'
 import { useAppConfigStore } from '~/stores/appConfig'
 
-const { locale } = useI18n()
 const appConfig = useAppConfigStore()
 
 const languages: { code: UILanguageOption; label: string; nativeLabel: string }[] = [
