@@ -4,14 +4,14 @@ export default {
   state() {
     return {
       tables: [],
-      chords: []
+      chords: [],
     };
   },
 
   getters: {
     chords(state) {
       return state.chords || [];
-    }
+    },
   },
 
   mutations: {
@@ -20,7 +20,7 @@ export default {
     },
     SET_CHORDS(state, list) {
       state.chords = list;
-    }
+    },
   },
 
   actions: {
@@ -36,6 +36,7 @@ export default {
             database: "chord",
             collection: "table",
             query: {},
+            options: { sort: "_id" },
             populates: [
               "keySignature",
               "type",
@@ -46,12 +47,12 @@ export default {
               "chromaticRows.one",
               "chromaticRows.two",
               "chromaticRows.three",
-              "chromaticRows.four"
-            ]
+              "chromaticRows.four",
+            ],
           })
-          .then(list => commit("SET_TABLES", list));
+          .then((list) => commit("SET_TABLES", list));
       } else {
-        return new Promise(done => done());
+        return new Promise((done) => done());
       }
     },
     getChords({ commit, state }) {
@@ -64,9 +65,9 @@ export default {
         .find({
           database: "chord",
           collection: "chord",
-          query: {}
+          query: {},
         })
-        .then(list => commit("SET_CHORDS", list));
-    }
-  }
+        .then((list) => commit("SET_CHORDS", list));
+    },
+  },
 };
