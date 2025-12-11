@@ -60,17 +60,17 @@ The goal is to have a browsable, usable site where users can find and play songs
 
 ### 4. Discovery & Search Engine
 *Helping users find specific content or explore new music.*
-- [ ] **Search Page (`pages/discovery.vue` or `/search`)**:
+- [x] **Search Page (`pages/discovery.vue` or `/search`)**:
     - Accept query parameters (`?q=`, `?genre=`, `?key=`).
     - Implement a layout with Filters Sidebar (Desktop) / Drawer (Mobile) and Results Grid.
-- [ ] **Filtering Logic**:
+- [x] **Filtering Logic**:
     - Filter by Genre (Pop, Folklore, etc.), Key (Cm, Am...), and Rhythm.
     - Sort options (Newest, Most Viewed, A-Z).
-- [ ] **Results Grid**:
+- [x] **Results Grid**:
     - Efficient pagination or Infinite Scroll for large result sets.
     - Re-use `SongCard` with optimized props for list views.
     - "No Results" empty state with a "Request Song" CTA.
-- [ ] **Artists Index (`pages/artists/index.vue`)**:
+- [x] **Artists Index (`pages/artists/index.vue`)**:
     - A simple, paginated grid of all available artists, sortable by name or popularity.
 
 ---
