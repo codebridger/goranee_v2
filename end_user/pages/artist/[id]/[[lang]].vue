@@ -154,13 +154,46 @@ const artistName = computed(() => {
 	return langContent?.name || artist.value.content?.['ckb-IR']?.name || ''
 });
 
-// SEO
-useHead({
+// SEO: Meta tags
+const baseUrl = useBaseUrl()
+const artistDescription = computed(() => {
+	if (!artist.value) return 'Goranee - Kurdish Chords Platform'
+	const langContent = artist.value.content?.[langCode.value] || artist.value.content?.['ckb-IR']
+	const bio = langContent?.bio || ''
+	const songCount = songsCount.value
+	return bio
+		? `${bio} | ${songCount} ${t('common.songs')} | Goranee`
+		: `${artistName.value} - ${songCount} ${t('common.songs')} | Goranee`
+})
+const artistImageUrl = computed(() => {
+	if (!artistImage.value) return `${baseUrl.value}/favicon.ico`
+	return artistImage.value
+})
+const canonicalUrl = computed(() => {
+	return langCode.value === 'ckb-IR'
+		? `${baseUrl.value}/artist/${artistId.value}`
+		: `${baseUrl.value}/artist/${artistId.value}/${langCode.value}`
+})
+
+useSeoMeta({
 	title: computed(() => artistName.value ? `${artistName.value} - Goranee` : t('common.artist')),
+	description: artistDescription,
+	ogTitle: artistName,
+	ogDescription: artistDescription,
+	ogImage: artistImageUrl,
+	ogType: 'profile',
+	ogUrl: canonicalUrl,
+	twitterCard: 'summary_large_image',
+	twitterTitle: artistName,
+	twitterDescription: artistDescription,
+	twitterImage: artistImageUrl,
+})
+
+// SEO: Structured Data (JSON-LD) and hreflang/canonical
+useHead({
 	link: computed(() => {
 		if (!artist.value) return []
 
-		const baseUrl = 'https://goranee.ir'
 		const links: any[] = []
 
 		// Get available languages for artist
@@ -172,8 +205,8 @@ useHead({
 			// Add hreflang for each available language
 			availableLangs.forEach(lang => {
 				const url = lang === 'ckb-IR'
-					? `${baseUrl}/artist/${artistId.value}`
-					: `${baseUrl}/artist/${artistId.value}/${lang}`
+					? `${baseUrl.value}/artist/${artistId.value}`
+					: `${baseUrl.value}/artist/${artistId.value}/${lang}`
 
 				links.push({
 					rel: 'alternate',
@@ -186,21 +219,51 @@ useHead({
 			links.push({
 				rel: 'alternate',
 				hreflang: 'x-default',
-				href: `${baseUrl}/artist/${artistId.value}`,
+				href: `${baseUrl.value}/artist/${artistId.value}`,
 			})
 		}
 
 		// Add canonical URL
-		const canonicalUrl = langCode.value === 'ckb-IR'
-			? `${baseUrl}/artist/${artistId.value}`
-			: `${baseUrl}/artist/${artistId.value}/${langCode.value}`
-
 		links.push({
 			rel: 'canonical',
-			href: canonicalUrl,
+			href: canonicalUrl.value,
 		})
 
 		return links
+	}),
+	script: computed(() => {
+		if (!artist.value) return []
+
+		const langContent = artist.value.content?.[langCode.value] || artist.value.content?.['ckb-IR']
+		const bio = langContent?.bio || ''
+
+		// Structured data with dateModified and dateCreated
+		const structuredData: any = {
+			'@context': 'https://schema.org',
+			'@type': 'Person', // Using Person for individual artists, could be MusicGroup for bands
+			name: artistName.value,
+			url: canonicalUrl.value,
+			...(bio ? { description: bio } : {}),
+			...(artist.value.image ? {
+				image: artistImageUrl.value,
+			} : {}),
+		}
+
+		// Add timestamps if available
+		const artistWithTimestamps = artist.value as any
+		if (artistWithTimestamps.createdAt) {
+			structuredData.dateCreated = new Date(artistWithTimestamps.createdAt).toISOString()
+		}
+		if (artistWithTimestamps.updatedAt) {
+			structuredData.dateModified = new Date(artistWithTimestamps.updatedAt).toISOString()
+		} else if (artistWithTimestamps.createdAt) {
+			structuredData.dateModified = new Date(artistWithTimestamps.createdAt).toISOString()
+		}
+
+		return [{
+			type: 'application/ld+json',
+			children: JSON.stringify(structuredData),
+		}]
 	}),
 });
 </script>

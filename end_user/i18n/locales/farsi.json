@@ -241,6 +241,12 @@
 		"of": "از"
 	},
 	"song": {
+		"language": "زبان",
+		"languages": {
+			"ckb-IR": "سورانی (ئێران)",
+			"ckb-Latn": "Soranî (Latînî)",
+			"kmr": "Kurmancî"
+		},
 		"metadata": {
 			"key": "کلید",
 			"rhythm": "ریتم",

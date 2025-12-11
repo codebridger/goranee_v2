@@ -1,5 +1,6 @@
 import { DatabaseTrigger } from "@modular-rest/server";
 import mongoose from "mongoose";
+import { notifySongUpdated, notifyArtistUpdated } from "./indexing_service";
 
 /**
  * Helper function to update artist song counts
@@ -96,6 +97,12 @@ export function getSongTriggers(): DatabaseTrigger[] {
       if (song && song.artists && Array.isArray(song.artists)) {
         await updateArtistSongCounts(song.artists);
       }
+      // Notify search engines about new song
+      if (song?._id) {
+        notifySongUpdated(String(song._id)).catch((err) =>
+          console.error("Failed to notify IndexNow for new song:", err)
+        );
+      }
     }),
 
     // Trigger after song is deleted
@@ -148,7 +155,13 @@ export function getSongTriggers(): DatabaseTrigger[] {
           await updateArtistSongCounts(Array.from(affectedArtistIds));
         }
       }
+
+      // Notify search engines about song update
+      if (updatedSong?._id) {
+        notifySongUpdated(String(updatedSong._id)).catch((err) =>
+          console.error("Failed to notify IndexNow for song update:", err)
+        );
+      }
     }),
   ];
 }
-

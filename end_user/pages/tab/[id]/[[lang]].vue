@@ -6,6 +6,7 @@ import { useAutoScroll } from '~/composables/useAutoScroll'
 import { useTranspose } from '~/composables/useTranspose'
 import { useSongSettings } from '~/composables/useSongSettings'
 import { useContentLanguageStore } from '~/stores/contentLanguage'
+import { useBaseUrl } from '~/composables/useBaseUrl'
 import type { LanguageCode } from '~/constants/routes'
 import type { SongWithLang, SongWithPopulatedRefs, Song } from '~/types/song.type'
 import { getAvailableLangs } from '~/types/song.type'
@@ -119,6 +120,20 @@ const gridColumns = ref<GridColumns>(2)
 // Settings will be loaded after song data is fetched (client-only)
 let settingsLoaded = false
 
+// Keyboard shortcut: Spacebar to toggle auto-scroll
+const handleKeydown = (event: KeyboardEvent) => {
+	// Only trigger if not typing in an input field
+	const target = event.target as HTMLElement
+	if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+		return
+	}
+
+	if (event.code === 'Space') {
+		event.preventDefault() // Prevent page scroll
+		toggleScroll()
+	}
+}
+
 // Sync store with route on mount and when route changes
 onMounted(async () => {
 	contentLanguageStore.syncWithRoute()
@@ -155,6 +170,9 @@ onMounted(async () => {
 		originalTableIndex.value = originalIdx
 		currentTableIndex.value = originalIdx
 	}
+
+	// Add keyboard event listener
+	window.addEventListener('keydown', handleKeydown)
 })
 
 watch(
@@ -167,29 +185,11 @@ watch(
 	{ immediate: true }
 )
 
-// Watch for language changes in route - refresh song data
+// Watch for language changes in route
 watch(langCode, async (newLang) => {
 	if (songId.value) {
 		await refreshSongData()
 	}
-})
-
-// Keyboard shortcut: Spacebar to toggle auto-scroll
-const handleKeydown = (event: KeyboardEvent) => {
-	// Only trigger if not typing in an input field
-	const target = event.target as HTMLElement
-	if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-		return
-	}
-
-	if (event.code === 'Space') {
-		event.preventDefault() // Prevent page scroll
-		toggleScroll()
-	}
-}
-
-onMounted(() => {
-	window.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
@@ -236,27 +236,43 @@ const handleGridColumns = (columns: GridColumns) => {
 	gridColumns.value = columns
 }
 
+// Reset handlers
 const handleResetTranspose = () => {
 	currentTableIndex.value = originalTableIndex.value
 }
 
 const handleResetScroll = () => {
-	setSpeed(0.5)
+	setSpeed(0.5) // Default scroll speed
 }
 
 const handleResetFontSize = () => {
-	fontSize.value = 1.0
+	fontSize.value = 1.0 // Default font size
 }
 
 const handleResetLayout = () => {
-	gridMode.value = false
-	gridColumns.value = 2
+	gridMode.value = false // Default grid mode
+	gridColumns.value = 2 // Default grid columns
 }
 
-const getArtistName = () => {
+const getArtistsNames = () => {
 	if (!song.value?.artists || song.value.artists.length === 0) return 'Unknown Artist'
-	const artist = song.value.artists[0]
-	return typeof artist === 'string' ? 'Unknown Artist' : (artist as any)?.name || 'Unknown Artist'
+
+	const artistNames = song.value.artists
+		.map((artist): string | null => {
+			if (typeof artist === 'string') return null
+			const artistObj = artist as any
+			if (artistObj && typeof artistObj === 'object' && 'name' in artistObj) {
+				return artistObj.name || null
+			}
+			return null
+		})
+		.filter((name): name is string => name !== null)
+
+	if (artistNames.length === 0) return 'Unknown Artist'
+	if (artistNames.length === 1) return artistNames[0]
+
+	// Join multiple artists with " و " (Kurdish/Farsi "and")
+	return artistNames.join(' و ')
 }
 
 const getArtistObj = () => {
@@ -270,20 +286,52 @@ const keyQuality = computed(() => {
 	return song.value?.chords?.keySignature as 'major' | 'minor' | undefined
 })
 
-// SEO: hreflang and canonical URLs
+// SEO: Meta tags
+const baseUrl = useBaseUrl()
+const songTitle = computed(() => song.value?.title || 'Goranee')
+const songDescription = computed(() => {
+	if (!song.value) return 'Goranee - Kurdish Chords Platform'
+	const artistsNames = getArtistsNames()
+	const rhythm = song.value.rhythm || ''
+	return `آکورد ${song.value.title}${artistsNames !== 'Unknown Artist' ? ` از ${artistsNames}` : ''}${rhythm ? ` - ${rhythm}` : ''} | Goranee`
+})
+const songImage = computed(() => {
+	if (!song.value?.image) return `${baseUrl.value}/favicon.ico`
+	return getImageUrl(song.value.image)
+})
+const canonicalUrl = computed(() => {
+	return langCode.value === 'ckb-IR'
+		? `${baseUrl.value}/tab/${songId.value}`
+		: `${baseUrl.value}/tab/${songId.value}/${langCode.value}`
+})
+
+useSeoMeta({
+	title: computed(() => `${songTitle.value} - Goranee`),
+	description: songDescription,
+	ogTitle: songTitle,
+	ogDescription: songDescription,
+	ogImage: songImage,
+	ogType: 'music.song',
+	ogUrl: canonicalUrl,
+	twitterCard: 'summary_large_image',
+	twitterTitle: songTitle,
+	twitterDescription: songDescription,
+	twitterImage: songImage,
+})
+
+// SEO: Structured Data (JSON-LD) and hreflang/canonical
 useHead({
 	link: computed(() => {
 		if (!song.value || !fullSong.value) return []
 
-		const baseUrl = 'https://goranee.ir'
 		const links: any[] = []
 		const available = getAvailableLangs(fullSong.value)
 
 		// Add hreflang for each available language
 		available.forEach(lang => {
 			const url = lang === 'ckb-IR'
-				? `${baseUrl}/tab/${songId.value}`
-				: `${baseUrl}/tab/${songId.value}/${lang}`
+				? `${baseUrl.value}/tab/${songId.value}`
+				: `${baseUrl.value}/tab/${songId.value}/${lang}`
 
 			links.push({
 				rel: 'alternate',
@@ -296,20 +344,73 @@ useHead({
 		links.push({
 			rel: 'alternate',
 			hreflang: 'x-default',
-			href: `${baseUrl}/tab/${songId.value}`,
+			href: `${baseUrl.value}/tab/${songId.value}`,
 		})
 
 		// Add canonical URL
-		const canonicalUrl = langCode.value === 'ckb-IR'
-			? `${baseUrl}/tab/${songId.value}`
-			: `${baseUrl}/tab/${songId.value}/${langCode.value}`
-
 		links.push({
 			rel: 'canonical',
-			href: canonicalUrl,
+			href: canonicalUrl.value,
 		})
 
 		return links
+	}),
+	script: computed(() => {
+		if (!song.value || !fullSong.value) return []
+
+		const artistsNames = getArtistsNames()
+
+		// Build composer array
+		const composers = song.value.artists && song.value.artists.length > 0
+			? song.value.artists.map(artist => {
+				if (typeof artist === 'string') {
+					return {
+						'@type': 'Person',
+						name: artistsNames,
+					}
+				}
+				const artistObj = artist as any
+				return {
+					'@type': 'Person',
+					name: artistObj?.name || artistsNames,
+					...(artistObj?._id ? { url: `${baseUrl.value}/artist/${artistObj._id}` } : {}),
+				}
+			})
+			: [{
+				'@type': 'Person',
+				name: artistsNames,
+			}]
+
+		// Structured data with dateModified and dateCreated
+		const structuredData = {
+			'@context': 'https://schema.org',
+			'@type': 'MusicComposition',
+			name: song.value.title,
+			composer: composers.length === 1 ? composers[0] : composers,
+			dateCreated: fullSong.value.createdAt
+				? new Date(fullSong.value.createdAt).toISOString()
+				: undefined,
+			dateModified: fullSong.value.updatedAt
+				? new Date(fullSong.value.updatedAt).toISOString()
+				: (fullSong.value.createdAt
+					? new Date(fullSong.value.createdAt).toISOString()
+					: undefined),
+			inAlbum: {
+				'@type': 'MusicAlbum',
+				name: 'Goranee Kurdish Chords',
+			},
+			...(song.value.image ? {
+				image: songImage.value,
+			} : {}),
+			...(song.value.rhythm ? {
+				genre: song.value.rhythm,
+			} : {}),
+		}
+
+		return [{
+			type: 'application/ld+json',
+			children: JSON.stringify(structuredData),
+		}]
 	}),
 })
 </script>
@@ -323,10 +424,6 @@ useHead({
 	<div v-else-if="song" class="min-h-screen bg-surface-base pb-0">
 
 		<div class="container mx-auto px-4 py-4">
-			<!-- Language Switcher -->
-			<LanguageSwitcher v-if="availableLangs.length > 1" :available-langs="availableLangs"
-				:current-lang="langCode" :song-id="songId" />
-
 			<!-- MOBILE HEADER (Compact) -->
 			<div class="lg:hidden mb-4">
 				<SongInfoCard variant="mobile" :title="song.title" :artist="getArtistObj()" :rhythm="song.rhythm"
@@ -354,6 +451,10 @@ useHead({
 
 				<!-- 2. CENTER (Chord Sheet) -->
 				<div class="lg:col-span-6">
+					<!-- Language Switcher -->
+					<LanguageSwitcher v-if="availableLangs.length > 1" :available-langs="availableLangs"
+						:current-lang="langCode" :song-id="songId" />
+
 					<MainChordSheet :sections="song.sections || []" :song-chords="song.chords"
 						:current-table-index="currentTableIndex" :original-table-index="originalTableIndex"
 						:font-size="fontSize" :grid-mode="gridMode" :grid-columns="gridColumns" />
@@ -366,13 +467,13 @@ useHead({
 						:original-key="song.chords?.keySignature"
 						:image="song.image ? getImageUrl(song.image) : undefined" />
 
-					<SongSidebar :artist-name="getArtistName()" :artist-songs="artistSongs"
+					<SongSidebar :artist-name="getArtistsNames()" :artist-songs="artistSongs"
 						:similar-songs="similarSongs" />
 				</div>
 
 				<!-- Mobile Recommendations (Bottom) -->
 				<div class="lg:hidden mt-4">
-					<SongSidebar :artist-name="getArtistName()" :artist-songs="artistSongs"
+					<SongSidebar :artist-name="getArtistsNames()" :artist-songs="artistSongs"
 						:similar-songs="similarSongs" />
 				</div>
 

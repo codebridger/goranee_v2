@@ -241,6 +241,12 @@
 		"of": "لە"
 	},
 	"song": {
+		"language": "زمان",
+		"languages": {
+			"ckb-IR": "سورانی (ئێران)",
+			"ckb-Latn": "Soranî (Latînî)",
+			"kmr": "Kurmancî"
+		},
 		"metadata": {
 			"key": "پلی دەنگ",
 			"rhythm": "ڕیتم",

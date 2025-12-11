@@ -241,6 +241,12 @@
 		"of": "ji"
 	},
 	"song": {
+		"language": "Ziman",
+		"languages": {
+			"ckb-IR": "سورانی (ئێران)",
+			"ckb-Latn": "Soranî (Latînî)",
+			"kmr": "Kurmancî"
+		},
 		"metadata": {
 			"key": "Kî",
 			"rhythm": "Rîtm",
