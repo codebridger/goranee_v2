@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
 import { useTranspose } from '~/composables/useTranspose'
 import { useSongSettings } from '~/composables/useSongSettings'
 import { useContentLanguageStore } from '~/stores/contentLanguage'
 import { useBaseUrl } from '~/composables/useBaseUrl'
+import { useSchema } from '~/composables/useSchema'
 import type { LanguageCode } from '~/constants/routes'
-import type { SongWithLang, SongWithPopulatedRefs, Song } from '~/types/song.type'
+import type { SongWithPopulatedRefs, Song, Artist } from '~/types/song.type'
 import { getAvailableLangs } from '~/types/song.type'
 import { dataProvider } from '@modular-rest/client'
 import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
@@ -23,7 +24,6 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
 const contentLanguageStore = useContentLanguageStore()
 
 // Extract song ID and language from route
@@ -41,6 +41,7 @@ const langCode = computed<LanguageCode>(() => {
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
 const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
 const { getOriginalTableIndex, fetchTables } = useTranspose()
+const { getArtistName, createMusicCompositionSchema, validateAndStringifySchema } = useSchema()
 
 // Fetch song data with SSR support
 const { data: songData, pending: isLoading, refresh: refreshSongData } = await useAsyncData(
@@ -358,59 +359,59 @@ useHead({
 	script: computed(() => {
 		if (!song.value || !fullSong.value) return []
 
-		const artistsNames = getArtistsNames()
-
-		// Build composer array
-		const composers = song.value.artists && song.value.artists.length > 0
-			? song.value.artists.map(artist => {
-				if (typeof artist === 'string') {
-					return {
-						'@type': 'Person',
-						name: artistsNames,
-					}
-				}
-				const artistObj = artist as any
-				return {
-					'@type': 'Person',
-					name: artistObj?.name || artistsNames,
-					...(artistObj?._id ? { url: `${baseUrl.value}/artist/${artistObj._id}` } : {}),
-				}
-			})
-			: [{
-				'@type': 'Person',
-				name: artistsNames,
-			}]
-
-		// Structured data with dateModified and dateCreated
-		const structuredData = {
-			'@context': 'https://schema.org',
-			'@type': 'MusicComposition',
-			name: song.value.title,
-			composer: composers.length === 1 ? composers[0] : composers,
-			dateCreated: fullSong.value.createdAt
-				? new Date(fullSong.value.createdAt).toISOString()
-				: undefined,
-			dateModified: fullSong.value.updatedAt
-				? new Date(fullSong.value.updatedAt).toISOString()
-				: (fullSong.value.createdAt
-					? new Date(fullSong.value.createdAt).toISOString()
-					: undefined),
-			inAlbum: {
-				'@type': 'MusicAlbum',
-				name: 'Goranee Kurdish Chords',
-			},
-			...(song.value.image ? {
-				image: songImage.value,
-			} : {}),
-			...(song.value.rhythm ? {
-				genre: song.value.rhythm,
-			} : {}),
+		// Build composer array from individual artists (type-safe)
+		type Composer = {
+			'@type': 'Person'
+			name: string
+			url?: string
 		}
 
-		return [{
-			type: 'application/ld+json',
-			children: JSON.stringify(structuredData),
-		}]
+		const composers: Composer[] = song.value.artists && song.value.artists.length > 0
+			? song.value.artists
+				.map((artist): Composer | null => {
+					// Skip if artist is just a string ID (no name available)
+					if (typeof artist === 'string') {
+						return null
+					}
+
+					const artistObj = artist as Artist
+					const artistName = getArtistName(artistObj, langCode.value)
+
+					// Only include if we have a valid name
+					if (!artistName || artistName === 'Unknown Artist') {
+						return null
+					}
+
+					// Build clean composer object with only valid fields
+					const composer: Composer = {
+						'@type': 'Person',
+						name: String(artistName),
+					}
+
+					// Only add URL if _id exists and is valid
+					if (artistObj._id && typeof artistObj._id === 'string') {
+						composer.url = `${baseUrl.value}/artist/${artistObj._id}`
+					}
+
+					return composer
+				})
+				.filter((composer): composer is Composer => composer !== null)
+			: []
+
+		// Create structured data using the shared composable
+		const structuredData = createMusicCompositionSchema({
+			name: song.value.title || 'Untitled Song',
+			language: langCode.value,
+			composers,
+			image: song.value.image && songImage.value && typeof songImage.value === 'string'
+				? String(songImage.value)
+				: undefined,
+			dateCreated: fullSong.value.createdAt,
+			dateModified: fullSong.value.updatedAt,
+		})
+
+		// Validate and stringify using the shared composable
+		return validateAndStringifySchema(structuredData)
 	}),
 })
 </script>

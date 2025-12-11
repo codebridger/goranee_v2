@@ -5,7 +5,9 @@ import { useI18n } from 'vue-i18n';
 import { Play, Heart } from 'lucide-vue-next';
 import { useTabService } from '~/composables/useTabService';
 import { useContentLanguageStore } from '~/stores/contentLanguage';
-import type { Artist, SongWithPopulatedRefs } from '~/types/song.type';
+import { useSchema } from '~/composables/useSchema';
+import type { Artist, SongWithPopulatedRefs, ContentLanguageCode } from '~/types/song.type';
+import { getAvailableLangsForArtist } from '~/types/song.type';
 import type { LanguageCode } from '~/constants/routes';
 import SongCard from '~/components/widget/SongCard.vue';
 import ArtistCard from '~/components/widget/ArtistCard.vue';
@@ -17,6 +19,7 @@ const route = useRoute();
 const { t } = useI18n();
 const contentLanguageStore = useContentLanguageStore();
 const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists, getImageUrl } = useTabService();
+const { createPersonSchema, validateAndStringifySchema } = useSchema();
 
 const artistId = computed(() => route.params.id as string);
 const langCode = computed<LanguageCode>(() => {
@@ -150,15 +153,28 @@ const navigateToHome = () => {
 // Get artist name from current language content
 const artistName = computed(() => {
 	if (!artist.value) return ''
-	const langContent = artist.value.content?.[langCode.value]
-	return langContent?.name || artist.value.content?.['ckb-IR']?.name || ''
+	// Only use languages that exist in Artist.content type (exclude 'en')
+	const currentLang = langCode.value
+	if (currentLang !== 'en' && currentLang in artist.value.content) {
+		const langContent = artist.value.content[currentLang as ContentLanguageCode]
+		if (langContent?.name) {
+			return langContent.name
+		}
+	}
+	// Fallback to default language
+	return artist.value.content?.['ckb-IR']?.name || ''
 });
 
 // SEO: Meta tags
 const baseUrl = useBaseUrl()
 const artistDescription = computed(() => {
 	if (!artist.value) return 'Goranee - Kurdish Chords Platform'
-	const langContent = artist.value.content?.[langCode.value] || artist.value.content?.['ckb-IR']
+	// Only use languages that exist in Artist.content type (exclude 'en')
+	const currentLang = langCode.value
+	let langContent = artist.value.content?.['ckb-IR']
+	if (currentLang !== 'en' && currentLang in artist.value.content) {
+		langContent = artist.value.content[currentLang as ContentLanguageCode]
+	}
 	const bio = langContent?.bio || ''
 	const songCount = songsCount.value
 	return bio
@@ -196,14 +212,12 @@ useHead({
 
 		const links: any[] = []
 
-		// Get available languages for artist
-		const availableLangs = (Object.keys(artist.value.content || {}) as LanguageCode[]).filter(
-			lang => artist.value?.content?.[lang]?.name
-		)
+		// Get available languages for artist (only ContentLanguageCode, not 'en')
+		const availableLangs = getAvailableLangsForArtist(artist.value)
 
 		if (availableLangs.length > 1) {
 			// Add hreflang for each available language
-			availableLangs.forEach(lang => {
+			availableLangs.forEach((lang: ContentLanguageCode) => {
 				const url = lang === 'ckb-IR'
 					? `${baseUrl.value}/artist/${artistId.value}`
 					: `${baseUrl.value}/artist/${artistId.value}/${lang}`
@@ -234,36 +248,30 @@ useHead({
 	script: computed(() => {
 		if (!artist.value) return []
 
-		const langContent = artist.value.content?.[langCode.value] || artist.value.content?.['ckb-IR']
+		// Only use languages that exist in Artist.content type (exclude 'en')
+		const currentLang = langCode.value
+		let langContent = artist.value.content?.['ckb-IR']
+		if (currentLang !== 'en' && currentLang in artist.value.content) {
+			langContent = artist.value.content[currentLang as ContentLanguageCode]
+		}
 		const bio = langContent?.bio || ''
 
-		// Structured data with dateModified and dateCreated
-		const structuredData: any = {
-			'@context': 'https://schema.org',
-			'@type': 'Person', // Using Person for individual artists, could be MusicGroup for bands
-			name: artistName.value,
-			url: canonicalUrl.value,
-			...(bio ? { description: bio } : {}),
-			...(artist.value.image ? {
-				image: artistImageUrl.value,
-			} : {}),
-		}
-
-		// Add timestamps if available
+		// Get timestamps if available
 		const artistWithTimestamps = artist.value as any
-		if (artistWithTimestamps.createdAt) {
-			structuredData.dateCreated = new Date(artistWithTimestamps.createdAt).toISOString()
-		}
-		if (artistWithTimestamps.updatedAt) {
-			structuredData.dateModified = new Date(artistWithTimestamps.updatedAt).toISOString()
-		} else if (artistWithTimestamps.createdAt) {
-			structuredData.dateModified = new Date(artistWithTimestamps.createdAt).toISOString()
-		}
 
-		return [{
-			type: 'application/ld+json',
-			children: JSON.stringify(structuredData),
-		}]
+		// Create structured data using the shared composable
+		const structuredData = createPersonSchema({
+			name: artistName.value,
+			language: langCode.value,
+			url: canonicalUrl.value,
+			description: bio || undefined,
+			image: artistImageUrl.value || undefined,
+			dateCreated: artistWithTimestamps.createdAt,
+			dateModified: artistWithTimestamps.updatedAt,
+		})
+
+		// Validate and stringify using the shared composable
+		return validateAndStringifySchema(structuredData)
 	}),
 });
 </script>
