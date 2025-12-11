@@ -78,17 +78,25 @@ export default [
   defineCollection({
     database: "tab",
     collection: "artist",
-    schema: new Schema({
-      // Language-specific content as nested object with lang codes as keys
-      content: {
-        "ckb-IR": ArtistLanguageContentSchema,
-        "ckb-Latn": ArtistLanguageContentSchema,
-        kmr: ArtistLanguageContentSchema,
+    schema: new Schema(
+      {
+        // Language-specific content as nested object with lang codes as keys
+        content: {
+          "ckb-IR": ArtistLanguageContentSchema,
+          "ckb-Latn": ArtistLanguageContentSchema,
+          kmr: ArtistLanguageContentSchema,
+        },
+        // Shared content (not language-specific)
+        chords: { type: Number, default: 0 },
+        image: schemas.file,
+        // Timestamps
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now },
       },
-      // Shared content (not language-specific)
-      chords: { type: Number, default: 0 },
-      image: schemas.file,
-    }),
+      {
+        timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
+      }
+    ),
     permissions: [
       new Permission({
         accessType: "god_access",
@@ -105,28 +113,33 @@ export default [
   defineCollection({
     database: "tab",
     collection: "song",
-    schema: new Schema({
-      // Language-specific content as nested object with lang codes as keys
-      content: {
-        "ckb-IR": SongLanguageContentSchema,
-        "ckb-Latn": SongLanguageContentSchema,
-        kmr: SongLanguageContentSchema,
+    schema: new Schema(
+      {
+        // Language-specific content as nested object with lang codes as keys
+        content: {
+          "ckb-IR": SongLanguageContentSchema,
+          "ckb-Latn": SongLanguageContentSchema,
+          kmr: SongLanguageContentSchema,
+        },
+        // Shared content (not language-specific)
+        rhythm: [{ type: Schema.Types.ObjectId, ref: RhythmCollection.model }],
+        artists: [{ type: Schema.Types.ObjectId, ref: "artist", default: [] }],
+        genres: [{ type: Schema.Types.ObjectId, ref: "genre", default: [] }],
+        chords: {
+          keySignature: { type: String, enum: ["major", "minor"] },
+          vocalNote: VocalNoteSchema,
+          list: [SongChordSchema],
+        },
+        image: schemas.file,
+        melodies: [MelodySchema],
+        // Timestamps
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now },
       },
-      // Shared content (not language-specific)
-      rhythm: [{ type: Schema.Types.ObjectId, ref: RhythmCollection.model }],
-      artists: [{ type: Schema.Types.ObjectId, ref: "artist", default: [] }],
-      genres: [{ type: Schema.Types.ObjectId, ref: "genre", default: [] }],
-      chords: {
-        keySignature: { type: String, enum: ["major", "minor"] },
-        vocalNote: VocalNoteSchema,
-        list: [SongChordSchema],
-      },
-      image: schemas.file,
-      melodies: [MelodySchema],
-      // Timestamps
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    }),
+      {
+        timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
+      }
+    ),
     permissions: [
       new Permission({
         accessType: "god_access",

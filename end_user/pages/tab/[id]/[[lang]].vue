@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useTabService } from '~/composables/useTabService'
 import { useAutoScroll } from '~/composables/useAutoScroll'
 import { useTranspose } from '~/composables/useTranspose'
 import { useSongSettings } from '~/composables/useSongSettings'
 import { useContentLanguageStore } from '~/stores/contentLanguage'
+import { useBaseUrl } from '~/composables/useBaseUrl'
+import { useSchema } from '~/composables/useSchema'
 import type { LanguageCode } from '~/constants/routes'
-import type { SongWithLang, SongWithPopulatedRefs, Song } from '~/types/song.type'
+import type { SongWithPopulatedRefs, Song, Artist } from '~/types/song.type'
 import { getAvailableLangs } from '~/types/song.type'
 import { dataProvider } from '@modular-rest/client'
 import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
@@ -22,7 +24,6 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
 const contentLanguageStore = useContentLanguageStore()
 
 // Extract song ID and language from route
@@ -40,6 +41,7 @@ const langCode = computed<LanguageCode>(() => {
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
 const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
 const { getOriginalTableIndex, fetchTables } = useTranspose()
+const { getArtistName, createMusicCompositionSchema, validateAndStringifySchema } = useSchema()
 
 // Fetch song data with SSR support
 const { data: songData, pending: isLoading, refresh: refreshSongData } = await useAsyncData(
@@ -119,6 +121,20 @@ const gridColumns = ref<GridColumns>(2)
 // Settings will be loaded after song data is fetched (client-only)
 let settingsLoaded = false
 
+// Keyboard shortcut: Spacebar to toggle auto-scroll
+const handleKeydown = (event: KeyboardEvent) => {
+	// Only trigger if not typing in an input field
+	const target = event.target as HTMLElement
+	if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+		return
+	}
+
+	if (event.code === 'Space') {
+		event.preventDefault() // Prevent page scroll
+		toggleScroll()
+	}
+}
+
 // Sync store with route on mount and when route changes
 onMounted(async () => {
 	contentLanguageStore.syncWithRoute()
@@ -155,6 +171,9 @@ onMounted(async () => {
 		originalTableIndex.value = originalIdx
 		currentTableIndex.value = originalIdx
 	}
+
+	// Add keyboard event listener
+	window.addEventListener('keydown', handleKeydown)
 })
 
 watch(
@@ -167,30 +186,28 @@ watch(
 	{ immediate: true }
 )
 
-// Watch for language changes in route - refresh song data
-watch(langCode, async (newLang) => {
-	if (songId.value) {
-		await refreshSongData()
-	}
-})
+// Watch for changes in song data to recalculate transpose indices
+watch(song, (newSong) => {
+	if (newSong && newSong.chords && typeof window !== 'undefined') {
+		const id = songId.value
+		// Determine original table index from song's first chord
+		const originalIdx = getOriginalTableIndex(newSong.chords)
+		originalTableIndex.value = originalIdx
 
-// Keyboard shortcut: Spacebar to toggle auto-scroll
-const handleKeydown = (event: KeyboardEvent) => {
-	// Only trigger if not typing in an input field
-	const target = event.target as HTMLElement
-	if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-		return
-	}
+		// Try to load saved settings
+		const { tableIndex: savedTableIndex } = useSongSettings(id)
 
-	if (event.code === 'Space') {
-		event.preventDefault() // Prevent page scroll
-		toggleScroll()
+		// Apply saved settings or use default
+		// Only override currentTableIndex if it hasn't been set by user in this session?
+		// Actually, when navigating to a NEW song, we want to reset to original or saved preference for THAT song.
+		currentTableIndex.value = savedTableIndex.value !== 0 ? savedTableIndex.value : originalIdx
+	} else if (newSong && newSong.chords) {
+		// Server-side fallback or if window not defined
+		const originalIdx = getOriginalTableIndex(newSong.chords)
+		originalTableIndex.value = originalIdx
+		currentTableIndex.value = originalIdx
 	}
-}
-
-onMounted(() => {
-	window.addEventListener('keydown', handleKeydown)
-})
+}, { immediate: true })
 
 onUnmounted(() => {
 	window.removeEventListener('keydown', handleKeydown)
@@ -236,27 +253,43 @@ const handleGridColumns = (columns: GridColumns) => {
 	gridColumns.value = columns
 }
 
+// Reset handlers
 const handleResetTranspose = () => {
 	currentTableIndex.value = originalTableIndex.value
 }
 
 const handleResetScroll = () => {
-	setSpeed(0.5)
+	setSpeed(0.5) // Default scroll speed
 }
 
 const handleResetFontSize = () => {
-	fontSize.value = 1.0
+	fontSize.value = 1.0 // Default font size
 }
 
 const handleResetLayout = () => {
-	gridMode.value = false
-	gridColumns.value = 2
+	gridMode.value = false // Default grid mode
+	gridColumns.value = 2 // Default grid columns
 }
 
-const getArtistName = () => {
+const getArtistsNames = () => {
 	if (!song.value?.artists || song.value.artists.length === 0) return 'Unknown Artist'
-	const artist = song.value.artists[0]
-	return typeof artist === 'string' ? 'Unknown Artist' : (artist as any)?.name || 'Unknown Artist'
+
+	const artistNames = song.value.artists
+		.map((artist): string | null => {
+			if (typeof artist === 'string') return null
+			const artistObj = artist as any
+			if (artistObj && typeof artistObj === 'object' && 'name' in artistObj) {
+				return artistObj.name || null
+			}
+			return null
+		})
+		.filter((name): name is string => name !== null)
+
+	if (artistNames.length === 0) return 'Unknown Artist'
+	if (artistNames.length === 1) return artistNames[0]
+
+	// Join multiple artists with " و " (Kurdish/Farsi "and")
+	return artistNames.join(' و ')
 }
 
 const getArtistObj = () => {
@@ -270,20 +303,52 @@ const keyQuality = computed(() => {
 	return song.value?.chords?.keySignature as 'major' | 'minor' | undefined
 })
 
-// SEO: hreflang and canonical URLs
+// SEO: Meta tags
+const baseUrl = useBaseUrl()
+const songTitle = computed(() => song.value?.title || 'Goranee')
+const songDescription = computed(() => {
+	if (!song.value) return 'Goranee - Kurdish Chords Platform'
+	const artistsNames = getArtistsNames()
+	const rhythm = song.value.rhythm || ''
+	return `آکورد ${song.value.title}${artistsNames !== 'Unknown Artist' ? ` از ${artistsNames}` : ''}${rhythm ? ` - ${rhythm}` : ''} | Goranee`
+})
+const songImage = computed(() => {
+	if (!song.value?.image) return `${baseUrl.value}/favicon.ico`
+	return getImageUrl(song.value.image)
+})
+const canonicalUrl = computed(() => {
+	return langCode.value === 'ckb-IR'
+		? `${baseUrl.value}/tab/${songId.value}`
+		: `${baseUrl.value}/tab/${songId.value}/${langCode.value}`
+})
+
+useSeoMeta({
+	title: computed(() => `${songTitle.value} - Goranee`),
+	description: songDescription,
+	ogTitle: songTitle,
+	ogDescription: songDescription,
+	ogImage: songImage,
+	ogType: 'music.song',
+	ogUrl: canonicalUrl,
+	twitterCard: 'summary_large_image',
+	twitterTitle: songTitle,
+	twitterDescription: songDescription,
+	twitterImage: songImage,
+})
+
+// SEO: Structured Data (JSON-LD) and hreflang/canonical
 useHead({
 	link: computed(() => {
 		if (!song.value || !fullSong.value) return []
 
-		const baseUrl = 'https://goranee.ir'
 		const links: any[] = []
 		const available = getAvailableLangs(fullSong.value)
 
 		// Add hreflang for each available language
 		available.forEach(lang => {
 			const url = lang === 'ckb-IR'
-				? `${baseUrl}/tab/${songId.value}`
-				: `${baseUrl}/tab/${songId.value}/${lang}`
+				? `${baseUrl.value}/tab/${songId.value}`
+				: `${baseUrl.value}/tab/${songId.value}/${lang}`
 
 			links.push({
 				rel: 'alternate',
@@ -296,20 +361,73 @@ useHead({
 		links.push({
 			rel: 'alternate',
 			hreflang: 'x-default',
-			href: `${baseUrl}/tab/${songId.value}`,
+			href: `${baseUrl.value}/tab/${songId.value}`,
 		})
 
 		// Add canonical URL
-		const canonicalUrl = langCode.value === 'ckb-IR'
-			? `${baseUrl}/tab/${songId.value}`
-			: `${baseUrl}/tab/${songId.value}/${langCode.value}`
-
 		links.push({
 			rel: 'canonical',
-			href: canonicalUrl,
+			href: canonicalUrl.value,
 		})
 
 		return links
+	}),
+	script: computed(() => {
+		if (!song.value || !fullSong.value) return []
+
+		// Build composer array from individual artists (type-safe)
+		type Composer = {
+			'@type': 'Person'
+			name: string
+			url?: string
+		}
+
+		const composers: Composer[] = song.value.artists && song.value.artists.length > 0
+			? song.value.artists
+				.map((artist): Composer | null => {
+					// Skip if artist is just a string ID (no name available)
+					if (typeof artist === 'string') {
+						return null
+					}
+
+					const artistObj = artist as Artist
+					const artistName = getArtistName(artistObj, langCode.value)
+
+					// Only include if we have a valid name
+					if (!artistName || artistName === 'Unknown Artist') {
+						return null
+					}
+
+					// Build clean composer object with only valid fields
+					const composer: Composer = {
+						'@type': 'Person',
+						name: String(artistName),
+					}
+
+					// Only add URL if _id exists and is valid
+					if (artistObj._id && typeof artistObj._id === 'string') {
+						composer.url = `${baseUrl.value}/artist/${artistObj._id}`
+					}
+
+					return composer
+				})
+				.filter((composer): composer is Composer => composer !== null)
+			: []
+
+		// Create structured data using the shared composable
+		const structuredData = createMusicCompositionSchema({
+			name: song.value.title || 'Untitled Song',
+			language: langCode.value,
+			composers,
+			image: song.value.image && songImage.value && typeof songImage.value === 'string'
+				? String(songImage.value)
+				: undefined,
+			dateCreated: fullSong.value.createdAt,
+			dateModified: fullSong.value.updatedAt,
+		})
+
+		// Validate and stringify using the shared composable
+		return validateAndStringifySchema(structuredData)
 	}),
 })
 </script>
@@ -323,10 +441,6 @@ useHead({
 	<div v-else-if="song" class="min-h-screen bg-surface-base pb-0">
 
 		<div class="container mx-auto px-4 py-4">
-			<!-- Language Switcher -->
-			<LanguageSwitcher v-if="availableLangs.length > 1" :available-langs="availableLangs"
-				:current-lang="langCode" :song-id="songId" />
-
 			<!-- MOBILE HEADER (Compact) -->
 			<div class="lg:hidden mb-4">
 				<SongInfoCard variant="mobile" :title="song.title" :artist="getArtistObj()" :rhythm="song.rhythm"
@@ -354,6 +468,10 @@ useHead({
 
 				<!-- 2. CENTER (Chord Sheet) -->
 				<div class="lg:col-span-6">
+					<!-- Language Switcher -->
+					<LanguageSwitcher v-if="availableLangs.length > 1" :available-langs="availableLangs"
+						:current-lang="langCode" :song-id="songId" />
+
 					<MainChordSheet :sections="song.sections || []" :song-chords="song.chords"
 						:current-table-index="currentTableIndex" :original-table-index="originalTableIndex"
 						:font-size="fontSize" :grid-mode="gridMode" :grid-columns="gridColumns" />
@@ -366,13 +484,13 @@ useHead({
 						:original-key="song.chords?.keySignature"
 						:image="song.image ? getImageUrl(song.image) : undefined" />
 
-					<SongSidebar :artist-name="getArtistName()" :artist-songs="artistSongs"
+					<SongSidebar :artist-name="getArtistsNames()" :artist-songs="artistSongs"
 						:similar-songs="similarSongs" />
 				</div>
 
 				<!-- Mobile Recommendations (Bottom) -->
 				<div class="lg:hidden mt-4">
-					<SongSidebar :artist-name="getArtistName()" :artist-songs="artistSongs"
+					<SongSidebar :artist-name="getArtistsNames()" :artist-songs="artistSongs"
 						:similar-songs="similarSongs" />
 				</div>
 

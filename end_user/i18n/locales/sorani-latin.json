@@ -241,6 +241,12 @@
 		"of": "le"
 	},
 	"song": {
+		"language": "Ziman",
+		"languages": {
+			"ckb-IR": "سورانی (ئێران)",
+			"ckb-Latn": "Soranî (Latînî)",
+			"kmr": "Kurmancî"
+		},
 		"metadata": {
 			"key": "Pley Deng",
 			"rhythm": "Rîtm",

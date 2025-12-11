@@ -23,7 +23,7 @@ export default defineNuxtConfig({
       // @ts-ignore
       apiBaseUrl: process.env.NUXT_API_BASE_URL || process.env.VITE_API_BASE_URL || '/api/',
       // @ts-ignore
-      ssrApiBaseUrl: process.env.NUXT_SSR_API_BASE_URL || process.env.VITE_SSR_API_BASE_URL,
+      baseUrl: process.env.NUXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://goranee.ir',
     },
   },
 

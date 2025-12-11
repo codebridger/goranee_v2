@@ -141,6 +141,22 @@ onMounted(async () => {
     await refreshHomeData()
   }
 })
+
+// SEO: Meta tags
+const baseUrl = useBaseUrl()
+useSeoMeta({
+  title: 'Goranee - Kurdish Chords Platform | آکورد کوردی',
+  description: 'Discover and learn Kurdish songs with chord sheets. Browse thousands of Kurdish chord tabs, find your favorite artists, and learn to play Kurdish music.',
+  ogTitle: 'Goranee - Kurdish Chords Platform',
+  ogDescription: 'Discover and learn Kurdish songs with chord sheets. Browse thousands of Kurdish chord tabs and find your favorite artists.',
+  ogImage: `${baseUrl.value}/favicon.ico`,
+  ogType: 'website',
+  ogUrl: baseUrl.value,
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Goranee - Kurdish Chords Platform',
+  twitterDescription: 'Discover and learn Kurdish songs with chord sheets.',
+  twitterImage: `${baseUrl.value}/favicon.ico`,
+})
 </script>
 
 <template>

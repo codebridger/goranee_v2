@@ -7,7 +7,25 @@ export default defineEventHandler(async (event) => {
   // Set content type
   event.node.res.setHeader('Content-Type', 'application/xml')
   
-  const baseUrl = 'https://goranee.ir'
+  // Get dynamic base URL from request headers
+  const headers = event.node.req.headers
+  const protocol = headers['x-forwarded-proto'] || 
+                  (event.node.req.socket?.encrypted ? 'https' : 'http')
+  const host = headers['x-forwarded-host'] || 
+               headers['host'] || 
+               headers[':authority'] ||
+               'goranee.ir'
+  
+  // Remove port if it's standard (80 for http, 443 for https)
+  const hostWithoutPort = host.split(':')[0]
+  const port = host.includes(':') ? host.split(':')[1] : null
+  
+  // Only include port if it's non-standard
+  let baseUrl = `${protocol}://${hostWithoutPort}`
+  if (port && port !== '80' && port !== '443') {
+    baseUrl = `${protocol}://${hostWithoutPort}:${port}`
+  }
+  
   const currentDate = new Date().toISOString()
 
   // Configure GlobalOptions for server-side API calls

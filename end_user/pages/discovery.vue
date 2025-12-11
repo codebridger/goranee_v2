@@ -224,6 +224,35 @@ const navigateToSong = (id: string) => {
   router.push(ROUTES.TAB.DETAIL(id))
 }
 
+// SEO: Meta tags
+const baseUrl = useBaseUrl()
+const discoveryTitle = computed(() => {
+  if (hasQuery.value) {
+    return `${t('pages.discovery.searchResults')} "${searchQuery.value}" - Goranee`
+  }
+  return `${t('pages.discovery.title')} - Goranee`
+})
+const discoveryDescription = computed(() => {
+  if (hasQuery.value) {
+    return `Search results for "${searchQuery.value}" on Goranee. Find Kurdish chord sheets and songs.`
+  }
+  return 'Discover and search Kurdish songs with chord sheets. Filter by genre, key, rhythm and find the perfect song to learn.'
+})
+
+useSeoMeta({
+  title: discoveryTitle,
+  description: discoveryDescription,
+  ogTitle: discoveryTitle,
+  ogDescription: discoveryDescription,
+  ogImage: `${baseUrl.value}/favicon.ico`,
+  ogType: 'website',
+  ogUrl: computed(() => `${baseUrl.value}/discovery${route.query.q ? `?q=${route.query.q}` : ''}`),
+  twitterCard: 'summary_large_image',
+  twitterTitle: discoveryTitle,
+  twitterDescription: discoveryDescription,
+  twitterImage: `${baseUrl.value}/favicon.ico`,
+})
+
 </script>
 
 <template>

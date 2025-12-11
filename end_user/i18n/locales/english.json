@@ -241,6 +241,12 @@
 		"of": "of"
 	},
 	"song": {
+		"language": "Language",
+		"languages": {
+			"ckb-IR": "سورانی (ئێران)",
+			"ckb-Latn": "Soranî (Latînî)",
+			"kmr": "Kurmancî"
+		},
 		"metadata": {
 			"key": "Key",
 			"rhythm": "Rhythm",

@@ -5,7 +5,9 @@ import { useI18n } from 'vue-i18n';
 import { Play, Heart } from 'lucide-vue-next';
 import { useTabService } from '~/composables/useTabService';
 import { useContentLanguageStore } from '~/stores/contentLanguage';
-import type { Artist, SongWithPopulatedRefs } from '~/types/song.type';
+import { useSchema } from '~/composables/useSchema';
+import type { Artist, SongWithPopulatedRefs, ContentLanguageCode } from '~/types/song.type';
+import { getAvailableLangsForArtist } from '~/types/song.type';
 import type { LanguageCode } from '~/constants/routes';
 import SongCard from '~/components/widget/SongCard.vue';
 import ArtistCard from '~/components/widget/ArtistCard.vue';
@@ -17,6 +19,7 @@ const route = useRoute();
 const { t } = useI18n();
 const contentLanguageStore = useContentLanguageStore();
 const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists, getImageUrl } = useTabService();
+const { createPersonSchema, validateAndStringifySchema } = useSchema();
 
 const artistId = computed(() => route.params.id as string);
 const langCode = computed<LanguageCode>(() => {
@@ -150,30 +153,74 @@ const navigateToHome = () => {
 // Get artist name from current language content
 const artistName = computed(() => {
 	if (!artist.value) return ''
-	const langContent = artist.value.content?.[langCode.value]
-	return langContent?.name || artist.value.content?.['ckb-IR']?.name || ''
+	// Only use languages that exist in Artist.content type (exclude 'en')
+	const currentLang = langCode.value
+	if (currentLang !== 'en' && currentLang in artist.value.content) {
+		const langContent = artist.value.content[currentLang as ContentLanguageCode]
+		if (langContent?.name) {
+			return langContent.name
+		}
+	}
+	// Fallback to default language
+	return artist.value.content?.['ckb-IR']?.name || ''
 });
 
-// SEO
-useHead({
+// SEO: Meta tags
+const baseUrl = useBaseUrl()
+const artistDescription = computed(() => {
+	if (!artist.value) return 'Goranee - Kurdish Chords Platform'
+	// Only use languages that exist in Artist.content type (exclude 'en')
+	const currentLang = langCode.value
+	let langContent = artist.value.content?.['ckb-IR']
+	if (currentLang !== 'en' && currentLang in artist.value.content) {
+		langContent = artist.value.content[currentLang as ContentLanguageCode]
+	}
+	const bio = langContent?.bio || ''
+	const songCount = songsCount.value
+	return bio
+		? `${bio} | ${songCount} ${t('common.songs')} | Goranee`
+		: `${artistName.value} - ${songCount} ${t('common.songs')} | Goranee`
+})
+const artistImageUrl = computed(() => {
+	if (!artistImage.value) return `${baseUrl.value}/favicon.ico`
+	return artistImage.value
+})
+const canonicalUrl = computed(() => {
+	return langCode.value === 'ckb-IR'
+		? `${baseUrl.value}/artist/${artistId.value}`
+		: `${baseUrl.value}/artist/${artistId.value}/${langCode.value}`
+})
+
+useSeoMeta({
 	title: computed(() => artistName.value ? `${artistName.value} - Goranee` : t('common.artist')),
+	description: artistDescription,
+	ogTitle: artistName,
+	ogDescription: artistDescription,
+	ogImage: artistImageUrl,
+	ogType: 'profile',
+	ogUrl: canonicalUrl,
+	twitterCard: 'summary_large_image',
+	twitterTitle: artistName,
+	twitterDescription: artistDescription,
+	twitterImage: artistImageUrl,
+})
+
+// SEO: Structured Data (JSON-LD) and hreflang/canonical
+useHead({
 	link: computed(() => {
 		if (!artist.value) return []
 
-		const baseUrl = 'https://goranee.ir'
 		const links: any[] = []
 
-		// Get available languages for artist
-		const availableLangs = (Object.keys(artist.value.content || {}) as LanguageCode[]).filter(
-			lang => artist.value?.content?.[lang]?.name
-		)
+		// Get available languages for artist (only ContentLanguageCode, not 'en')
+		const availableLangs = getAvailableLangsForArtist(artist.value)
 
 		if (availableLangs.length > 1) {
 			// Add hreflang for each available language
-			availableLangs.forEach(lang => {
+			availableLangs.forEach((lang: ContentLanguageCode) => {
 				const url = lang === 'ckb-IR'
-					? `${baseUrl}/artist/${artistId.value}`
-					: `${baseUrl}/artist/${artistId.value}/${lang}`
+					? `${baseUrl.value}/artist/${artistId.value}`
+					: `${baseUrl.value}/artist/${artistId.value}/${lang}`
 
 				links.push({
 					rel: 'alternate',
@@ -186,21 +233,45 @@ useHead({
 			links.push({
 				rel: 'alternate',
 				hreflang: 'x-default',
-				href: `${baseUrl}/artist/${artistId.value}`,
+				href: `${baseUrl.value}/artist/${artistId.value}`,
 			})
 		}
 
 		// Add canonical URL
-		const canonicalUrl = langCode.value === 'ckb-IR'
-			? `${baseUrl}/artist/${artistId.value}`
-			: `${baseUrl}/artist/${artistId.value}/${langCode.value}`
-
 		links.push({
 			rel: 'canonical',
-			href: canonicalUrl,
+			href: canonicalUrl.value,
 		})
 
 		return links
+	}),
+	script: computed(() => {
+		if (!artist.value) return []
+
+		// Only use languages that exist in Artist.content type (exclude 'en')
+		const currentLang = langCode.value
+		let langContent = artist.value.content?.['ckb-IR']
+		if (currentLang !== 'en' && currentLang in artist.value.content) {
+			langContent = artist.value.content[currentLang as ContentLanguageCode]
+		}
+		const bio = langContent?.bio || ''
+
+		// Get timestamps if available
+		const artistWithTimestamps = artist.value as any
+
+		// Create structured data using the shared composable
+		const structuredData = createPersonSchema({
+			name: artistName.value,
+			language: langCode.value,
+			url: canonicalUrl.value,
+			description: bio || undefined,
+			image: artistImageUrl.value || undefined,
+			dateCreated: artistWithTimestamps.createdAt,
+			dateModified: artistWithTimestamps.updatedAt,
+		})
+
+		// Validate and stringify using the shared composable
+		return validateAndStringifySchema(structuredData)
 	}),
 });
 </script>
