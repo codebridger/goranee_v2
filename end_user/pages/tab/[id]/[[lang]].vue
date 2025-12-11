@@ -186,12 +186,28 @@ watch(
 	{ immediate: true }
 )
 
-// Watch for language changes in route
-watch(langCode, async (newLang) => {
-	if (songId.value) {
-		await refreshSongData()
+// Watch for changes in song data to recalculate transpose indices
+watch(song, (newSong) => {
+	if (newSong && newSong.chords && typeof window !== 'undefined') {
+		const id = songId.value
+		// Determine original table index from song's first chord
+		const originalIdx = getOriginalTableIndex(newSong.chords)
+		originalTableIndex.value = originalIdx
+
+		// Try to load saved settings
+		const { tableIndex: savedTableIndex } = useSongSettings(id)
+
+		// Apply saved settings or use default
+		// Only override currentTableIndex if it hasn't been set by user in this session?
+		// Actually, when navigating to a NEW song, we want to reset to original or saved preference for THAT song.
+		currentTableIndex.value = savedTableIndex.value !== 0 ? savedTableIndex.value : originalIdx
+	} else if (newSong && newSong.chords) {
+		// Server-side fallback or if window not defined
+		const originalIdx = getOriginalTableIndex(newSong.chords)
+		originalTableIndex.value = originalIdx
+		currentTableIndex.value = originalIdx
 	}
-})
+}, { immediate: true })
 
 onUnmounted(() => {
 	window.removeEventListener('keydown', handleKeydown)
