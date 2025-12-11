@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ArrowRight, Music } from 'lucide-vue-next'
 
 import { useTabService } from '~/composables/useTabService'
@@ -12,14 +12,48 @@ const { t } = useI18n()
 const tabService = useTabService()
 const contentLanguageStore = useContentLanguageStore()
 
-const isLoading = ref(true)
-const isListLoading = ref(true)
-const heroSongs = ref<SongWithPopulatedRefs[]>([])
-const trendingSongs = ref<SongWithPopulatedRefs[]>([])
-const featuredArtists = ref<Artist[]>([])
-const genres = ref<Genre[]>([])
+const isListLoading = ref(false)
 const songCache = ref<Record<string, SongWithPopulatedRefs[]>>({})
 const artistCarouselRef = ref<HTMLElement | null>(null)
+
+// Fetch initial data with SSR support
+const { data: homeData, pending: isLoading, refresh: refreshHomeData } = await useAsyncData('home', async () => {
+  const [hero, trending, artists, fetchedGenres] = await Promise.all([
+    tabService.fetchSongs(5, 0, {
+      'content.ckb-IR.sections': { $slice: 1 },
+      'content.ckb-Latn.sections': { $slice: 1 },
+      'content.kmr.sections': { $slice: 1 }
+    }, {}, { _id: -1 }),
+    tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
+    tabService.fetchFeaturedArtists(),
+    tabService.fetchGenres(),
+  ])
+
+  return {
+    heroSongs: hero,
+    trendingSongs: trending,
+    featuredArtists: artists,
+    genres: fetchedGenres,
+  }
+}, {
+  server: true,
+  lazy: true,
+})
+
+// Client-only loading state
+const isClientLoading = computed(() => {
+  return process.client && isLoading.value
+})
+
+const heroSongs = computed(() => homeData.value?.heroSongs || [])
+const trendingSongs = ref<SongWithPopulatedRefs[]>(homeData.value?.trendingSongs || [])
+const featuredArtists = computed(() => homeData.value?.featuredArtists || [])
+const genres = computed(() => homeData.value?.genres || [])
+
+// Initialize cache with initial trending songs
+if (homeData.value?.trendingSongs) {
+  songCache.value[t('home.discovery.tabs.all')] = homeData.value.trendingSongs
+}
 
 const tabs = computed(() => [
   t('home.discovery.tabs.all'),
@@ -27,6 +61,18 @@ const tabs = computed(() => [
 ])
 
 const activeTab = ref(t('home.discovery.tabs.all'))
+
+// Sync trendingSongs when homeData changes (e.g., when navigating back to page)
+watch(homeData, (newData) => {
+  if (newData?.trendingSongs) {
+    // Always update cache for 'All' tab
+    songCache.value[t('home.discovery.tabs.all')] = newData.trendingSongs
+    // Only update trendingSongs if we're on the 'All' tab
+    if (activeTab.value === t('home.discovery.tabs.all')) {
+      trendingSongs.value = newData.trendingSongs
+    }
+  }
+}, { immediate: true })
 
 // Helper function to get artist name with language support
 const getArtistName = (artist: Artist) => {
@@ -88,27 +134,11 @@ const handleTabChange = async (tabName: string) => {
   }
 }
 
+// Client-only: Refresh data if missing when navigating back to page
 onMounted(async () => {
-  isLoading.value = true
-  try {
-    const [hero, trending, artists, fetchedGenres] = await Promise.all([
-      tabService.fetchSongs(5, 0, { sections: { $slice: 1 } }, {}, { _id: -1 }),
-      tabService.fetchSongs(8, 5, {}, {}, { _id: -1 }),
-      tabService.fetchFeaturedArtists(),
-      tabService.fetchGenres(),
-    ])
-    heroSongs.value = hero
-    trendingSongs.value = trending
-    featuredArtists.value = artists
-    genres.value = fetchedGenres
-
-    // Cache initial "All" tab data
-    songCache.value[t('home.discovery.tabs.all')] = trending
-  } catch (error) {
-    console.error('Failed to load home data:', error)
-  } finally {
-    isLoading.value = false
-    isListLoading.value = false
+  // If data is missing or empty when navigating back, refresh it
+  if (process.client && (!homeData.value || !homeData.value.trendingSongs?.length)) {
+    await refreshHomeData()
   }
 })
 </script>
@@ -125,13 +155,13 @@ onMounted(async () => {
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-            }}</Typography>
+          }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <template v-if="isListLoading">
+        <template v-if="isClientLoading || isListLoading">
           <SkeletonCard v-for="i in 4" :key="i" />
         </template>
         <template v-else-if="trendingSongs.length > 0">
@@ -163,13 +193,13 @@ onMounted(async () => {
           </NuxtLink>
         </div>
 
-        <div v-if="isLoading || featuredArtists.length > 0" class="relative">
+        <div v-if="isClientLoading || featuredArtists.length > 0" class="relative">
           <CarouselNav direction="left" size="md" :ariaLabel="t('toolbox.ariaLabels.scrollLeft')"
             @click="scrollCarousel(-1)" />
 
           <div ref="artistCarouselRef"
             class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide scroll-smooth px-10">
-            <template v-if="isLoading">
+            <template v-if="isClientLoading">
               <SkeletonArtistCard v-for="i in 6" :key="i" class="shrink-0 snap-center" />
             </template>
             <template v-else>

@@ -32,16 +32,129 @@ const langCode = computed<LanguageCode>(() => {
 	// Handle array case (catch-all route)
 	const langStr = Array.isArray(lang) ? lang[0] : lang
 	const validLangs: LanguageCode[] = ['ckb-IR', 'ckb-Latn', 'kmr', 'en']
-	return validLangs.includes(langStr as LanguageCode) 
-		? (langStr as LanguageCode) 
+	return validLangs.includes(langStr as LanguageCode)
+		? (langStr as LanguageCode)
 		: 'ckb-IR' // Default fallback
 })
 
 const { fetchSongById, fetchSongsByArtist, getImageUrl } = useTabService()
+const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
+const { getOriginalTableIndex, fetchTables } = useTranspose()
+
+// Fetch song data with SSR support
+const { data: songData, pending: isLoading, refresh: refreshSongData } = await useAsyncData(
+	() => `song-${songId.value}-${langCode.value}`,
+	async () => {
+		// Fetch song data with language
+		const id = songId.value
+		const fetchedSong = await fetchSongById(id, langCode.value)
+
+		// Also fetch full song object to get available languages
+		let fetchedFullSong: Song | null = null
+		if (id) {
+			try {
+				const fullSongData = await dataProvider.findOne<Song>({
+					database: DATABASE_NAME,
+					collection: COLLECTION_NAME.SONG,
+					query: { _id: id },
+					options: { limit: 1 },
+				})
+				if (fullSongData) {
+					fetchedFullSong = fullSongData
+				}
+			} catch (error) {
+				console.error('Failed to fetch full song object:', error)
+			}
+		}
+
+		// Fetch more songs by first artist if song exists
+		let fetchedArtistSongs: SongWithPopulatedRefs[] = []
+		if (fetchedSong && fetchedSong.artists && fetchedSong.artists.length > 0) {
+			const firstArtist = fetchedSong.artists[0]
+			const artistId = typeof firstArtist === 'string'
+				? firstArtist
+				: (firstArtist as any)?._id
+			if (artistId) {
+				fetchedArtistSongs = await fetchSongsByArtist(artistId)
+			}
+		}
+
+		return {
+			song: fetchedSong,
+			fullSong: fetchedFullSong,
+			artistSongs: fetchedArtistSongs,
+		}
+	},
+	{
+		server: true,
+		lazy: true,
+		watch: [langCode],
+	}
+)
+
+const song = computed(() => songData.value?.song || null)
+const fullSong = computed(() => songData.value?.fullSong || null)
+const artistSongs = computed(() => songData.value?.artistSongs || [])
+const similarSongs = ref<SongWithPopulatedRefs[]>([]) // Placeholder for now
+
+// Client-only loading state
+const isClientLoading = computed(() => {
+	return process.client && isLoading.value
+})
+
+const availableLangs = computed(() => {
+	if (!fullSong.value) return song.value ? [song.value.currentLang] : []
+	return getAvailableLangs(fullSong.value)
+})
+
+type GridColumns = 2 | 3 | 'auto'
+
+// UI State - Table-based transposition
+const currentTableIndex = ref(0)
+const originalTableIndex = ref(0)
+const fontSize = ref(1.0)
+const gridMode = ref(false)
+const gridColumns = ref<GridColumns>(2)
+
+// Settings will be loaded after song data is fetched (client-only)
+let settingsLoaded = false
 
 // Sync store with route on mount and when route changes
-onMounted(() => {
+onMounted(async () => {
 	contentLanguageStore.syncWithRoute()
+
+	// Fetch chord transposition tables (cached after first load) - can be client-only
+	await fetchTables()
+
+	// Load saved settings from localStorage (client-side only)
+	if (song.value && typeof window !== 'undefined') {
+		const id = songId.value
+		// Determine original table index from song's first chord
+		const originalIdx = getOriginalTableIndex(song.value.chords)
+		originalTableIndex.value = originalIdx
+
+		const {
+			tableIndex: savedTableIndex,
+			fontSize: savedFontSize,
+			scrollSpeed: savedScrollSpeed,
+			gridMode: savedGridMode,
+			gridColumns: savedGridColumns
+		} = useSongSettings(id)
+
+		// Apply saved settings or use defaults
+		currentTableIndex.value = savedTableIndex.value !== 0 ? savedTableIndex.value : originalIdx
+		fontSize.value = savedFontSize.value
+		setSpeed(savedScrollSpeed.value)
+		gridMode.value = savedGridMode.value
+		gridColumns.value = savedGridColumns.value
+
+		settingsLoaded = true
+	} else if (song.value) {
+		// Server-side: just set original index
+		const originalIdx = getOriginalTableIndex(song.value.chords)
+		originalTableIndex.value = originalIdx
+		currentTableIndex.value = originalIdx
+	}
 })
 
 watch(
@@ -53,99 +166,11 @@ watch(
 	},
 	{ immediate: true }
 )
-const { isScrolling, speed, toggleScroll, setSpeed } = useAutoScroll()
-const { getOriginalTableIndex, fetchTables } = useTranspose()
 
-const song = ref<SongWithLang | null>(null)
-const fullSong = ref<Song | null>(null) // Store full song object to get available languages
-const availableLangs = computed(() => {
-	if (!fullSong.value) return song.value ? [song.value.currentLang] : []
-	return getAvailableLangs(fullSong.value)
-})
-const artistSongs = ref<SongWithPopulatedRefs[]>([])
-const similarSongs = ref<SongWithPopulatedRefs[]>([]) // Placeholder for now
-
-type GridColumns = 2 | 3 | 'auto'
-
-// UI State - Table-based transposition
-const currentTableIndex = ref(0)
-const originalTableIndex = ref(0)
-const fontSize = ref(1.0)
-const gridMode = ref(false)
-const gridColumns = ref<GridColumns>(2)
-
-// Settings will be loaded after song data is fetched
-let settingsLoaded = false
-
-// Fetch chord tables and song data on mount
-onMounted(async () => {
-	// Fetch chord transposition tables (cached after first load)
-	await fetchTables()
-
-	// Fetch song data with language
-	const id = songId.value
-	song.value = await fetchSongById(id, langCode.value)
-	
-		// Also fetch full song object to get available languages
-		if (id) {
-			try {
-				const fullSongData = await dataProvider.findOne<Song>({
-					database: DATABASE_NAME,
-					collection: COLLECTION_NAME.SONG,
-					query: { _id: id },
-					options: { limit: 1 },
-				})
-				if (fullSongData) {
-					fullSong.value = fullSongData
-				}
-			} catch (error) {
-				console.error('Failed to fetch full song object:', error)
-			}
-		}
-
-	if (song.value) {
-		// Determine original table index from song's first chord
-		const originalIdx = getOriginalTableIndex(song.value.chords)
-		originalTableIndex.value = originalIdx
-
-		// Load saved settings from localStorage (client-side only)
-		if (typeof window !== 'undefined') {
-			const {
-				tableIndex: savedTableIndex,
-				fontSize: savedFontSize,
-				scrollSpeed: savedScrollSpeed,
-				gridMode: savedGridMode,
-				gridColumns: savedGridColumns
-			} = useSongSettings(id)
-
-			// Apply saved settings or use defaults
-			currentTableIndex.value = savedTableIndex.value !== 0 ? savedTableIndex.value : originalIdx
-			fontSize.value = savedFontSize.value
-			setSpeed(savedScrollSpeed.value)
-			gridMode.value = savedGridMode.value
-			gridColumns.value = savedGridColumns.value
-
-			settingsLoaded = true
-		} else {
-			currentTableIndex.value = originalIdx
-		}
-
-		// Fetch more songs by first artist
-		if (song.value.artists && song.value.artists.length > 0) {
-			const artistId = typeof song.value.artists[0] === 'string'
-				? song.value.artists[0]
-				: song.value.artists[0]?._id
-			if (artistId) {
-				artistSongs.value = await fetchSongsByArtist(artistId)
-			}
-		}
-	}
-})
-
-// Watch for language changes in route
+// Watch for language changes in route - refresh song data
 watch(langCode, async (newLang) => {
 	if (songId.value) {
-		song.value = await fetchSongById(songId.value, newLang)
+		await refreshSongData()
 	}
 })
 
@@ -211,10 +236,27 @@ const handleGridColumns = (columns: GridColumns) => {
 	gridColumns.value = columns
 }
 
+const handleResetTranspose = () => {
+	currentTableIndex.value = originalTableIndex.value
+}
+
+const handleResetScroll = () => {
+	setSpeed(0.5)
+}
+
+const handleResetFontSize = () => {
+	fontSize.value = 1.0
+}
+
+const handleResetLayout = () => {
+	gridMode.value = false
+	gridColumns.value = 2
+}
+
 const getArtistName = () => {
 	if (!song.value?.artists || song.value.artists.length === 0) return 'Unknown Artist'
 	const artist = song.value.artists[0]
-	return typeof artist === 'string' ? 'Unknown Artist' : artist?.name || 'Unknown Artist'
+	return typeof artist === 'string' ? 'Unknown Artist' : (artist as any)?.name || 'Unknown Artist'
 }
 
 const getArtistObj = () => {
@@ -232,58 +274,59 @@ const keyQuality = computed(() => {
 useHead({
 	link: computed(() => {
 		if (!song.value || !fullSong.value) return []
-		
+
 		const baseUrl = 'https://goranee.ir'
 		const links: any[] = []
 		const available = getAvailableLangs(fullSong.value)
-		
+
 		// Add hreflang for each available language
 		available.forEach(lang => {
 			const url = lang === 'ckb-IR'
 				? `${baseUrl}/tab/${songId.value}`
 				: `${baseUrl}/tab/${songId.value}/${lang}`
-			
+
 			links.push({
 				rel: 'alternate',
 				hreflang: lang,
 				href: url,
 			})
 		})
-		
+
 		// Add x-default
 		links.push({
 			rel: 'alternate',
 			hreflang: 'x-default',
 			href: `${baseUrl}/tab/${songId.value}`,
 		})
-		
+
 		// Add canonical URL
 		const canonicalUrl = langCode.value === 'ckb-IR'
 			? `${baseUrl}/tab/${songId.value}`
 			: `${baseUrl}/tab/${songId.value}/${langCode.value}`
-		
+
 		links.push({
 			rel: 'canonical',
 			href: canonicalUrl,
 		})
-		
+
 		return links
 	}),
 })
 </script>
 
 <template>
-	<div v-if="song" class="min-h-screen bg-surface-base pb-0">
+	<!-- Loading State -->
+	<div v-if="isClientLoading" class="min-h-screen flex items-center justify-center bg-surface-base">
+		<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+	</div>
+
+	<div v-else-if="song" class="min-h-screen bg-surface-base pb-0">
 
 		<div class="container mx-auto px-4 py-4">
 			<!-- Language Switcher -->
-			<LanguageSwitcher 
-				v-if="availableLangs.length > 1"
-				:available-langs="availableLangs"
-				:current-lang="langCode"
-				:song-id="songId"
-			/>
-			
+			<LanguageSwitcher v-if="availableLangs.length > 1" :available-langs="availableLangs"
+				:current-lang="langCode" :song-id="songId" />
+
 			<!-- MOBILE HEADER (Compact) -->
 			<div class="lg:hidden mb-4">
 				<SongInfoCard variant="mobile" :title="song.title" :artist="getArtistObj()" :rhythm="song.rhythm"
@@ -303,7 +346,9 @@ useHead({
 							:grid-mode="gridMode" :grid-columns="gridColumns"
 							@update:table-index="handleTableIndexChange" @toggle-scroll="toggleScroll"
 							@update:speed="setSpeed" @update:font-size="handleFontSize"
-							@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns" />
+							@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns"
+							@reset:transpose="handleResetTranspose" @reset:scroll="handleResetScroll"
+							@reset:font-size="handleResetFontSize" @reset:layout="handleResetLayout" />
 					</div>
 				</div>
 
@@ -340,7 +385,9 @@ useHead({
 				:key-quality="keyQuality" :is-scrolling="isScrolling" :scroll-speed="speed" :font-size="fontSize"
 				:grid-mode="gridMode" :grid-columns="gridColumns" @update:table-index="handleTableIndexChange"
 				@toggle-scroll="toggleScroll" @update:speed="setSpeed" @update:font-size="handleFontSize"
-				@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns" />
+				@update:grid-mode="handleGridMode" @update:grid-columns="handleGridColumns"
+				@reset:transpose="handleResetTranspose" @reset:scroll="handleResetScroll"
+				@reset:font-size="handleResetFontSize" @reset:layout="handleResetLayout" />
 		</div>
 
 	</div>
@@ -349,4 +396,3 @@ useHead({
 		<div class="loading loading-spinner loading-lg text-primary"></div>
 	</div>
 </template>
-

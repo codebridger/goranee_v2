@@ -106,22 +106,53 @@ export const createZipFile = (zipPath: string = '/file.zip', compressingFilesAnd
 }
 
 export const moveFile = (source: string, dest: string, name: string = ''): Promise<void> => {
-    let command = `mv "${source}" "${dest}"`;
+    // Validate inputs
+    if (!source) {
+        return Promise.reject({
+            message: `Source path is required but was ${source === undefined ? 'undefined' : 'empty'}`,
+            step: "file_move",
+        });
+    }
 
-    if (dest && name) command += '/' + name;
+    if (!dest) {
+        return Promise.reject({
+            message: `Destination path is required but was ${dest === undefined ? 'undefined' : 'empty'}`,
+            step: "file_move",
+        });
+    }
 
-    // Create directory if it dosent exist
+    // Construct destination path with optional filename
+    let destinationPath = dest;
+    if (name) {
+        destinationPath = path.join(dest, name);
+    }
+
+    // Create directory if it doesn't exist
     fs.mkdirSync(dest, {
         recursive: true
     });
 
-    return new Promise((done, reject) => {
-        exec(command, (error, outSTR) => {
-            if (error) console.log(error.message);
-            if (error && error.killed) reject(outSTR);
-            else done();
-        });
+    // Construct command with proper path handling
+    let command = `mv "${source}" "${destinationPath}"`;
 
+    return new Promise((done, reject) => {
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`moveFile error: ${error.message}`);
+                console.error(`Command: ${command}`);
+                console.error(`stderr: ${stderr}`);
+                
+                // Reject on any error, not just when killed
+                reject({
+                    message: `Failed to move file from "${source}" to "${destinationPath}": ${error.message || stderr || 'Unknown error'}`,
+                    step: "file_move",
+                    originalError: error.message,
+                    stderr: stderr,
+                });
+            } else {
+                done();
+            }
+        });
     });
 }
 

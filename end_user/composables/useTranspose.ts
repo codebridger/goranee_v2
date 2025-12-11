@@ -1,178 +1,235 @@
 import { computed } from 'vue'
 import { useChordTablesStore } from '~/stores/chordTables'
-import type { SongChord, SongSection, SongSectionLine, VocalNote, SongChords } from '~/types/song.type'
-import type { TranspositionTable, ChordTableRow, ChordChromaticRow } from '~/types/database.type'
+import type { SongChord, SongSection, VocalNote, SongChords } from '~/types/song.type'
 
-// Position of a chord within a line string
-interface ChordPosition {
-  from: number
-  to: number
-  word: string
-  newWord?: string
+
+// Helper functions from v1 logic
+
+function generateSpace(total: number) {
+  let text = "";
+  for (let index = 0; index < total; index++) {
+    text += " ";
+  }
+  return text;
+}
+
+interface Position {
+  from: number;
+  to: number;
+  word: string;
+  newWord?: string;
 }
 
 /**
- * Helper: Generate a string of spaces
+ * @param string word the string you want find its positions.
+ * @param string text the text you want to find word positions in it.
  */
-function generateSpace(total: number): string {
-  return ' '.repeat(Math.max(0, total))
-}
+function findWordPosition(word: string, text: string, lastLength = 0): Position[] {
+  let positions: Position[] = [];
+  
+  let from = text.indexOf(word);
 
-/**
- * Recursively find all positions of a word in text (only if it's a complete word)
- * Based on chord_library's findWordPosition algorithm
- */
-function findWordPosition(word: string, text: string, lastLength = 0): ChordPosition[] {
-  const positions: ChordPosition[] = []
-  const from = text.indexOf(word)
+  // is not valid if from is -1
+  if (from == -1) {
+    return positions;
+  }
 
-  // Not found
-  if (from === -1) return positions
-
-  const to = from + word.length - 1
-  const position: ChordPosition = {
+  let to = from + word.length - 1;
+  let position: Position = {
     from: from + (lastLength > 0 ? lastLength : 0),
     to: to + (lastLength > 0 ? lastLength : 0),
     word: word,
+  };
+
+  /**
+   * Check valid [from] position
+   */
+
+  // is not valid if after [from] posed another character
+  let charAfterToPositiontext = text.charAt(position.to + 1);
+  if (charAfterToPositiontext.length && charAfterToPositiontext != " ") {
+    return positions;
   }
 
-  // Validate word boundaries (must be surrounded by spaces or at start/end)
-  const charAfter = text.charAt(to + 1)
-  if (charAfter.length && charAfter !== ' ') {
-    return positions // Invalid - not a complete word
+  // is not valid if before [from] posed another character
+  let charBeforeFromPosition = text.charAt(position.from - 1);
+  if (charBeforeFromPosition.length && charBeforeFromPosition != " ") {
+    return positions;
   }
 
-  const charBefore = text.charAt(from - 1)
-  if (charBefore.length && charBefore !== ' ') {
-    return positions // Invalid - not a complete word
-  }
+  positions.push(position);
 
-  positions.push(position)
+  let rest = text.slice(to + 1, text.length);
+  let restPositions: Position[] = [];
 
-  // Recursive call for remaining text
-  const rest = text.slice(to + 1)
   if (rest.length) {
-    const newLastLength = to + lastLength + 1
-    const restPositions = findWordPosition(word, rest, newLastLength)
-    positions.push(...restPositions)
+    lastLength = to + lastLength - 1;
+    restPositions = findWordPosition(word, rest, lastLength);
   }
 
-  return positions
+  return [...positions, ...restPositions];
 }
 
-/**
- * Separate chords from a chord line into position objects
- */
-function separateChords(chordsLine: string): ChordPosition[] {
-  // Split by space, remove empty entries
-  const uniqueChords: string[] = []
-  const separated = chordsLine.split(' ').filter((item) => item !== '')
+function seperateChords(chordsLine: string) {
+  /**
+   * Separate chords in this line
+   */
+  let list: string[] = [];
+  let sparatedBySpace = chordsLine
+    .split(" ")
+    .filter((item) => item != " " && item != "");
 
-  // Remove duplicate chords (for unique matching)
-  for (const chord of separated) {
-    if (!uniqueChords.includes(chord)) {
-      uniqueChords.push(chord)
-    }
+  // remove repetitiv chords
+  for (let i = 0; i < sparatedBySpace.length; i++) {
+    const chord = sparatedBySpace[i] as string;
+    if (list.indexOf(chord) == -1) list.push(chord);
   }
 
-  // Find positions for each unique chord
-  let positions: ChordPosition[] = []
-  for (const chordTitle of uniqueChords) {
-    positions = positions.concat(findWordPosition(chordTitle, chordsLine))
-  }
+  /**
+   * Extract chord positions as a list
+   */
+  let positions: Position[] = [];
+  list.forEach((chordTitle) => {
+    positions = positions.concat(findWordPosition(chordTitle, chordsLine));
+  });
 
-  // Sort by position (left to right)
-  positions.sort((a, b) => a.from - b.from)
+  positions.sort((a, b) => a.from - b.from);
 
-  return positions
+  return positions;
 }
 
-/**
- * Inject spaces between chords, recalculating for length differences
- */
-function injectSpaceBetweenChords(
-  positions: ChordPosition[],
+function injectSpace({
+  before,
+  current,
+  index,
+  newPositionListWithSpaces,
+  totalPositions,
+  lineLength,
+}: {
+  before: Position,
+  current: Position,
+  index: number,
+  newPositionListWithSpaces: Position[],
+  totalPositions: number,
   lineLength: number
-): ChordPosition[] {
-  const result: ChordPosition[] = []
-
-  if (positions.length === 0) return result
-
-  if (positions.length === 1) {
-    const pos = positions[0]
-    // Add starting space if chord doesn't start at 0
-    if (pos.from > 0) {
-      result.push({
-        from: 0,
-        to: pos.from - 1,
-        word: generateSpace(pos.from),
-      })
-    }
-    result.push(pos)
-    // Add trailing space
-    if (pos.to < lineLength - 1) {
-      result.push({
-        from: pos.to + 1,
-        to: lineLength - 1,
-        word: generateSpace(lineLength - pos.to - 1),
-      })
-    }
-    return result
+}) {
+  // Add start spaces
+  if (index == 1 && before.from > 0) {
+    newPositionListWithSpaces.push({
+      from: 0,
+      to: before.to - 1,
+      word: generateSpace(0 - before.to), // Note: 0 - before.to is likely negative? v1 logic copy.
+    });
   }
 
-  // Process multiple positions
-  for (let i = 0; i < positions.length; i++) {
-    const current = positions[i]
+  newPositionListWithSpaces.push(before);
 
-    // Add starting space before first chord
-    if (i === 0 && current.from > 0) {
-      result.push({
-        from: 0,
-        to: current.from - 1,
-        word: generateSpace(current.from),
-      })
-    }
+  let currentLengthDifference =
+    current.word.length - (current.newWord || "").length;
+  let beforeLengthDifference =
+    before.word.length - (before.newWord || "").length;
 
-    result.push(current)
+  let totalSpace = current.from - (before.to + 1);
 
-    // Add space between current and next chord
-    if (i < positions.length - 1) {
-      const next = positions[i + 1]
-      const currentLengthDiff = current.word.length - (current.newWord?.length || current.word.length)
-      let totalSpace = next.from - current.to - 1
-
-      // Adjust for length changes when chord name changes
-      totalSpace += currentLengthDiff
-
-      result.push({
-        from: current.to + 1,
-        to: next.from - 1,
-        word: generateSpace(Math.max(1, totalSpace)),
-      })
-    }
-
-    // Add trailing space after last chord
-    if (i === positions.length - 1 && current.to < lineLength - 1) {
-      result.push({
-        from: current.to + 1,
-        to: lineLength - 1,
-        word: generateSpace(lineLength - current.to - 1),
-      })
-    }
+  if (index == totalPositions - 2) {
+    totalSpace +=
+      currentLengthDifference < 0
+        ? currentLengthDifference * 2
+        : currentLengthDifference;
+  } else {
+    totalSpace +=
+      beforeLengthDifference < 0
+        ? beforeLengthDifference * 2
+        : beforeLengthDifference;
   }
 
-  return result
+  let spacePosition = {
+    from: before.to + 1,
+    to: current.from - 1,
+    word: generateSpace(totalSpace > 0 ? totalSpace : 1),
+  };
+
+  newPositionListWithSpaces.push(spacePosition);
+
+  if (index == totalPositions - 1) newPositionListWithSpaces.push(current);
+
+  // Add end spaces
+  if (totalPositions - 1 == index && current.to < lineLength) {
+    newPositionListWithSpaces.push({
+      from: current.to + 1,
+      to: lineLength,
+      word: generateSpace(lineLength - current.to),
+    });
+  }
 }
 
-/**
- * Deep clone helper (simple implementation for our data structures)
- */
-function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj))
+function injectSpaceBetweenChords(positions: Position[] = [], lineLength = 0) {
+  /**
+   * Generate spaces between chords
+   * and inject both chords and spaces into a new list
+   */
+  let newPositionListWithSpaces: Position[] = [];
+
+  if (positions.length == 1) {
+    let position = positions[0]!;
+
+    // after space
+    if (position.to < lineLength) {
+      injectSpace({
+        before: position,
+        current: {
+          from: lineLength,
+          to: lineLength,
+          word: "",
+          newWord: "",
+        },
+        index: 0,
+        newPositionListWithSpaces: newPositionListWithSpaces,
+        totalPositions: positions.length,
+        lineLength: lineLength,
+      });
+    }
+  } else if (positions.length) {
+    positions.reduce((before, current, index) => {
+      injectSpace({
+        before: before,
+        current: current,
+        index: index,
+        newPositionListWithSpaces: newPositionListWithSpaces,
+        totalPositions: positions.length,
+        lineLength: lineLength,
+      });
+
+      return current;
+    });
+  }
+
+  return newPositionListWithSpaces;
 }
 
 /**
  * Composable for table-based chord transposition
+ * 
+ * Logic Migrated from v1 (admin_panel/components/materials/Transpose.vue)
+ * 
+ * CORE PRINCIPLE: 
+ * This logic relies on a set of 12 static transposition tables fetched from the backend.
+ * Each song has an "original table" based on its starting key. Transposition works by
+ * shifting to a different table index (0-11) and mapping chords from the original
+ * table's rows/columns to the new table's rows/columns.
+ * 
+ * UNLIKE standard semitone transposition, this preserves the exact harmonic function 
+ * and specific chord voicings defined in the database tables.
+ * 
+ * V1 LOGIC REPLICATION:
+ * - Recursive position finding (`findWordPosition`) matches v1 exactly.
+ * - Spacing injection (`injectSpace`, `injectSpaceBetweenChords`) matches v1 exactly.
+ * - Table/Row/Column mapping matches v1 exactly.
+ * 
+ * IMPORTANT: 
+ * All UI controls for transposition (steppers, carousels) MUST use `dir="ltr"`
+ * to ensure the sequence (Minus -> Value -> Plus) and array order (C -> C# -> D...) 
+ * remains intuitive and consistent regardless of the application's RTL/LTR state.
  */
 export const useTranspose = () => {
   const store = useChordTablesStore()
@@ -180,194 +237,144 @@ export const useTranspose = () => {
   // Computed to check if tables are ready
   const isReady = computed(() => store.isLoaded && store.tables.length > 0)
 
-  /**
-   * Get table index from a chord's table ID
-   */
+  // v1: getChordOffset
   const getChordTableIndex = (chord: SongChord): number => {
-    if (!chord.table) return -1
-    return store.getTableIndexById(chord.table)
+    let offset = -1;
+    store.tables.forEach((table, i) => {
+      if (chord.table == table._id) offset = i;
+    });
+    return offset;
   }
 
-  /**
-   * Find the original table index from song's first chord
-   */
+  // v1: getKeySignatureOffset / findMainTable
   const getOriginalTableIndex = (chords: SongChords | undefined): number => {
     if (!chords?.list || chords.list.length === 0) return 0
-    const firstChord = chords.list[0]
+    const firstChord = chords.list[0]!
     return getChordTableIndex(firstChord)
   }
 
-  /**
-   * Get chord from table by row index and column
-   */
-  const getChordFromTable = (
-    table: TranspositionTable,
-    rowIndex: number,
-    column: string,
-    type: 'regular' | 'chromatic' = 'regular'
-  ): { title: string; _id: string } | null => {
-    const rows = type === 'regular' ? table.rows : table.chromaticRows
-
-    if (!rows || rowIndex < 0 || rowIndex >= rows.length) return null
-
-    const row = rows[rowIndex] as ChordTableRow | ChordChromaticRow
-
-    // Map column names for chromatic rows
-    const chromaticColumnMap: Record<string, keyof ChordChromaticRow> = {
-      one: 'one',
-      two: 'two',
-      three: 'three',
-      four: 'four',
-    }
-
-    // Map column names for regular rows
-    const regularColumnMap: Record<string, keyof ChordTableRow> = {
-      major: 'major',
-      naturalMinor: 'naturalMinor',
-      harmonicMinor: 'harmonicMinor',
-      melodicMinor: 'melodicMinor',
-    }
-
-    let chord
-    if (type === 'chromatic') {
-      const colKey = chromaticColumnMap[column]
-      chord = colKey ? (row as ChordChromaticRow)[colKey] : undefined
-    } else {
-      const colKey = regularColumnMap[column]
-      chord = colKey ? (row as ChordTableRow)[colKey] : undefined
-    }
-
-    if (!chord) return null
-
-    return {
-      title: chord.title,
-      _id: chord._id,
-    }
-  }
-
-  /**
-   * Transpose a single chord to a new table index
-   */
-  const transposeChord = (
-    chord: SongChord,
-    newTableIndex: number
-  ): SongChord => {
-    const table = store.getTableByIndex(newTableIndex)
-    if (!table || chord.rowIndex === undefined || !chord.column) {
-      return chord
-    }
-
-    const newChordData = getChordFromTable(
-      table,
-      chord.rowIndex,
-      chord.column,
-      chord.type || 'regular'
-    )
-
-    if (!newChordData) return chord
-
-    return {
-      ...chord,
-      title: newChordData.title,
-      table: table._id,
-      chord: newChordData._id,
-      keySignature: table.keySignature._id,
-    }
-  }
-
-  /**
-   * Transpose vocal note to new table
-   */
+  // v1: changeVocalNote
   const transposeVocalNote = (
     vocalNote: VocalNote | undefined,
     newTableIndex: number
   ): VocalNote | undefined => {
     if (!vocalNote || vocalNote.index === undefined) return vocalNote
-
-    const table = store.getTableByIndex(newTableIndex)
+    
+    const table = store.tables[newTableIndex]
     if (!table || !table.vocalRows) return vocalNote
 
-    const newNote = table.vocalRows[vocalNote.index]
-    if (!newNote) return vocalNote
-
     return {
-      ...vocalNote,
       table: table._id,
-      note: newNote,
+      index: vocalNote.index,
+      note: table.vocalRows[vocalNote.index] || vocalNote.note // Fallback if index out of bounds?
     }
   }
 
-  /**
-   * Transpose all chords in the list to a new table
-   */
+  // v1: changeChordOffset
   const transposeChordList = (
     originalChords: SongChord[],
     newTableIndex: number
   ): SongChord[] => {
-    return originalChords.map((chord) => transposeChord(chord, newTableIndex))
+    const table = store.tables[newTableIndex]
+    if (!table) return originalChords
+
+    const tempChords = JSON.parse(JSON.stringify(originalChords)) as SongChord[]
+
+    originalChords.forEach((chord, chordIndex) => {
+      let rowIndex = chord.rowIndex;
+      let column = chord.column;
+
+      let tableChords: any[] = []; // Use any[] because rows and chromaticRows have different structures
+
+      if (chord.type == "regular") tableChords = table.rows;
+      else if (chord.type == "chromatic") tableChords = table.chromaticRows;
+
+      if (!tableChords || rowIndex === undefined || !column || !tableChords[rowIndex]) {
+         return; // Skip if invalid
+      }
+      
+      const targetChord = tableChords[rowIndex][column];
+
+      if (!targetChord) return;
+
+      let newChord = {
+        ...chord,
+        title: targetChord.title,
+        table: table._id,
+        chord: targetChord._id,
+        keySignature: table.keySignature._id,
+      };
+
+      tempChords[chordIndex] = newChord;
+    });
+
+    return tempChords;
   }
 
-  /**
-   * Apply transposed chords to section lines, preserving spacing
-   * This is the core algorithm from chord_library
-   */
+  // v1: putTempChordsIntoTempSections
   const transposeSectionLines = (
     sections: SongSection[],
     originalChords: SongChord[],
     transposedChords: SongChord[]
   ): SongSection[] => {
-    const result = deepClone(sections)
+    // Clone sections
+    const tempSections = JSON.parse(JSON.stringify(sections)) as SongSection[];
 
-    // Create a mapping from original chord title to transposed title
-    const chordMap = new Map<string, string>()
-    for (let i = 0; i < originalChords.length; i++) {
-      const original = originalChords[i]
-      const transposed = transposedChords[i]
-      if (original.title && transposed.title) {
-        chordMap.set(original.title, transposed.title)
-      }
-    }
+    tempSections.forEach((section, sectionIndex) => {
+      if (!section.lines) return;
 
-    // Process each section
-    for (const section of result) {
-      if (!section.lines) continue
+      for (let lineIndex = 0; lineIndex < section.lines.length; lineIndex++) {
+        const line = section.lines[lineIndex];
+        if (!line?.chords) continue;
 
-      for (const line of section.lines) {
-        if (!line.chords) continue
+        // seperate chords and spaces
+        let speratedChordsFromLine = seperateChords(line.chords);
 
-        // Separate chords from the line
-        const positions = separateChords(line.chords)
+        /**
+         * Put transposed chord as a new property
+         * for each member of the list
+         */
+        for (
+          let chordIndex = 0;
+          chordIndex < originalChords.length;
+          chordIndex++
+        ) {
+          const chord = originalChords[chordIndex];
+          const transposedChord = transposedChords[chordIndex];
 
-        // Map original chords to transposed chords
-        for (const position of positions) {
-          const transposedTitle = chordMap.get(position.word)
-          if (transposedTitle) {
-            position.newWord = transposedTitle
+          if (!chord?.title || !transposedChord?.title) continue;
+
+          speratedChordsFromLine.forEach((position) => {
+            if (position.word == chord.title)
+              position.newWord = transposedChord.title;
+          });
+        }
+
+        let normalizedList = injectSpaceBetweenChords(
+          speratedChordsFromLine,
+          line.chords.length
+        );
+
+        /**
+         * Join normalized array into one single line
+         */
+        let transposeChordLine = "";
+        normalizedList.forEach((position) => {
+          if (position.newWord) transposeChordLine += position.newWord;
+          else transposeChordLine += position.word;
+        });
+
+        if (transposeChordLine.length) {
+          if (tempSections[sectionIndex]?.lines?.[lineIndex]) {
+            tempSections[sectionIndex].lines![lineIndex].chords = transposeChordLine;
           }
         }
-
-        // Recalculate spacing and rebuild line
-        const normalizedList = injectSpaceBetweenChords(positions, line.chords.length)
-
-        // Join back into string
-        let transposedLine = ''
-        for (const pos of normalizedList) {
-          transposedLine += pos.newWord || pos.word
-        }
-
-        if (transposedLine.length > 0) {
-          line.chords = transposedLine
-        }
       }
-    }
+    });
 
-    return result
+    return tempSections;
   }
 
-  /**
-   * Full transpose operation: sections + vocal note
-   * Returns everything needed for rendering
-   */
   const transposeAll = (
     sections: SongSection[],
     songChords: SongChords | undefined,
@@ -379,7 +386,7 @@ export const useTranspose = () => {
   } => {
     if (!songChords?.list || songChords.list.length === 0) {
       return {
-        sections: deepClone(sections),
+        sections: JSON.parse(JSON.stringify(sections)),
         vocalNote: songChords?.vocalNote,
         chordList: [],
       }
@@ -396,33 +403,39 @@ export const useTranspose = () => {
     }
   }
 
-  /**
-   * Get display name for current key
-   */
+  // Helper for UI
   const getKeyDisplayName = (
     tableIndex: number,
     keyQuality: 'major' | 'minor' | undefined = 'major'
   ): string => {
+    // v1 doesn't have this exact function but uses table.keySignature[chords.keySignature]
+    // In v2 we have getKeySignatureName in store.
     return store.getKeySignatureName(tableIndex, keyQuality || 'major')
   }
-
-  // Legacy support: simple semitone-based transpose for fallback
+  
+  // Need to export transposeChord for legacy/compatibility if used elsewhere?
+  // v2 useTranspose had it.
+  const transposeChord = (chord: SongChord, newTableIndex: number): SongChord => {
+     // Implement single chord transpose reusing logic
+     const list = [chord];
+     const transposed = transposeChordList(list, newTableIndex);
+     return transposed[0]!;
+  }
+  
+  // Legacy fallback
   const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-
   const transposeNoteBySemitone = (note: string, semitones: number): string => {
     const index = NOTES.indexOf(note)
     if (index === -1) return note
     let newIndex = (index + semitones) % 12
     if (newIndex < 0) newIndex += 12
-    return NOTES[newIndex]
+    return NOTES[newIndex]!;
   }
 
   return {
-    // State
     isReady,
     tables: computed(() => store.tables),
     keySignatures: computed(() => store.keySignatures),
-    // Core functions
     getOriginalTableIndex,
     getChordTableIndex,
     transposeChord,
@@ -431,9 +444,7 @@ export const useTranspose = () => {
     transposeSectionLines,
     transposeAll,
     getKeyDisplayName,
-    // Legacy fallback
     transposeNoteBySemitone,
-    // Store access
     fetchTables: store.fetchTables,
   }
 }

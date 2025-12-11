@@ -9,8 +9,10 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock* ./
 
-# Install dependencies
-RUN yarn install --frozen-lockfile || npm install
+# Install dependencies (with BuildKit cache mount for npm/yarn cache)
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --frozen-lockfile || npm install
 
 # Copy source code
 COPY tsconfig.json ./
@@ -30,8 +32,10 @@ WORKDIR /server
 # Copy package files
 COPY package.json yarn.lock* ./
 
-# Install only production dependencies
-RUN yarn install --frozen-lockfile --production || npm install --only=production
+# Install only production dependencies (with BuildKit cache mount for npm/yarn cache)
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --frozen-lockfile --production || npm install --only=production
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist

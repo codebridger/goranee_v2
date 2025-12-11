@@ -7,15 +7,10 @@
     </div>
 
     <!-- Content -->
-    <div class="mt-8 flex flex-wrap justify-between">
-      <card-song
-        v-for="(song, i) in list"
-        allowRemove
-        :key="i"
-        :song="song"
-        :to="'/admin/song/' + song._id"
-        @remove="showRemoveDialog(song)"
-      />
+    <div class="mt-8 flex flex-wrap justify-between relative min-h-[200px]">
+      <loading-state :active="pending" />
+      <card-song v-for="(song, i) in list" allowRemove :key="i" :song="song" :to="'/admin/song/' + song._id"
+        @remove="showRemoveDialog(song)" />
     </div>
   </div>
 </template>
@@ -23,9 +18,11 @@
 <script>
 import { dataProvider } from '@modular-rest/client'
 import notifier from '../../../utilities/notifier'
+import LoadingState from '~/components/materials/LoadingState.vue'
 
 export default {
   name: 'Songs',
+  components: { LoadingState },
   middleware: ['auth'],
   data() {
     return {
@@ -98,5 +95,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>

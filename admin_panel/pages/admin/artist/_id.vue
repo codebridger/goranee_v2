@@ -6,7 +6,7 @@
       <div class="flex">
         <vs-button :loading="pending" @click="update">{{
           $t("update")
-        }}</vs-button>
+          }}</vs-button>
         <div class="float-button">
           <vs-button danger icon blank :loading="pending" @click="update">
             <i class="bx bxs-save"></i>
@@ -29,7 +29,8 @@
 
     </div>
 
-    <card class="p-4 mt-4">
+    <card class="p-4 mt-4 relative min-h-[200px]">
+      <loading-state :active="$fetchState.pending" />
       <div class="w-full">
         <vs-input class="mt-4" block :label="$t('artist.artists') || 'Name'" v-model="currentLangForm.name" />
 
@@ -49,37 +50,34 @@
 <script>
 import { dataProvider } from '@modular-rest/client'
 import notifier from '../../../utilities/notifier'
+import LoadingState from '~/components/materials/LoadingState.vue'
 
 export default {
   middleware: ['auth'],
-  async asyncData({ params, error }) {
-    // Skip API calls during static generation
-    if (process.server) {
-      return {
-        artist: null,
-      };
-    }
-
+  components: { LoadingState },
+  async fetch() {
     try {
       const artist = await dataProvider.findOne({
         database: 'tab',
         collection: 'artist',
-        query: { _id: params.id },
+        query: { _id: this.$route.params.id },
       })
 
       if (!artist) {
-        error({ statusCode: 404, message: 'Artist not found' })
+        this.$nuxt.error({ statusCode: 404, message: 'Artist not found' })
         return
       }
 
-      return { artist }
+      this.artist = artist
+      this.initForm()
     } catch (err) {
       console.error("Error fetching artist:", err);
-      error({ statusCode: 500, message: 'Failed to load artist' })
+      this.$nuxt.error({ statusCode: 500, message: 'Failed to load artist' })
     }
   },
   data() {
     return {
+      artist: null,
       pending: false,
       currentLang: 'ckb-IR',
       availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr'],
@@ -104,6 +102,29 @@ export default {
     },
   },
   methods: {
+    initForm() {
+      // Initialize form from artist data
+      if (this.artist) {
+        // Migrate old structure to new if needed
+        if (this.artist.name && !this.artist.content) {
+          // Old structure - migrate on the fly
+          this.form.content['ckb-IR'] = {
+            name: this.artist.name || '',
+            name_seo: this.artist.name_seo || '',
+            bio: this.artist.bio || '',
+          }
+        } else if (this.artist.content) {
+          // New structure
+          this.form.content = { ...this.artist.content }
+        }
+
+        // Copy shared fields
+        this.form.image = this.artist.image || null
+
+        // Load current language content
+        this.switchLanguage(this.currentLang)
+      }
+    },
     getLangLabel(lang) {
       const labels = {
         'ckb-IR': 'سورانی (ایران)',
@@ -175,29 +196,7 @@ export default {
         .finally(() => (this.pending = false))
     },
   },
-  mounted() {
-    // Initialize form from artist data
-    if (this.artist) {
-      // Migrate old structure to new if needed
-      if (this.artist.name && !this.artist.content) {
-        // Old structure - migrate on the fly
-        this.form.content['ckb-IR'] = {
-          name: this.artist.name || '',
-          name_seo: this.artist.name_seo || '',
-          bio: this.artist.bio || '',
-        }
-      } else if (this.artist.content) {
-        // New structure
-        this.form.content = { ...this.artist.content }
-      }
-
-      // Copy shared fields
-      this.form.image = this.artist.image || null
-
-      // Load current language content
-      this.switchLanguage(this.currentLang)
-    }
-  },
+  // mounted() block removed as logic moved to fetch/initForm
 }
 </script>
 

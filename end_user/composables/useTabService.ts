@@ -1,11 +1,10 @@
-import { dataProvider, fileProvider } from '@modular-rest/client'
+import { dataProvider } from '@modular-rest/client'
 import { DATABASE_NAME, COLLECTION_NAME } from '~/types/database.type'
 import type { SongWithPopulatedRefs, Artist, Song, Genre, SongWithLang, LanguageCode } from '~/types/song.type'
 import { getAvailableLangs } from '~/types/song.type'
+import { useImageUrl } from './useImageUrl'
 
-// Mock constants for fallbacks (only for filling gaps in real data)
-const MOCK_RHYTHMS = ['Slow 6/8', 'Kurdish 7/8', '4/4 Pop', 'Georgina', 'Waz Waz', 'Garyan']
-const MOCK_KEYS = ['Cm', 'Am', 'Gm', 'Dm', 'Em', 'Fm']
+// Color constants for UI gradients (always applied for visual consistency)
 const MOCK_IMAGES = ['purple', 'pink', 'blue', 'orange', 'emerald', 'red']
 
 const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)] as T
@@ -107,11 +106,6 @@ export const useTabService = () => {
       }
 
       return artists.map((artist) => {
-        // Mock song count if missing
-        if (artist.chords === undefined || artist.chords === null) {
-          artist.chords = Math.floor(Math.random() * 50) + 1
-        }
-
         // Mock color for gradient border
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(artist as any)._mockColor = getRandomElement([
@@ -148,8 +142,11 @@ export const useTabService = () => {
     }
   }
 
+  // Note: getImageUrl has been moved to useImageUrl composable
+  // This is kept for backward compatibility but delegates to useImageUrl
   const getImageUrl = (file: any) => {
-    return fileProvider.getFileLink(file)
+    const { getImageUrl: getImageUrlFromComposable } = useImageUrl()
+    return getImageUrlFromComposable(file)
   }
 
   // Helper to process songs with mock data and extract default language content
@@ -165,21 +162,18 @@ export const useTabService = () => {
 
       // Handle rhythm - extract titles from Rhythm[] array
       if (songWithRefs.rhythm && Array.isArray(songWithRefs.rhythm)) {
-        songWithRefs.rhythm = songWithRefs.rhythm
+        const rhythmStr = songWithRefs.rhythm
           .map(r => r?.title || '')
           .filter(Boolean)
-          .join(', ') || getRandomElement(MOCK_RHYTHMS)
+          .join(', ')
+        songWithRefs.rhythm = rhythmStr || undefined
       } else {
-        songWithRefs.rhythm = getRandomElement(MOCK_RHYTHMS)
+        songWithRefs.rhythm = undefined
       }
 
-        // Ensure chords object exists and mock key if missing
+        // Ensure chords object exists
         if (!songWithRefs.chords) {
           songWithRefs.chords = { list: [] }
-        }
-        if (!songWithRefs.chords.keySignature) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(songWithRefs.chords as any).keySignature = getRandomElement(MOCK_KEYS)
         }
 
         // Mock image gradient/color if no image file
@@ -219,12 +213,13 @@ export const useTabService = () => {
           title_seo: fallbackContent?.title_seo,
           rhythm: (() => {
             if (!songWithContent.rhythm || !Array.isArray(songWithContent.rhythm)) {
-              return getRandomElement(MOCK_RHYTHMS)
+              return undefined
             }
-            return songWithContent.rhythm
+            const rhythmStr = songWithContent.rhythm
               .map(r => r?.title || '')
               .filter(Boolean)
-              .join(', ') || getRandomElement(MOCK_RHYTHMS)
+              .join(', ')
+            return rhythmStr || undefined
           })(),
           sections: fallbackContent?.sections,
           artists: songWithContent.artists,
@@ -242,12 +237,13 @@ export const useTabService = () => {
         title_seo: langContent.title_seo,
         rhythm: (() => {
           if (!songWithContent.rhythm || !Array.isArray(songWithContent.rhythm)) {
-            return getRandomElement(MOCK_RHYTHMS)
+            return undefined
           }
-          return songWithContent.rhythm
+          const rhythmStr = songWithContent.rhythm
             .map(r => r?.title || '')
             .filter(Boolean)
-            .join(', ') || getRandomElement(MOCK_RHYTHMS)
+            .join(', ')
+          return rhythmStr || undefined
         })(),
         sections: langContent.sections,
         artists: songWithContent.artists,
@@ -257,13 +253,9 @@ export const useTabService = () => {
         melodies: songWithContent.melodies,
       }
 
-      // Ensure chords object exists and mock key if missing
+      // Ensure chords object exists
       if (!songWithRefs.chords) {
         songWithRefs.chords = { list: [] }
-      }
-      if (!songWithRefs.chords.keySignature) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(songWithRefs.chords as any).keySignature = getRandomElement(MOCK_KEYS)
       }
 
       // Mock image gradient/color if no image file
@@ -494,11 +486,6 @@ export const useTabService = () => {
         page,
         onFetched: (docs) => {
           const processedArtists = docs.map((artist) => {
-            // Mock song count if missing
-            if (artist.chords === undefined || artist.chords === null) {
-              artist.chords = Math.floor(Math.random() * 50) + 1
-            }
-
             // Mock color for gradient border
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(artist as any)._mockColor = getRandomElement([

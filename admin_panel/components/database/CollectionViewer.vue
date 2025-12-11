@@ -5,11 +5,12 @@
       <h2 class="text-lg">{{ title }}</h2>
       <vs-button v-if="allowAdd" @click="showAddForm">{{
         $t('add')
-      }}</vs-button>
+        }}</vs-button>
     </div>
 
     <!-- Content -->
-    <card class="p-8 mt-4">
+    <card class="p-8 mt-4 relative min-h-[200px]">
+      <loading-state :active="pending" />
       <vs-table striped :key="list.length">
         <!-- Search -->
         <template slot="header">
@@ -43,7 +44,7 @@
                 <div class="flex">
                   <vs-button warn border v-if="allowEdit" @click="showEditForm(row)">{{ $t('edit') }}</vs-button>
                   <vs-button danger border v-if="allowRemove" @click="showRemoveDialog(row)">{{ $t('remove')
-                  }}</vs-button>
+                    }}</vs-button>
                 </div>
               </div>
             </template>
@@ -59,9 +60,10 @@ import { dataProvider } from '@modular-rest/client'
 import notifier from '../../utilities/notifier'
 import CollectionForm from './CollectionForm'
 import ImageViewer from '../materials/ImageViewer.vue'
+import LoadingState from '../materials/LoadingState.vue'
 
 export default {
-  components: { ImageViewer },
+  components: { ImageViewer, LoadingState },
   props: {
     title: String,
     database: { type: String, required: true },

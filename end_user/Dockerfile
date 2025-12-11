@@ -3,30 +3,38 @@ FROM node:22.17.1-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
+# Enable corepack and use Yarn 1.x (classic) to match existing lockfile format
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate
 
-# Install dependencies
-RUN npm ci
+# Build arguments for API base URLs
+ARG NUXT_API_BASE_URL=/api/
+ARG NUXT_SSR_API_BASE_URL
+ENV NUXT_API_BASE_URL=$NUXT_API_BASE_URL
+ENV NUXT_SSR_API_BASE_URL=$NUXT_SSR_API_BASE_URL
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install dependencies (with BuildKit cache mount for yarn cache)
+# Cache mount speeds up builds by reusing downloaded packages between builds
+# Works in GitHub Actions when BuildKit is enabled (default in newer versions)
+RUN --mount=type=cache,target=/root/.yarn-cache \
+    YARN_CACHE_FOLDER=/root/.yarn-cache yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build Nuxt 4 SSR
-RUN npm run build
+RUN yarn build
 
 # Stage 2: Runtime
 FROM node:22.17.1-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production
-
 # Copy built output from builder
+# Nuxt 4's .output folder is self-contained and includes all necessary dependencies
+# No need to install node_modules in runtime stage
 COPY --from=builder /app/.output ./.output
 
 # Expose port

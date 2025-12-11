@@ -43,9 +43,21 @@ export const createBackup = async () => {
   );
 };
 
-export const removeBackupFile = (filePath: string) => {
-  let backupFile = path.join(getRootPath(), "backups", filePath);
-  fs.unlink(backupFile, (err) => {});
+export const removeBackupFile = (filePath: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    let backupFile = path.join(getRootPath(), "backups", filePath);
+    fs.unlink(backupFile, (err) => {
+      if (err) {
+        reject({
+          message: err.message || "Failed to delete backup file",
+          step: "file_deletion",
+          originalError: err,
+        });
+      } else {
+        resolve();
+      }
+    });
+  });
 };
 
 export const getBackupList = async () => {
@@ -57,30 +69,71 @@ export const getBackupList = async () => {
     files = fs.readdirSync(backupDir);
   } catch (error) {}
 
-  let backupList: { title: string; size: number }[] = [];
+  let backupList: { title: string; size: number; date: Date }[] = [];
 
   try {
     for (let i = 0; i < files.length; i++) {
       const file = path.join(backupDir, files[i]);
-      let size = await getSize(file);
 
       if (!file.endsWith(".zip")) continue;
+
+      let size = await getSize(file);
+      let stats = fs.statSync(file);
+      let date = stats.mtime;
 
       backupList.push({
         title: files[i],
         size,
+        date,
       });
     }
   } catch (error) {
     console.log(error);
   }
 
-  return backupList;
+  // Sort by date descending (newest first)
+  backupList.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  // Remove date from return value to maintain API compatibility
+  return backupList.map(({ date, ...rest }) => rest);
 };
 
 export const insertBackup = async (file: any) => {
-  let name = file.name.split(" ").join("-");
-  return moveFile(file.path, "./backups", name);
+  // Validate file object and required properties
+  if (!file) {
+    throw {
+      message: "File object is required",
+      step: "validation",
+    };
+  }
+
+  if (!file.path) {
+    throw {
+      message:
+        "File path is missing. The uploaded file may not have been processed correctly.",
+      step: "validation",
+    };
+  }
+
+  if (!file.originalFilename) {
+    throw {
+      message: "File original filename is missing",
+      step: "validation",
+    };
+  }
+
+  const name = file.originalFilename.split(" ").join("-");
+
+  try {
+    await moveFile(file.path, "./backups", name);
+  } catch (error: any) {
+    // Re-throw with proper formatting if not already formatted
+    throw {
+      message: error.message || "Failed to move backup file",
+      step: error.step || "file_move",
+      originalError: error.originalError || error,
+    };
+  }
 };
 
 export const restore = (filename: string): Promise<void> => {

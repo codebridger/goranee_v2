@@ -25,8 +25,11 @@ const classes = computed(() => {
 
 <template>
   <div :class="classes">
-    <div v-if="title && variant === 'section'" class="text-xs font-bold text-text-muted uppercase mb-3">
-      {{ title }}
+    <div v-if="title && variant === 'section'" class="flex items-center justify-between mb-3">
+      <div class="text-xs font-bold text-text-muted uppercase">
+        {{ title }}
+      </div>
+      <slot name="header-action" />
     </div>
     <slot />
   </div>

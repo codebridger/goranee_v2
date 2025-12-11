@@ -3,6 +3,7 @@ import { computed, ref, onMounted, nextTick, watch, type ComponentPublicInstance
 import { useTranspose } from '~/composables/useTranspose'
 import { useI18nRtl } from '~/composables/useI18nRtl'
 import type { SongSection, SongChords } from '~/types/song.type'
+import LyricSection from './LyricSection.vue'
 
 type GridColumns = 2 | 3 | 'auto'
 
@@ -54,9 +55,7 @@ const processedSections = computed(() => {
   }))
 })
 
-const fontSizeStyle = computed(() => ({
-  fontSize: `${props.fontSize}rem`
-}))
+// Font size is now handled by LyricSection component
 
 const measureLongestLine = () => {
   nextTick(() => {
@@ -133,30 +132,7 @@ const gridClass = computed(() => {
         <!-- Section number badge (subtle, top-left corner) -->
         <span v-if="gridMode" class="section-number">{{ sIdx + 1 }}</span>
 
-        <h3 v-if="section.title" class="my-2 text-xs font-bold uppercase text-text-muted tracking-wider"
-          :dir="section.direction">
-          {{ section.title }}
-        </h3>
-
-        <!-- Match original TabviewSectionLines.vue EXACTLY -->
-        <div class="lines" :style="[fontSizeStyle, { fontFamily: 'dana, sans-serif' }]">
-          <p v-for="(line, lIdx) in section.lines" :key="lIdx" :style="{
-            textAlign: section.direction === 'rtl' ? 'right' : 'left',
-            fontFamily: 'dana, sans-serif'
-          }">
-            <!-- Chord line: display:block makes it full-width so trailing spaces work with text-align -->
-            <span class="chord text-text-accent" dir="ltr" :style="{
-              display: 'block',
-              fontFamily: 'dana, sans-serif',
-              fontWeight: 400
-            }">{{ line.transposedChords }}</span>
-            <!-- Lyrics line: display:block for consistent width with chords -->
-            <span :dir="section.direction || 'ltr'" :style="{
-              display: 'block',
-              fontFamily: 'dana, sans-serif'
-            }">{{ line.text }}</span>
-          </p>
-        </div>
+        <LyricSection :section="section" :font-size="fontSize" variant="full" />
       </div>
     </div>
 
@@ -168,16 +144,8 @@ const gridClass = computed(() => {
 
 <style scoped>
 /* 
- * Chord/lyric alignment styles
- * Lines should NOT wrap - preserve whitespace and prevent breaking
+ * Chord/lyric alignment styles are now handled by LyricSection component
  */
-.lines {
-  white-space: pre;
-}
-
-.lines p {
-  margin-bottom: 1rem;
-}
 
 /* Flexbox layout for sections - per-row flexibility */
 .sections-grid {

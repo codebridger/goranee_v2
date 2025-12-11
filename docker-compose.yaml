@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: ghcr.io/navidshad/goranee_v2_nginx:${NGINX_IMAGE_TAG:-latest}
+    image: ghcr.io/codebridger/goranee_v2_nginx:${NGINX_IMAGE_TAG:-latest}
     # build:
     #   context: .
     #   dockerfile: nginx.Dockerfile
@@ -18,7 +18,7 @@ services:
       - default
 
   server:
-    image: ghcr.io/navidshad/goranee_v2_server:${SERVER_IMAGE_TAG:-latest}
+    image: ghcr.io/codebridger/goranee_v2_server:${SERVER_IMAGE_TAG:-latest}
     # build:
     #   context: ./server
     #   dockerfile: Dockerfile
@@ -26,11 +26,11 @@ services:
     expose:
       - "8081"
     volumes:
-      - ./server/uploads:/server/uploads
-      - ./server/backups:/server/backups
+      - ./public_assets:/server/uploads
+      - ./backups:/server/backups
     environment:
-      - ADMIN_EMAIL=${SERVER_ADMIN_EMAIL:-admin@mail.com}
-      - ADMIN_PASSWORD=${SERVER_ADMIN_PASSWORD:-admin}
+      - SERVER_ADMIN_EMAIL=${SERVER_ADMIN_EMAIL:-admin@mail.com}
+      - SERVER_ADMIN_PASSWORD=${SERVER_ADMIN_PASSWORD:-admin}
       - NODE_ENV=production
       - MONGODB_URL=mongodb://mongo:27017
     depends_on:
@@ -39,7 +39,7 @@ services:
       - default
 
   end_user:
-    image: ghcr.io/navidshad/goranee_v2_end_user:${END_USER_IMAGE_TAG:-latest}
+    image: ghcr.io/codebridger/goranee_v2_end_user:${END_USER_IMAGE_TAG:-latest}
     # build:
     #   context: ./end_user
     #   dockerfile: Dockerfile

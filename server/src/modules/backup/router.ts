@@ -81,11 +81,19 @@ backup.get("/list", async (ctx) => {
  * @param {string} fileName - The name of the file to delete (from the URL parameters).
  * @returns {void} Success message.
  */
-backup.delete("/:fileName", (ctx) => {
+backup.delete("/:fileName", async (ctx) => {
   let fileName = ctx.params.fileName;
-  service.removeBackupFile(fileName);
-
-  ctx.body = reply.create("s");
+  try {
+    await service.removeBackupFile(fileName);
+    ctx.body = reply.create("s");
+  } catch (error: any) {
+    console.error("Backup deletion failed:", error);
+    ctx.status = 500;
+    ctx.body = reply.create("f", {
+      message: error?.message || "Failed to delete backup file",
+      step: error?.step || "backup_deletion",
+    });
+  }
 });
 
 /**
@@ -101,7 +109,14 @@ backup.delete("/:fileName", (ctx) => {
  * @returns {Promise<void>}
  */
 backup.post("/", async (ctx: any) => {
+  // Handle both single file and array of files
   let file = ctx.request.files ? ctx.request.files.file : null;
+
+  // If file is an array, take the first one
+  if (Array.isArray(file)) {
+    file = file[0];
+  }
+
   let result;
 
   if (!file) {
@@ -109,23 +124,59 @@ backup.post("/", async (ctx: any) => {
     result = reply.create("f", {
       message: "file field required",
     });
-  } else if (!file.name.endsWith(".zip")) {
-    ctx.status = 415;
-    result = reply.create("f", {
-      message: "Only .zip files are accepted",
-    });
   } else {
-    await service
-      .insertBackup(file)
-      .then((_) => {
-        result = reply.create("s", {
-          message: "Backup inserted",
-        });
-      })
-      .catch((_) => {
-        ctx.status = 500;
-        result = reply.create("f", _);
+    // Log file object structure for debugging (only in development or when path is missing)
+    if (!file.path && !file.filepath) {
+      console.error(
+        "File object structure:",
+        JSON.stringify(Object.keys(file), null, 2)
+      );
+      console.error("File object:", {
+        hasPath: !!file.path,
+        hasFilepath: !!file.filepath,
+        hasOriginalFilename: !!file.originalFilename,
+        keys: Object.keys(file),
       });
+    }
+
+    // Normalize file path - handle both 'path' (formidable v1) and 'filepath' (formidable v2+)
+    if (!file.path && file.filepath) {
+      file.path = file.filepath;
+    }
+
+    if (!file.originalFilename || !file.originalFilename.endsWith(".zip")) {
+      ctx.status = 415;
+      result = reply.create("f", {
+        message: "Only .zip files are accepted",
+      });
+    } else {
+      await service
+        .insertBackup(file)
+        .then((_) => {
+          result = reply.create("s", {
+            message: "Backup inserted",
+          });
+        })
+        .catch((error: any) => {
+          console.error("Backup insertion failed:", error);
+
+          // Determine appropriate HTTP status code based on error type
+          let statusCode = 500; // Default to server error
+          if (error?.step === "validation") {
+            statusCode = 400; // Bad request for validation errors
+          } else if (error?.step === "file_move") {
+            statusCode = 500; // Server error for file operations
+          }
+
+          ctx.status = statusCode;
+          result = reply.create("f", {
+            message: error?.message || "Failed to insert backup file",
+            step: error?.step || "backup_insertion",
+            originalError:
+              process.env.NODE_ENV === "development" ? error : undefined,
+          });
+        });
+    }
   }
 
   ctx.body = result;

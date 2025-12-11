@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Search, Music } from 'lucide-vue-next'
@@ -19,12 +19,16 @@ const router = useRouter()
 const { t } = useI18n()
 const { fetchAllArtists } = useTabService()
 
+// Read initial state from URL (works in SSR)
+const query = route.query.q as string
+const sort = route.query.sort as 'name-asc' | 'name-desc' | 'popularity-desc' | 'popularity-asc'
+const page = parseInt(route.query.page as string) || 1
+
 // State
 const artists = ref<Artist[]>([])
-const isLoading = ref(false)
-const searchQuery = ref('')
-const sortBy = ref<'name-asc' | 'name-desc' | 'popularity-desc' | 'popularity-asc'>('name-asc')
-const currentPage = ref(1)
+const searchQuery = ref(query || '')
+const sortBy = ref<'name-asc' | 'name-desc' | 'popularity-desc' | 'popularity-asc'>(sort || 'name-asc')
+const currentPage = ref(page)
 const itemsPerPage = 24
 const totalResults = ref(0)
 const totalPages = ref(0)
@@ -38,12 +42,17 @@ const sortOptions = computed(() => [
   // { value: 'popularity-asc', label: `${t('pages.artists.popularity')} (Low)` },
 ])
 
-// Load artists
-const loadArtists = async () => {
-  isLoading.value = true
-  try {
+// Build search key for useAsyncData
+const getArtistsKey = () => {
+  return `artists-${searchQuery.value}-${sortBy.value}-${currentPage.value}`
+}
+
+// Fetch artists with SSR support
+const { data: artistsData, pending: isLoading, refresh: refreshArtists } = await useAsyncData(
+  getArtistsKey,
+  async () => {
     // Get pagination controller
-    paginationController.value = fetchAllArtists(
+    const controller = fetchAllArtists(
       {
         limit: itemsPerPage,
         page: currentPage.value,
@@ -55,22 +64,45 @@ const loadArtists = async () => {
       }
     )
 
-    await paginationController.value?.updatePagination()
-
-    // Fetch the current page
-    await paginationController.value?.fetchPage(currentPage.value)
+    await controller?.updatePagination()
+    await controller?.fetchPage(currentPage.value)
 
     // Read pagination data from controller after fetching
-    if (paginationController.value?.pagination) {
-      totalResults.value = paginationController.value.pagination.total || 0
-      totalPages.value = paginationController.value.pagination.pages || 0
+    let total = 0
+    let pages = 0
+    if (controller?.pagination) {
+      total = controller.pagination.total || 0
+      pages = controller.pagination.pages || 0
     }
-  } catch (error) {
-    console.error('Failed to load artists:', error)
-  } finally {
-    isLoading.value = false
+
+    paginationController.value = controller
+
+    return {
+      artists: artists.value,
+      totalResults: total,
+      totalPages: pages,
+    }
+  },
+  {
+    server: true,
+    lazy: true,
+    immediate: true,
   }
-}
+)
+
+// Sync artistsData to reactive refs
+watch(artistsData, (data) => {
+  if (data) {
+    artists.value = data.artists
+    totalResults.value = data.totalResults
+    totalPages.value = data.totalPages
+  }
+}, { immediate: true })
+
+// Client-only loading state
+const isClientLoading = computed(() => {
+  return process.client && isLoading.value
+})
 
 // Debounced search
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -78,40 +110,25 @@ watch(searchQuery, () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     currentPage.value = 1
-    loadArtists()
+    // useAsyncData will automatically refetch when the key changes (via getArtistsKey function)
   }, 300)
 })
 
 watch(sortBy, () => {
   currentPage.value = 1
-  loadArtists()
+  // useAsyncData will automatically refetch when the key changes (via getArtistsKey function)
 })
 
 // Pagination
-const goToPage = async (page: number) => {
+const goToPage = (page: number) => {
   if (page < 1 || page > totalPages.value) return
 
   currentPage.value = page
-  isLoading.value = true
+  // useAsyncData will automatically refetch when the key changes (via getArtistsKey function)
 
-  try {
-    if (paginationController.value) {
-      // Fetch the page
-      await paginationController.value?.fetchPage(page)
-
-      // Read pagination data from controller after fetching
-      if (paginationController.value?.pagination) {
-        totalResults.value = paginationController.value.pagination.total || 0
-        totalPages.value = paginationController.value.pagination.pages || 0
-      }
-    } else {
-      await loadArtists()
-    }
+  // Scroll to top (client-only)
+  if (process.client) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  } catch (error) {
-    console.error('Pagination error:', error)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -129,19 +146,6 @@ const getArtistName = (artist: Artist) => {
   // Fallback to old structure (for backward compatibility during migration)
   return (artist as any).name || ''
 }
-
-onMounted(() => {
-  // Read initial state from URL
-  const query = route.query.q as string
-  const sort = route.query.sort as typeof sortBy.value
-  const page = parseInt(route.query.page as string) || 1
-
-  if (query) searchQuery.value = query
-  if (sort) sortBy.value = sort
-  currentPage.value = page
-
-  loadArtists()
-})
 </script>
 
 <template>
@@ -166,14 +170,14 @@ onMounted(() => {
       </div>
 
       <!-- Results Count -->
-      <div v-if="!isLoading && totalResults > 0" class="mb-6">
+      <div v-if="!isClientLoading && totalResults > 0" class="mb-6">
         <Typography variant="body" class="text-text-secondary">
           {{ t('pages.artists.artistsCount', { count: totalResults }) }}
         </Typography>
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <div v-if="isClientLoading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
         <SkeletonCard v-for="i in 12" :key="i" />
       </div>
 

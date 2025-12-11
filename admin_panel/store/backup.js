@@ -19,8 +19,10 @@ export default {
     },
 
     REMOVE_FROMlIST(state, fileName) {
-      let index = state.list.findIndex(fileName);
-      state.list.splice(index, 1);
+      let index = state.list.findIndex((item) => item.title === fileName);
+      if (index !== -1) {
+        state.list.splice(index, 1);
+      }
     }
   },
 
@@ -34,7 +36,10 @@ export default {
       const url = BASE_URL + "/backup/list";
 
       return fetch(url).then(async r => {
-        let body = await r.json();
+        const body = await r.json();
+        if (!r.ok) {
+          throw body.message || body.error || "Failed to load backup list";
+        }
         commit("SET_LIST", body.list);
         return body;
       });
@@ -42,14 +47,27 @@ export default {
 
     createNewBackup({ commit, state }) {
       const url = BASE_URL + "/backup";
-      return fetch(url);
+      return fetch(url).then(async r => {
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          throw body.message || body.error || "Failed to create backup";
+        }
+        return body;
+      });
     },
 
     removeBackupfile({ commit, state }, fileName) {
       const url = BASE_URL + "/backup/" + fileName;
       return fetch(url, {
         method: "DELETE"
-      }).then(() => commit("REMOVE_FROMlIST", fileName));
+      }).then(async r => {
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          throw body.message || body.error || "Failed to remove backup";
+        }
+        commit("REMOVE_FROMlIST", fileName);
+        return body;
+      });
     },
 
     restoreBackupFile({}, fileName) {

@@ -56,15 +56,25 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
   const router = useRouter()
   const { locale, setLocale } = useI18n()
 
-  // Get initial UI language from localStorage or default to 'farsi'
+  // Get initial UI language from localStorage, i18n locale, or default to 'farsi'
   const getInitialUILanguage = (): UILanguageOption => {
+    const validOptions: UILanguageOption[] = ['sorani-latin', 'sorani-farsi', 'farsi', 'english', 'kmr']
+    
+    // On client: check localStorage first
     if (import.meta.client) {
       const stored = localStorage.getItem('uiLanguage') as UILanguageOption
-      const validOptions: UILanguageOption[] = ['sorani-latin', 'sorani-farsi', 'farsi', 'english', 'kmr']
       if (stored && validOptions.includes(stored)) {
         return stored
       }
     }
+    
+    // On SSR or if localStorage doesn't have a value: sync with i18n locale
+    // This ensures SSR and CSR use the same default language
+    const i18nLocale = locale.value
+    if (i18nLocale && validOptions.includes(i18nLocale as UILanguageOption)) {
+      return i18nLocale as UILanguageOption
+    }
+    
     return 'farsi' // Default fallback
   }
 
@@ -223,20 +233,32 @@ export const useContentLanguageStore = defineStore('contentLanguage', () => {
     { immediate: true }
   )
 
-  // Initialize: sync with route on mount and set i18n locale and direction
-  if (import.meta.client) {
-    syncWithRoute()
-    // Ensure i18n locale matches current UI language
+  // Initialize: sync with route and ensure i18n locale matches current UI language
+  // This runs on both SSR and CSR to ensure consistency
+  const initializeLanguage = () => {
+    // On client: sync with route params first
+    if (import.meta.client) {
+      syncWithRoute()
+    }
+    
+    // Ensure i18n locale matches current UI language (works on both SSR and CSR)
     const mapping = getLanguageMapping(currentUILanguage.value)
     if (locale.value !== mapping.uiLocale) {
       setLocale(mapping.uiLocale)
       // Also set direction explicitly to ensure it's set immediately
-      setDocumentDirection(mapping.uiLocale)
+      if (import.meta.client) {
+        setDocumentDirection(mapping.uiLocale)
+      }
     } else {
       // If locale hasn't changed, still update direction in case it's out of sync
-      setDocumentDirection(mapping.uiLocale)
+      if (import.meta.client) {
+        setDocumentDirection(mapping.uiLocale)
+      }
     }
   }
+  
+  // Initialize immediately (runs on both SSR and CSR)
+  initializeLanguage()
 
   return {
     currentLanguage: getContentLanguage, // For backward compatibility

@@ -6,7 +6,7 @@
       <div class="flex">
         <vs-button :loading="pending" @click="update">{{
           $t("update")
-          }}</vs-button>
+        }}</vs-button>
         <div class="float-button">
           <vs-button danger icon blank :loading="pending" @click="update">
             <i class="bx bxs-save"></i>
@@ -35,7 +35,8 @@
 
     <chord-picker class="mt-4" :value="form.chords" @input="form.chords = $event" />
 
-    <card class="p-4 mt-4 flex space-x-4">
+    <card class="p-4 mt-4 flex space-x-4 relative min-h-[200px]">
+      <loading-state :active="$fetchState.pending" />
       <div class="w-1/3 pr-4">
         <div>
           <vs-input class="mt-4" block :label="$t('song.title')" v-model="currentLangForm.title" />
@@ -91,35 +92,28 @@
 import { dataProvider } from "@modular-rest/client";
 import notifier from "../../../utilities/notifier";
 import SeoLabels from '~/components/inputs/SeoLabels.vue';
+import LoadingState from '~/components/materials/LoadingState.vue';
 
 export default {
-  components: { SeoLabels },
+  components: { SeoLabels, LoadingState },
   middleware: ["auth"],
-  async asyncData({ params, error }) {
-    // Skip API calls during static generation
-    if (process.server) {
-      return {
-        song: null,
-      };
-    }
-
+  async fetch() {
     try {
       const data = await dataProvider.findOne({
         database: "tab",
         collection: "song",
-        query: { _id: params.id },
+        query: { _id: this.$route.params.id },
       });
 
       if (data) {
-        return {
-          song: data,
-        };
+        this.song = data;
+        this.initForm();
       } else {
-        error({ statusCode: 404, message: "Song doesn't found" });
+        this.$nuxt.error({ statusCode: 404, message: "Song doesn't found" });
       }
     } catch (err) {
       console.error("Error fetching song:", err);
-      error({ statusCode: 500, message: "Failed to load song" });
+      this.$nuxt.error({ statusCode: 500, message: "Failed to load song" });
     }
   },
   data() {
@@ -170,6 +164,88 @@ export default {
     },
   },
   methods: {
+    initForm() {
+      // Initialize form from song data
+      if (this.song) {
+        // Migrate old structure to new if needed
+        if (this.song.title && !this.song.content) {
+          // Old structure - migrate on the fly
+          this.form.content['ckb-IR'] = {
+            title: this.song.title || '',
+            title_seo: this.song.title_seo || '',
+            sections: this.song.sections || [],
+          };
+          // Move rhythm from old structure to main object (convert to array if needed)
+          if (this.song.rhythm) {
+            if (Array.isArray(this.song.rhythm)) {
+              this.form.rhythm = this.song.rhythm.map(r => {
+                // If it's an object with _id, extract the _id
+                if (typeof r === 'object' && r !== null && '_id' in r) {
+                  return r._id;
+                }
+                // Otherwise, it's already an ID string
+                return r;
+              });
+            } else {
+              // Single value - extract _id if it's an object
+              if (typeof this.song.rhythm === 'object' && this.song.rhythm !== null && '_id' in this.song.rhythm) {
+                this.form.rhythm = [this.song.rhythm._id];
+              } else {
+                this.form.rhythm = [this.song.rhythm];
+              }
+            }
+          }
+        } else if (this.song.content) {
+          // New structure - ensure all language keys exist
+          this.form.content = {
+            'ckb-IR': this.song.content['ckb-IR'] || null,
+            'ckb-Latn': this.song.content['ckb-Latn'] || null,
+            'kmr': this.song.content['kmr'] || null,
+          };
+        }
+
+        // Copy shared fields (including rhythm)
+        // Extract ObjectIds from rhythm array (handle both populated objects and plain IDs)
+        if (Array.isArray(this.song.rhythm)) {
+          if (this.song.rhythm.length > 0) {
+            this.form.rhythm = this.song.rhythm.map(r => {
+              // If it's an object with _id, extract the _id
+              if (typeof r === 'object' && r !== null && '_id' in r) {
+                return r._id;
+              }
+              // Otherwise, it's already an ID string
+              return r;
+            });
+          } else {
+            // Empty array - keep it as empty array
+            this.form.rhythm = [];
+          }
+        } else if (this.song.rhythm) {
+          // Single value (backward compatibility) - extract _id if it's an object
+          if (typeof this.song.rhythm === 'object' && this.song.rhythm !== null && '_id' in this.song.rhythm) {
+            this.form.rhythm = [this.song.rhythm._id];
+          } else {
+            this.form.rhythm = [this.song.rhythm];
+          }
+        } else {
+          // No rhythm - set to empty array
+          this.form.rhythm = [];
+        }
+        this.form.artists = this.song.artists || [];
+        this.form.genres = this.song.genres || [];
+        this.form.chords = this.song.chords || { keySignature: "", list: [], vocalNote: {} };
+        this.form.image = this.song.image || null;
+        this.form.melodies = this.song.melodies || [];
+
+        // Set current language to default language
+        this.currentLang = 'ckb-IR';
+
+        // Load current language content (without saving first)
+        this.isInitializing = true;
+        this.switchLanguage(this.currentLang);
+        this.isInitializing = false;
+      }
+    },
     getLangLabel(lang) {
       const labels = {
         'ckb-IR': 'سورانی (ایران)',
@@ -282,88 +358,7 @@ export default {
         .finally(() => (this.pending = false));
     },
   },
-  mounted() {
-    // Initialize form from song data
-    if (this.song) {
-      // Migrate old structure to new if needed
-      if (this.song.title && !this.song.content) {
-        // Old structure - migrate on the fly
-        this.form.content['ckb-IR'] = {
-          title: this.song.title || '',
-          title_seo: this.song.title_seo || '',
-          sections: this.song.sections || [],
-        };
-        // Move rhythm from old structure to main object (convert to array if needed)
-        if (this.song.rhythm) {
-          if (Array.isArray(this.song.rhythm)) {
-            this.form.rhythm = this.song.rhythm.map(r => {
-              // If it's an object with _id, extract the _id
-              if (typeof r === 'object' && r !== null && '_id' in r) {
-                return r._id;
-              }
-              // Otherwise, it's already an ID string
-              return r;
-            });
-          } else {
-            // Single value - extract _id if it's an object
-            if (typeof this.song.rhythm === 'object' && this.song.rhythm !== null && '_id' in this.song.rhythm) {
-              this.form.rhythm = [this.song.rhythm._id];
-            } else {
-              this.form.rhythm = [this.song.rhythm];
-            }
-          }
-        }
-      } else if (this.song.content) {
-        // New structure - ensure all language keys exist
-        this.form.content = {
-          'ckb-IR': this.song.content['ckb-IR'] || null,
-          'ckb-Latn': this.song.content['ckb-Latn'] || null,
-          'kmr': this.song.content['kmr'] || null,
-        };
-      }
-
-      // Copy shared fields (including rhythm)
-      // Extract ObjectIds from rhythm array (handle both populated objects and plain IDs)
-      if (Array.isArray(this.song.rhythm)) {
-        if (this.song.rhythm.length > 0) {
-          this.form.rhythm = this.song.rhythm.map(r => {
-            // If it's an object with _id, extract the _id
-            if (typeof r === 'object' && r !== null && '_id' in r) {
-              return r._id;
-            }
-            // Otherwise, it's already an ID string
-            return r;
-          });
-        } else {
-          // Empty array - keep it as empty array
-          this.form.rhythm = [];
-        }
-      } else if (this.song.rhythm) {
-        // Single value (backward compatibility) - extract _id if it's an object
-        if (typeof this.song.rhythm === 'object' && this.song.rhythm !== null && '_id' in this.song.rhythm) {
-          this.form.rhythm = [this.song.rhythm._id];
-        } else {
-          this.form.rhythm = [this.song.rhythm];
-        }
-      } else {
-        // No rhythm - set to empty array
-        this.form.rhythm = [];
-      }
-      this.form.artists = this.song.artists || [];
-      this.form.genres = this.song.genres || [];
-      this.form.chords = this.song.chords || { keySignature: "", list: [], vocalNote: {} };
-      this.form.image = this.song.image || null;
-      this.form.melodies = this.song.melodies || [];
-
-      // Set current language to default language
-      this.currentLang = 'ckb-IR';
-
-      // Load current language content (without saving first)
-      this.isInitializing = true;
-      this.switchLanguage(this.currentLang);
-      this.isInitializing = false;
-    }
-  },
+  // mounted() removed as logic moved to fetch/initForm
 };
 </script>
 

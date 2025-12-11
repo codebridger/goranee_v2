@@ -7,7 +7,6 @@ import { useTabService } from '~/composables/useTabService';
 import { useContentLanguageStore } from '~/stores/contentLanguage';
 import type { Artist, SongWithPopulatedRefs } from '~/types/song.type';
 import type { LanguageCode } from '~/constants/routes';
-import { fileProvider } from '@modular-rest/client';
 import SongCard from '~/components/widget/SongCard.vue';
 import ArtistCard from '~/components/widget/ArtistCard.vue';
 import Button from '~/components/base/Button.vue';
@@ -17,7 +16,7 @@ import { ROUTES } from '~/constants/routes';
 const route = useRoute();
 const { t } = useI18n();
 const contentLanguageStore = useContentLanguageStore();
-const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists } = useTabService();
+const { fetchArtist, fetchSongsByArtist, fetchFeaturedArtists, getImageUrl } = useTabService();
 
 const artistId = computed(() => route.params.id as string);
 const langCode = computed<LanguageCode>(() => {
@@ -29,37 +28,47 @@ const langCode = computed<LanguageCode>(() => {
 		? (langStr as LanguageCode)
 		: 'ckb-IR' // Default fallback
 });
-const artist = ref<Artist | null>(null);
-const songs = ref<SongWithPopulatedRefs[]>([]);
-const relatedArtists = ref<Artist[]>([]);
-const isLoading = ref(true);
 
-const loadData = async () => {
-	isLoading.value = true;
-	try {
+// Fetch artist data with SSR support
+const { data: artistData, pending: isLoading, refresh: refreshArtistData } = await useAsyncData(
+	() => `artist-${artistId.value}-${langCode.value}`,
+	async () => {
 		const [artistData, songsData, relatedData] = await Promise.all([
 			fetchArtist(artistId.value, langCode.value),
 			fetchSongsByArtist(artistId.value),
 			fetchFeaturedArtists()
 		]);
 
-		artist.value = artistData;
-		songs.value = songsData;
 		// Filter out current artist and limit to 10
-		relatedArtists.value = relatedData
+		const filteredRelatedArtists = relatedData
 			.filter(a => a._id !== artistId.value)
 			.slice(0, 10);
-	} catch (e) {
-		console.error('Error loading artist page:', e);
-	} finally {
-		isLoading.value = false;
-	}
-};
 
+		return {
+			artist: artistData,
+			songs: songsData,
+			relatedArtists: filteredRelatedArtists,
+		}
+	},
+	{
+		server: true,
+		lazy: true,
+		watch: [langCode],
+	}
+)
+
+const artist = computed(() => artistData.value?.artist || null);
+const songs = computed(() => artistData.value?.songs || []);
+const relatedArtists = computed(() => artistData.value?.relatedArtists || []);
+
+// Client-only loading state
+const isClientLoading = computed(() => {
+	return process.client && isLoading.value
+})
+
+// Client-only: Sync store with route on mount
 onMounted(() => {
-	// Sync store with route on mount
 	contentLanguageStore.syncWithRoute();
-	loadData();
 });
 
 // Watch for language changes in route
@@ -68,12 +77,12 @@ watch(langCode, async (newLang) => {
 		contentLanguageStore.setContentLanguage(newLang);
 	}
 	if (artistId.value) {
-		await loadData();
+		await refreshArtistData();
 	}
 });
 
 const artistImage = computed(() => {
-	return artist.value?.image ? fileProvider.getFileLink(artist.value.image as any) : undefined;
+	return artist.value?.image ? getImageUrl(artist.value.image) : undefined;
 });
 
 const gradientClass = computed(() => {
@@ -106,7 +115,7 @@ const getSongMetadata = (song: SongWithPopulatedRefs) => {
 };
 
 const getRelatedArtistAvatarUrl = (related: Artist) => {
-	return related.image ? fileProvider.getFileLink(related.image as any) : undefined;
+	return related.image ? getImageUrl(related.image) : undefined;
 };
 
 const getRelatedArtistSongCount = (related: Artist) => {
@@ -200,7 +209,7 @@ useHead({
 	<div class="min-h-screen pb-20 bg-surface-base text-text-primary transition-colors duration-300">
 
 		<!-- Loading State -->
-		<div v-if="isLoading" class="flex items-center justify-center min-h-[50vh]">
+		<div v-if="isClientLoading" class="flex items-center justify-center min-h-[50vh]">
 			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
 		</div>
 

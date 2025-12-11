@@ -10,50 +10,174 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+  # Note: packages: delete permission is automatically granted for packages: write
+
 env:
   IMAGE_TAG_SERVER: SERVER-${{ github.sha }}
   IMAGE_TAG_END_USER: END_USER-${{ github.sha }}
   REGISTRY: ghcr.io
-  IMAGE_NAME: navidshad/goranee_v2
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  check-changes:
+  cleanup-old-images:
     runs-on: ubuntu-latest
-    outputs:
-      nginx: ${{ steps.filter.outputs.nginx }}
-      server: ${{ steps.filter.outputs.server }}
-      admin_panel: ${{ steps.filter.outputs.admin_panel }}
-      end_user: ${{ steps.filter.outputs.end_user }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Cleanup old package versions
+        uses: actions/github-script@v7
         with:
-          fetch-depth: 2
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const repoName = context.repo.repo;
+            const owner = context.repo.owner;
+            const packages = [
+              `${repoName}_server`,
+              `${repoName}_end_user`,
+              `${repoName}_nginx`
+            ];
 
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            nginx:
-              - 'nginx/**'
-              - 'nginx.Dockerfile'
-            server:
-              - 'server/**'
-            admin_panel:
-              - 'admin_panel/**'
-            end_user:
-              - 'end_user/**'
-          list-files: shell
+            const keepVersions = 4; // Keep the latest 4 versions
+
+            console.log(`Starting cleanup for packages in ${owner}/${repoName}`);
+            console.log(`Will keep the latest ${keepVersions} versions per package`);
+
+            for (const packageName of packages) {
+              try {
+                console.log(`\n=== Processing package: ${packageName} ===`);
+                
+                // Get all package versions (works for both user and org packages)
+                let versionsResponse;
+                try {
+                  // Try organization first (if repo is under an org)
+                  versionsResponse = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                    package_type: 'container',
+                    package_name: packageName,
+                    org: owner,
+                    per_page: 100
+                  });
+                  console.log(`Found package as organization package`);
+                } catch (orgError) {
+                  // Fallback to user packages
+                  versionsResponse = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
+                    package_type: 'container',
+                    package_name: packageName,
+                    username: owner,
+                    per_page: 100
+                  });
+                  console.log(`Found package as user package`);
+                }
+                
+                const versions = versionsResponse.data;
+                
+                if (!versions || versions.length === 0) {
+                  console.log(`No versions found for ${packageName}, skipping`);
+                  continue;
+                }
+                
+                console.log(`Total versions found: ${versions.length}`);
+                
+                // Filter and sort: Keep only SHA-tagged versions (SERVER-* or END_USER-*)
+                // Exclude 'latest' tag from cleanup (it's always kept)
+                // Sort by creation date (newest first)
+                const sortedVersions = versions
+                  .filter(v => {
+                    const tags = v.metadata?.container?.tags || [];
+                    // Only process versions with SHA tags (SERVER-* or END_USER-*)
+                    // Skip versions that only have 'latest' tag
+                    return tags.some(tag => 
+                      tag.startsWith('SERVER-') || 
+                      tag.startsWith('END_USER-')
+                    );
+                  })
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                console.log(`SHA-tagged versions (excluding latest): ${sortedVersions.length}`);
+                
+                // Delete versions beyond the keep limit
+                const versionsToDelete = sortedVersions.slice(keepVersions);
+                
+                if (versionsToDelete.length === 0) {
+                  console.log(`✓ No versions to delete for ${packageName} (only ${sortedVersions.length} versions exist)`);
+                  continue;
+                }
+                
+                console.log(`Keeping: ${Math.min(keepVersions, sortedVersions.length)} versions`);
+                console.log(`Deleting: ${versionsToDelete.length} old versions`);
+                
+                // Show what we're keeping
+                const keeping = sortedVersions.slice(0, keepVersions);
+                keeping.forEach(v => {
+                  const tags = v.metadata?.container?.tags || [];
+                  console.log(`  Keeping: ${tags.join(', ') || 'untagged'} (created: ${v.created_at})`);
+                });
+                
+                // Delete old versions
+                let deletedCount = 0;
+                for (const version of versionsToDelete) {
+                  try {
+                    const tags = version.metadata?.container?.tags || [];
+                    const tagStr = tags.join(', ') || 'untagged';
+                    
+                    // Try organization first, then user
+                    try {
+                      await github.rest.packages.deletePackageVersionForOrg({
+                        package_type: 'container',
+                        package_name: packageName,
+                        org: owner,
+                        package_version_id: version.id
+                      });
+                    } catch (orgError) {
+                      await github.rest.packages.deletePackageVersionForUser({
+                        package_type: 'container',
+                        package_name: packageName,
+                        username: owner,
+                        package_version_id: version.id
+                      });
+                    }
+                    console.log(`  ✓ Deleted: ${tagStr} (id: ${version.id})`);
+                    deletedCount++;
+                  } catch (error) {
+                    console.log(`  ✗ Failed to delete version ${version.id}: ${error.message}`);
+                  }
+                }
+                
+                console.log(`✓ Cleanup complete for ${packageName}: ${deletedCount}/${versionsToDelete.length} versions deleted`);
+              } catch (error) {
+                // Package might not exist yet, which is fine
+                if (error.status === 404) {
+                  console.log(`Package ${packageName} does not exist yet, skipping cleanup`);
+                } else {
+                  console.log(`✗ Error processing ${packageName}: ${error.message}`);
+                  console.log(`  Status: ${error.status}, Response: ${JSON.stringify(error.response?.data || {})}`);
+                }
+              }
+            }
+
+            console.log(`\n=== Cleanup job completed ===`);
 
   build-nginx:
     runs-on: ubuntu-latest
-    needs: check-changes
-    if: needs.check-changes.outputs.nginx == 'true' || needs.check-changes.outputs.admin_panel == 'true'
+    needs: cleanup-old-images
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
+          cache: "npm"
+          cache-dependency-path: admin_panel/package-lock.json
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: admin_panel/node_modules
+          key: ${{ runner.os }}-npm-admin_panel-${{ hashFiles('admin_panel/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-admin_panel-
 
       - name: Build admin panel static files
         run: |
@@ -63,74 +187,91 @@ jobs:
           npm install
           npm run generate
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Nginx Image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest -f nginx.Dockerfile .
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
-        working-directory: .
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./nginx.Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_nginx:buildcache,mode=max
 
   build-server:
     runs-on: ubuntu-latest
-    needs: check-changes
-    if: needs.check-changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
+    needs: cleanup-old-images
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Server Image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }} -f server/Dockerfile ./server
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:${{ env.IMAGE_TAG_SERVER }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_server:buildcache,mode=max
 
   build-end-user:
     runs-on: ubuntu-latest
-    needs: check-changes
-    if: needs.check-changes.outputs.end_user == 'true' || github.event_name == 'workflow_dispatch'
+    needs: cleanup-old-images
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-
-      - name: Build end_user app
-        run: |
-          cd end_user
-          echo "NUXT_API_BASE_URL=/api/" > .env
-          npm install
-          npm run build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push End User Image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }} -f end_user/Dockerfile ./end_user
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./end_user
+          file: ./end_user/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:${{ env.IMAGE_TAG_END_USER }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_end_user:buildcache,mode=max
+          build-args: |
+            NUXT_API_BASE_URL=/api/
+            NUXT_SSR_API_BASE_URL=${{ vars.NUXT_SSR_API_BASE_URL || 'https://goranee.ir/api/' }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-server, build-end-user, build-nginx, check-changes]
+    needs: [build-server, build-end-user, build-nginx]
     if: always() && (needs.build-server.result == 'success' || needs.build-server.result == 'skipped') && (needs.build-end-user.result == 'success' || needs.build-end-user.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy docker-compose file to server
         uses: appleboy/scp-action@v0.1.7
@@ -138,9 +279,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
           source: "docker-compose.yaml"
           target: "."
           timeout: 30s
+          strip_components: 0
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
@@ -156,29 +299,65 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
           envs: SERVER_IMAGE_TAG, END_USER_IMAGE_TAG, SERVER_ADMIN_EMAIL, SERVER_ADMIN_PASSWORD, GITHUB_TOKEN, GITHUB_ACTOR, GITHUB_SHA
           script: |
+            set -e  # Exit on any error
+
             # Login to GitHub Container Registry
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin || true
+            echo "Logging into GitHub Container Registry..."
+            if ! echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin; then
+              echo "ERROR: Failed to login to GitHub Container Registry"
+              exit 1
+            fi
+            echo "Successfully logged into GitHub Container Registry"
 
             # Set image tags (use commit SHA tags or fallback to latest)
             export SERVER_IMAGE_TAG=${SERVER_IMAGE_TAG:-SERVER-${GITHUB_SHA:-latest}}
             export END_USER_IMAGE_TAG=${END_USER_IMAGE_TAG:-END_USER-${GITHUB_SHA:-latest}}
             export NGINX_IMAGE_TAG=latest
 
-            # Remove the previous version of the app, if exists
-            docker-compose down
+            echo "Using image tags:"
+            echo "  SERVER_IMAGE_TAG=$SERVER_IMAGE_TAG"
+            echo "  END_USER_IMAGE_TAG=$END_USER_IMAGE_TAG"
+            echo "  NGINX_IMAGE_TAG=$NGINX_IMAGE_TAG"
 
-            # Pull latest images first
+            # Step 1: Pull new images first (while old containers are still running)
+            echo "Step 1: Pulling new images (containers still running)..."
             docker-compose pull
 
-            # Start the new version
+            # Step 1.5: Stop and remove containers to avoid ContainerConfig errors
+            # This prevents KeyError: 'ContainerConfig' when docker-compose tries to inspect old containers
+            # We use direct docker commands to bypass docker-compose's container state tracking
+            echo "Step 1.5: Stopping and removing containers to avoid ContainerConfig errors..."
+            # Stop and remove containers using docker directly (bypasses docker-compose state)
+            for service in server end_user nginx; do
+              CONTAINER_IDS=$(docker ps -aq --filter "name=$service" 2>/dev/null)
+              if [ -n "$CONTAINER_IDS" ]; then
+                echo "  Removing containers for $service..."
+                echo "$CONTAINER_IDS" | xargs docker rm -f 2>/dev/null || true
+              fi
+            done
+
+            # Step 2: Start new containers with new images (fresh start, no recreation needed)
+            echo "Step 2: Starting new containers with new images..."
             docker-compose up --remove-orphans -d
 
-            # Clean up unused images to save space
+            # Wait a moment for containers to start
+            echo "Waiting for containers to be ready..."
+            sleep 5
+
+            # Step 3: Verify new containers are running
+            echo "Step 3: Verifying deployment..."
+            docker-compose ps
+
+            echo "Deployment completed successfully"
+
+            # Step 4: Clean up unused images to save space (after new containers are running)
             # Remove old SHA-tagged images from this project (keep only current deployment)
-            OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/navidshad/goranee_v2_server" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
-            OLD_END_USER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/navidshad/goranee_v2_end_user" | grep "END_USER-" | grep -v "$END_USER_IMAGE_TAG" || true)
+            REPO_NAME="${{ github.repository }}"
+            OLD_SERVER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_server:" | grep "SERVER-" | grep -v "$SERVER_IMAGE_TAG" || true)
+            OLD_END_USER_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "ghcr.io/${REPO_NAME}_end_user:" | grep "END_USER-" | grep -v "$END_USER_IMAGE_TAG" || true)
 
             if [ -n "$OLD_SERVER_IMAGES" ]; then
               echo "$OLD_SERVER_IMAGES" | xargs docker rmi -f || true
