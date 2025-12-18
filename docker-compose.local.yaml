@@ -65,7 +65,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - NUXT_API_BASE_URL=/api/
-      - NUXT_SSR_API_BASE_URL=http://localhost/api/
+      - NUXT_PUBLIC_BASE_URL=http://localhost
+      - NUXT_SSR_API_BASE_URL=http://localhost/api
       - PORT=8080
       - NITRO_PORT=8080
     depends_on:

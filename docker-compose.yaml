@@ -49,6 +49,8 @@ services:
     environment:
       - NODE_ENV=production
       - NUXT_API_BASE_URL=/api/
+      - NUXT_PUBLIC_BASE_URL=https://goranee.ir
+      - NUXT_SSR_API_BASE_URL=https://goranee.ir/api
     depends_on:
       - server
     networks:
