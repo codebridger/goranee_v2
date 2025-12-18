@@ -300,7 +300,7 @@ const closeDrawer = () => {
         <Music class="w-5 h-5" />
         <div class="flex items-baseline gap-1.5">
           <span v-if="originalKeyName" class="font-mono text-[10px] opacity-70 leading-none">{{ originalKeyName
-            }}</span>
+          }}</span>
           <span v-if="isTransposed" class="text-[8px] opacity-50">→</span>
           <span class="font-mono font-bold text-xs leading-none" :class="{ 'text-text-accent': isTransposed }">{{
             currentKeyName }}</span>
@@ -327,7 +327,8 @@ const closeDrawer = () => {
     </div>
 
     <!-- MOBILE DRAWER (Overlay) -->
-    <Drawer v-model="showMobileDrawer" position="bottom" :backdrop="true" :close-on-backdrop="true" class="lg:hidden">
+    <Drawer v-model="showMobileDrawer" position="bottom" :backdrop="true" :lock-scroll="false" :close-on-backdrop="true"
+      class="lg:hidden">
 
       <!-- Transpose Tab -->
       <div v-if="activeTab === 'transpose'" class="space-y-6">

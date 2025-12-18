@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, onUnmounted } from 'vue'
 
 interface Props {
   modelValue: boolean
   position?: 'bottom' | 'top' | 'left' | 'right'
   backdrop?: boolean
   closeOnBackdrop?: boolean
+  lockScroll?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   position: 'bottom',
   backdrop: true,
   closeOnBackdrop: true,
+  lockScroll: true,
 })
 
 const emit = defineEmits<{
@@ -39,29 +41,46 @@ const drawerClasses = computed(() => {
   return `${base} ${positions[props.position]}`
 })
 
+let isLockedByThisInstance = false
+
+const lockScroll = () => {
+  if (props.lockScroll && !isLockedByThisInstance) {
+    document.body.style.overflow = 'hidden'
+    isLockedByThisInstance = true
+  }
+}
+
+const unlockScroll = () => {
+  if (isLockedByThisInstance) {
+    document.body.style.overflow = ''
+    isLockedByThisInstance = false
+  }
+}
+
 // Prevent body scroll when drawer is open
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
-    document.body.style.overflow = 'hidden'
+    lockScroll()
   } else {
-    document.body.style.overflow = ''
+    unlockScroll()
   }
+}, { immediate: true })
+
+// Ensure scroll is unlocked when component is destroyed
+onUnmounted(() => {
+  unlockScroll()
 })
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="modelValue" class="fixed inset-0 z-60">
-      <div
-        v-if="backdrop"
-        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+    <div v-if="modelValue" class="fixed inset-0 z-60" :class="{ 'pointer-events-none': !backdrop }">
+      <div v-if="backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
         @click="handleBackdropClick"></div>
 
-      <div :class="drawerClasses">
+      <div :class="[drawerClasses, { 'pointer-events-auto': !backdrop }]">
         <!-- Drag handle for bottom drawer -->
-        <div
-          v-if="position === 'bottom'"
-          class="w-12 h-1 bg-border-subtle rounded-full mx-auto mb-6"></div>
+        <div v-if="position === 'bottom'" class="w-12 h-1 bg-border-subtle rounded-full mx-auto mb-6"></div>
 
         <!-- Header slot -->
         <div v-if="$slots.header" class="mb-6">
@@ -101,6 +120,7 @@ watch(() => props.modelValue, (isOpen) => {
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -110,6 +130,7 @@ watch(() => props.modelValue, (isOpen) => {
   from {
     transform: translateY(-100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -119,6 +140,7 @@ watch(() => props.modelValue, (isOpen) => {
   from {
     transform: translateX(-100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -128,9 +150,9 @@ watch(() => props.modelValue, (isOpen) => {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
 }
 </style>
-
