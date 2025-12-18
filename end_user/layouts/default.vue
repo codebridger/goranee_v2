@@ -9,7 +9,6 @@ import { ROUTES } from '~/constants/routes'
 const route = useRoute()
 const { t } = useI18n()
 const isScrolled = ref(false)
-const isDevLoading = ref(false)
 
 // Determine if the navbar should be transparent (homepage only for now)
 const isHome = computed(() => route.name === 'index' || route.path === '/')
