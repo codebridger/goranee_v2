@@ -23,12 +23,24 @@ export const RhythmCollection = defineCollection({
   }),
   permissions: [
     new Permission({
-      accessType: "god_access",
+      accessType: "advanced_settings",
       write: true,
       read: true,
     }),
     new Permission({
+      accessType: "upload_file_access",
+      write: true,
+    }),
+    new Permission({
+      accessType: "remove_file_access",
+      write: true,
+    }),
+    new Permission({
       accessType: "anonymous_access",
+      read: true,
+    }),
+    new Permission({
+      accessType: "user_access",
       read: true,
     }),
   ],
@@ -44,12 +56,24 @@ export default [
     }),
     permissions: [
       new Permission({
-        accessType: "god_access",
+        accessType: "advanced_settings",
         write: true,
         read: true,
       }),
       new Permission({
+        accessType: "upload_file_access",
+        write: true,
+      }),
+      new Permission({
+        accessType: "remove_file_access",
+        write: true,
+      }),
+      new Permission({
         accessType: "anonymous_access",
+        read: true,
+      }),
+      new Permission({
+        accessType: "user_access",
         read: true,
       }),
     ],
@@ -65,12 +89,24 @@ export default [
     }),
     permissions: [
       new Permission({
-        accessType: "god_access",
+        accessType: "advanced_settings",
         write: true,
         read: true,
       }),
       new Permission({
+        accessType: "upload_file_access",
+        write: true,
+      }),
+      new Permission({
+        accessType: "remove_file_access",
+        write: true,
+      }),
+      new Permission({
         accessType: "anonymous_access",
+        read: true,
+      }),
+      new Permission({
+        accessType: "user_access",
         read: true,
       }),
     ],
@@ -85,12 +121,24 @@ export default [
     }),
     permissions: [
       new Permission({
-        accessType: "god_access",
+        accessType: "advanced_settings",
         write: true,
         read: true,
       }),
       new Permission({
+        accessType: "upload_file_access",
+        write: true,
+      }),
+      new Permission({
+        accessType: "remove_file_access",
+        write: true,
+      }),
+      new Permission({
         accessType: "anonymous_access",
+        read: true,
+      }),
+      new Permission({
+        accessType: "user_access",
         read: true,
       }),
     ],
@@ -112,12 +160,24 @@ export default [
     }),
     permissions: [
       new Permission({
-        accessType: "god_access",
+        accessType: "advanced_settings",
         write: true,
         read: true,
       }),
       new Permission({
+        accessType: "upload_file_access",
+        write: true,
+      }),
+      new Permission({
+        accessType: "remove_file_access",
+        write: true,
+      }),
+      new Permission({
         accessType: "anonymous_access",
+        read: true,
+      }),
+      new Permission({
+        accessType: "user_access",
         read: true,
       }),
     ],
