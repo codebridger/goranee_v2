@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@modular-rest/server": "^1.20.0",
+    "@modular-rest/server": "^1.20.1",
     "dotenv": "^16.4.5",
     "koa-router": "^7.4.0",
     "nodemailer": "^7.0.11"

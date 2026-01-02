@@ -21,7 +21,8 @@ export const requestLogger = async (ctx: any, next: any) => {
               ctx.request.files[key].name ||
               ctx.request.files[key].originalFilename,
             size: ctx.request.files[key].size,
-            type: ctx.request.files[key].type || ctx.request.files[key].mimetype,
+            type:
+              ctx.request.files[key].type || ctx.request.files[key].mimetype,
           }))
         : [],
     };
