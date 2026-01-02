@@ -1,6 +1,7 @@
 import * as path from "path";
 import { createRest } from "@modular-rest/server";
 import { permissionGroups } from "./permissions";
+import { requestLogger } from "./middlewares/request_logger";
 
 // Load .env file
 require("dotenv").config({
@@ -35,6 +36,8 @@ const restConfig: any = {
     dbPrefix: "goranee_",
   },
   onBeforeInit: (app: any) => {
+    app.use(requestLogger);
+
     // Add Health cheker route
     let Router = require("koa-router");
     let healthCheck = new Router();
