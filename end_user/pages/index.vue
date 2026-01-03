@@ -171,7 +171,7 @@ useSeoMeta({
           <Typography variant="h2" class="font-bold">{{ t('home.discovery.title') }}</Typography>
           <Typography variant="body" class="text-text-secondary">{{
             t('home.discovery.subtitle')
-          }}</Typography>
+            }}</Typography>
         </div>
         <TabFilter :tabs="tabs" :activeTab="activeTab" @change="handleTabChange" />
       </div>
@@ -223,7 +223,8 @@ useSeoMeta({
                 class="flex flex-col items-center shrink-0 group cursor-pointer snap-center"
                 @click="artist._id && $router.push(ROUTES.ARTIST.DETAIL(artist._id))">
                 <ArtistCard :name="getArtistName(artist)" :song-count="artist.chords || 0"
-                  :songs-label="t('home.artists.songs')" :gradient-border="(artist as any)._mockColor" />
+                  :songs-label="t('home.artists.songs')" :gradient-border="(artist as any)._mockColor"
+                  :avatar-url="tabService.getImageUrl(artist.image)" />
               </div>
             </template>
           </div>

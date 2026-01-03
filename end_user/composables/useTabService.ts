@@ -13,6 +13,8 @@ const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.
  * Composable for tab/song related services
  */
 export const useTabService = () => {
+  const { getImageUrl: _getImageUrl } = useImageUrl()
+
   /**
    * Fetch songs with limited fields optimized for SongCard
    */
@@ -98,26 +100,18 @@ export const useTabService = () => {
         query: {},
         options: {
           limit: 10,
+          // Explicitly project fields to ensure image is returned
+          projection: {
+            content: 1,
+            chords: 1,
+            image: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
         },
       })
 
-      if (!artists || artists.length === 0) {
-        return []
-      }
-
-      return artists.map((artist) => {
-        // Mock color for gradient border
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(artist as any)._mockColor = getRandomElement([
-          'from-pink-500 to-rose-500',
-          'from-purple-500 to-indigo-500',
-          'from-blue-500 to-cyan-500',
-          'from-orange-500 to-red-500',
-          'from-emerald-500 to-teal-500',
-        ])
-
-        return artist
-      })
+      return _processArtists(artists || [])
     } catch (error) {
       console.error('Failed to fetch featured artists:', error)
       return []
@@ -144,9 +138,33 @@ export const useTabService = () => {
 
   // Note: getImageUrl has been moved to useImageUrl composable
   // This is kept for backward compatibility but delegates to useImageUrl
+  // Updated to use the pre-initialized _getImageUrl to preserve Nuxt context during SSR
   const getImageUrl = (file: any) => {
-    const { getImageUrl: getImageUrlFromComposable } = useImageUrl()
-    return getImageUrlFromComposable(file)
+    return _getImageUrl(file);
+  }
+
+  // Helper to process artists with mock data and ensure clean objects for serialization
+  const _processArtists = (artists: Artist[]): Artist[] => {
+    if (!artists || artists.length === 0) {
+      return []
+    }
+
+    return artists.map((artist) => {
+      // Create a plain object to ensure clean serialization through useAsyncData
+      const plainArtist = { ...artist }
+
+      // Mock color for gradient border
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(plainArtist as any)._mockColor = getRandomElement([
+        'from-pink-500 to-rose-500',
+        'from-purple-500 to-indigo-500',
+        'from-blue-500 to-cyan-500',
+        'from-orange-500 to-red-500',
+        'from-emerald-500 to-teal-500',
+      ])
+
+      return plainArtist
+    })
   }
 
   // Helper to process songs with mock data and extract default language content
@@ -156,20 +174,28 @@ export const useTabService = () => {
     }
 
     return songs.map((song) => {
-      // If it's already a SongWithPopulatedRefs (old structure), return as is
-      if ('title' in song && typeof song.title === 'string') {
-      const songWithRefs = song as unknown as SongWithPopulatedRefs
+      // Ensure we're working with a plain object for serialization
+      const songDoc = { ...song }
 
-      // Handle rhythm - extract titles from Rhythm[] array
-      if (songWithRefs.rhythm && Array.isArray(songWithRefs.rhythm)) {
-        const rhythmStr = songWithRefs.rhythm
-          .map(r => r?.title || '')
-          .filter(Boolean)
-          .join(', ')
-        songWithRefs.rhythm = rhythmStr || undefined
-      } else {
-        songWithRefs.rhythm = undefined
+      // Also process populated artists if they exist
+      if (songDoc.artists && Array.isArray(songDoc.artists) && songDoc.artists.length > 0 && typeof songDoc.artists[0] === 'object') {
+        songDoc.artists = _processArtists(songDoc.artists as Artist[])
       }
+
+      // If it's already a SongWithPopulatedRefs (old structure), return as is
+      if ('title' in songDoc && typeof songDoc.title === 'string') {
+        const songWithRefs = songDoc as unknown as SongWithPopulatedRefs
+
+        // Handle rhythm - extract titles from Rhythm[] array
+        if (songWithRefs.rhythm && Array.isArray(songWithRefs.rhythm)) {
+          const rhythmStr = (songWithRefs.rhythm as any[])
+            .map(r => r?.title || '')
+            .filter(Boolean)
+            .join(', ')
+          songWithRefs.rhythm = rhythmStr || undefined
+        } else {
+          songWithRefs.rhythm = undefined
+        }
 
         // Ensure chords object exists
         if (!songWithRefs.chords) {
@@ -184,13 +210,13 @@ export const useTabService = () => {
       }
 
       // New structure: extract default language content
-      const songWithContent = song as Song
+      const songWithContent = songDoc as Song
       const langContent = songWithContent.content?.['ckb-IR']
 
       if (!langContent) {
         // Fallback: try to find any available language
         const availableLang = Object.keys(songWithContent.content || {}).find(
-          lang => songWithContent.content?.[lang as LanguageCode]?.title
+          lang => (songWithContent.content as any)?.[lang]?.title
         ) as LanguageCode | undefined
 
         if (!availableLang) {
@@ -206,7 +232,7 @@ export const useTabService = () => {
           } as SongWithPopulatedRefs
         }
 
-        const fallbackContent = songWithContent.content[availableLang]
+        const fallbackContent = (songWithContent.content as any)[availableLang]
         return {
           _id: songWithContent._id,
           title: fallbackContent?.title || '',
@@ -215,15 +241,15 @@ export const useTabService = () => {
             if (!songWithContent.rhythm || !Array.isArray(songWithContent.rhythm)) {
               return undefined
             }
-            const rhythmStr = songWithContent.rhythm
+            const rhythmStr = (songWithContent.rhythm as any[])
               .map(r => r?.title || '')
               .filter(Boolean)
               .join(', ')
             return rhythmStr || undefined
           })(),
           sections: fallbackContent?.sections,
-          artists: songWithContent.artists,
-          genres: songWithContent.genres,
+          artists: songWithContent.artists as any,
+          genres: songWithContent.genres as any,
           chords: songWithContent.chords || { list: [] },
           image: songWithContent.image,
           melodies: songWithContent.melodies,
@@ -239,15 +265,15 @@ export const useTabService = () => {
           if (!songWithContent.rhythm || !Array.isArray(songWithContent.rhythm)) {
             return undefined
           }
-          const rhythmStr = songWithContent.rhythm
+          const rhythmStr = (songWithContent.rhythm as any[])
             .map(r => r?.title || '')
             .filter(Boolean)
             .join(', ')
           return rhythmStr || undefined
         })(),
         sections: langContent.sections,
-        artists: songWithContent.artists,
-        genres: songWithContent.genres,
+        artists: songWithContent.artists as any,
+        genres: songWithContent.genres as any,
         chords: songWithContent.chords || { list: [] },
         image: songWithContent.image,
         melodies: songWithContent.melodies,
@@ -277,7 +303,6 @@ export const useTabService = () => {
       const songs = await dataProvider.find<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
-        populates: ['artists', 'rhythm'],
         query: {
           $or: [
             { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
@@ -287,7 +312,9 @@ export const useTabService = () => {
         },
         options: {
           limit,
-          select: {
+          // @ts-expect-error: populate is not in the strict type definition but supported by backend
+          populate: ['artists', 'rhythm'],
+          projection: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
@@ -333,12 +360,15 @@ export const useTabService = () => {
     const queryObj: any = {}
     const orConditions: any[] = []
 
-    // Text search - search in all language content titles
+    // Text search - search in all language content titles and artist names
     if (query && query.trim().length > 0) {
       orConditions.push(
         { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
         { 'content.ckb-Latn.title': { $regex: query, $options: 'i' } },
-        { 'content.kmr.title': { $regex: query, $options: 'i' } }
+        { 'content.kmr.title': { $regex: query, $options: 'i' } },
+        { 'artists.content.ckb-IR.name': { $regex: query, $options: 'i' } },
+        { 'artists.content.ckb-Latn.name': { $regex: query, $options: 'i' } },
+        { 'artists.content.kmr.name': { $regex: query, $options: 'i' } }
       )
     }
 
@@ -396,9 +426,10 @@ export const useTabService = () => {
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         query: queryObj,
-        populates: ['artists', 'rhythm'],
         options: {
-          select: {
+          // @ts-expect-error: populate is not in the strict type definition but supported by backend
+          populate: ['artists', 'rhythm'],
+          projection: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
@@ -479,25 +510,21 @@ export const useTabService = () => {
         query: queryObj,
         options: {
           sort: sortObj,
+          // Explicitly project fields to ensure image is returned
+          projection: {
+            content: 1,
+            chords: 1,
+            image: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
         },
       },
       {
         limit,
         page,
         onFetched: (docs) => {
-          const processedArtists = docs.map((artist) => {
-            // Mock color for gradient border
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(artist as any)._mockColor = getRandomElement([
-              'from-pink-500 to-rose-500',
-              'from-purple-500 to-indigo-500',
-              'from-blue-500 to-cyan-500',
-              'from-orange-500 to-red-500',
-              'from-emerald-500 to-teal-500',
-            ])
-
-            return artist
-          })
+          const processedArtists = _processArtists(docs)
           onFetched(processedArtists)
         },
       }
@@ -510,23 +537,24 @@ export const useTabService = () => {
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.ARTIST,
         query: { _id: id },
-        options: { limit: 1 },
+        options: {
+          limit: 1,
+          // Explicitly project fields to ensure image is returned
+          projection: {
+            content: 1,
+            chords: 1,
+            image: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
+        },
       })
 
       const artist = artists && artists.length > 0 ? artists[0] : null
 
       if (artist) {
-        // Mock color for gradient border
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(artist as any)._mockColor = getRandomElement([
-          'from-pink-500 to-rose-500',
-          'from-purple-500 to-indigo-500',
-          'from-blue-500 to-cyan-500',
-          'from-orange-500 to-red-500',
-          'from-emerald-500 to-teal-500',
-        ])
-
-        return artist as Artist
+        const processed = _processArtists([artist])
+        return processed[0] as Artist
       }
 
       return null
@@ -541,12 +569,13 @@ export const useTabService = () => {
       const songs = await dataProvider.find<SongWithPopulatedRefs>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
-        populates: ['artists', 'rhythm'],
         query: {
           artists: artistId,
         },
         options: {
-          select: {
+          // @ts-expect-error: populate is not in the strict type definition but supported by backend
+          populate: ['artists', 'rhythm'],
+          projection: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
@@ -570,11 +599,11 @@ export const useTabService = () => {
       const song = await dataProvider.findOne<Song>({
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
-        // @ts-expect-error: populate is not in the strict type definition but supported by backend
-        populates: ['artists', 'genres', 'rhythm'],
         query: { _id: id },
         options: {
           limit: 1,
+          // @ts-expect-error: populate is not in the strict type definition but supported by backend
+          populate: ['artists', 'genres', 'rhythm'],
         },
       })
 
@@ -584,7 +613,7 @@ export const useTabService = () => {
 
       // Extract language-specific content (direct access - O(1))
       const targetLang = lang || 'ckb-IR'
-      const langContent = song.content?.[targetLang]
+      const langContent = (song.content as any)?.[targetLang]
       
       if (!langContent) {
         // Fallback to default language
@@ -600,7 +629,7 @@ export const useTabService = () => {
           title_seo: defaultContent.title_seo,
           rhythm: (() => {
             if (!song.rhythm || !Array.isArray(song.rhythm)) return ''
-            return song.rhythm
+            return (song.rhythm as any[])
               .map(r => r?.title || '')
               .filter(Boolean)
               .join(', ')
@@ -617,7 +646,7 @@ export const useTabService = () => {
         title_seo: langContent.title_seo,
         rhythm: (() => {
           if (!song.rhythm || !Array.isArray(song.rhythm)) return ''
-          return song.rhythm
+          return (song.rhythm as any[])
             .map(r => r?.title || '')
             .filter(Boolean)
             .join(', ')

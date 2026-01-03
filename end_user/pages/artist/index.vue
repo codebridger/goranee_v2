@@ -52,6 +52,7 @@ const { data: artistsData, pending: isLoading, refresh: refreshArtists } = await
   getArtistsKey,
   async () => {
     // Get pagination controller
+    let initialDocs: Artist[] = []
     const controller = fetchAllArtists(
       {
         limit: itemsPerPage,
@@ -60,6 +61,7 @@ const { data: artistsData, pending: isLoading, refresh: refreshArtists } = await
         search: searchQuery.value.trim() || undefined,
       },
       (docs) => {
+        initialDocs = docs
         artists.value = docs
       }
     )
@@ -78,7 +80,7 @@ const { data: artistsData, pending: isLoading, refresh: refreshArtists } = await
     paginationController.value = controller
 
     return {
-      artists: artists.value,
+      artists: initialDocs.length > 0 ? initialDocs : artists.value,
       totalResults: total,
       totalPages: pages,
     }
@@ -185,6 +187,7 @@ const getArtistName = (artist: Artist) => {
       <div v-else-if="artists.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 3xl:grid-cols-6 gap-6">
         <ArtistCard v-for="artist in artists" :key="artist._id" :name="getArtistName(artist)"
           :song-count="artist.chords || 0" :songs-label="t('common.songs')"
+          :avatar-url="useTabService().getImageUrl(artist.image)" :gradient-border="(artist as any)._mockColor"
           @click="navigateToArtist(artist._id || '')" />
       </div>
 
