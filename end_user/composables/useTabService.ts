@@ -49,7 +49,7 @@ export const useTabService = () => {
           skip,
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists', 'rhythm'],
-          projection: { ...defaultProjection, ...projection },
+          select: { ...defaultProjection, ...projection },
           sort: sort
         },
       })
@@ -76,7 +76,7 @@ export const useTabService = () => {
         options: {
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists', 'rhythm'],
-          projection: {
+          select: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
@@ -101,7 +101,7 @@ export const useTabService = () => {
         options: {
           limit: 10,
           // Explicitly project fields to ensure image is returned
-          projection: {
+          select: {
             content: 1,
             chords: 1,
             image: 1,
@@ -314,7 +314,7 @@ export const useTabService = () => {
           limit,
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists', 'rhythm'],
-          projection: {
+          select: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
@@ -429,7 +429,7 @@ export const useTabService = () => {
         options: {
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists', 'rhythm'],
-          projection: {
+          select: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
@@ -511,7 +511,7 @@ export const useTabService = () => {
         options: {
           sort: sortObj,
           // Explicitly project fields to ensure image is returned
-          projection: {
+          select: {
             content: 1,
             chords: 1,
             image: 1,
@@ -540,7 +540,7 @@ export const useTabService = () => {
         options: {
           limit: 1,
           // Explicitly project fields to ensure image is returned
-          projection: {
+          select: {
             content: 1,
             chords: 1,
             image: 1,
@@ -575,7 +575,7 @@ export const useTabService = () => {
         options: {
           // @ts-expect-error: populate is not in the strict type definition but supported by backend
           populate: ['artists', 'rhythm'],
-          projection: {
+          select: {
             'content.ckb-IR.title': 1,
             'content.ckb-Latn.title': 1,
             'content.kmr.title': 1,
