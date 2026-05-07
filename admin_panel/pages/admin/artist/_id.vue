@@ -81,6 +81,7 @@ export default {
       pending: false,
       currentLang: 'ckb-IR',
       availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr'],
+      isInitializing: true,
       form: {
         content: {
           'ckb-IR': null,
@@ -100,6 +101,11 @@ export default {
     id() {
       return this.$route.params.id
     },
+    hasCurrentContent() {
+      return this.currentLangForm.name ||
+        this.currentLangForm.name_seo ||
+        this.currentLangForm.bio;
+    },
   },
   methods: {
     initForm() {
@@ -108,21 +114,34 @@ export default {
         // Migrate old structure to new if needed
         if (this.artist.name && !this.artist.content) {
           // Old structure - migrate on the fly
-          this.form.content['ckb-IR'] = {
-            name: this.artist.name || '',
-            name_seo: this.artist.name_seo || '',
-            bio: this.artist.bio || '',
+          this.form.content = {
+            'ckb-IR': {
+              name: this.artist.name || '',
+              name_seo: this.artist.name_seo || '',
+              bio: this.artist.bio || '',
+            },
+            'ckb-Latn': null,
+            'kmr': null,
           }
         } else if (this.artist.content) {
-          // New structure
-          this.form.content = { ...this.artist.content }
+          // New structure - ensure all language keys exist
+          this.form.content = {
+            'ckb-IR': this.artist.content['ckb-IR'] || null,
+            'ckb-Latn': this.artist.content['ckb-Latn'] || null,
+            'kmr': this.artist.content['kmr'] || null,
+          }
         }
 
         // Copy shared fields
         this.form.image = this.artist.image || null
 
-        // Load current language content
+        // Set current language to default language
+        this.currentLang = 'ckb-IR';
+
+        // Load current language content (without saving first)
+        this.isInitializing = true;
         this.switchLanguage(this.currentLang)
+        this.isInitializing = false;
       }
     },
     getLangLabel(lang) {
@@ -137,15 +156,15 @@ export default {
       return this.form.content[lang] && this.form.content[lang].name
     },
     switchLanguage(lang) {
-      // Save current language content before switching
-      if (this.currentLangForm.name || this.currentLangForm.name_seo || this.currentLangForm.bio) {
+      // Save current language content before switching (but not during initialization)
+      if (!this.isInitializing && this.hasCurrentContent) {
         this.form.content[this.currentLang] = { ...this.currentLangForm }
       }
 
       this.currentLang = lang
 
       // Load new language content
-      if (this.form.content[lang]) {
+      if (this.form.content[lang] && this.form.content[lang] !== null) {
         this.currentLangForm = {
           name: this.form.content[lang].name || '',
           name_seo: this.form.content[lang].name_seo || '',
@@ -163,9 +182,7 @@ export default {
 
     update() {
       // Save current language content before updating
-      if (this.currentLangForm.name || this.currentLangForm.name_seo || this.currentLangForm.bio) {
-        this.form.content[this.currentLang] = { ...this.currentLangForm }
-      }
+      this.form.content[this.currentLang] = { ...this.currentLangForm }
 
       this.pending = true
       dataProvider

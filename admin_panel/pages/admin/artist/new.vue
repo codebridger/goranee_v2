@@ -72,6 +72,7 @@ export default {
       pending: false,
       currentLang: 'ckb-IR',
       availableLangs: ['ckb-IR', 'ckb-Latn', 'kmr'],
+      isInitializing: false,
       form: {
         content: {
           'ckb-IR': null,
@@ -87,6 +88,13 @@ export default {
       },
     }
   },
+  computed: {
+    hasCurrentContent() {
+      return this.currentLangForm.name ||
+        this.currentLangForm.name_seo ||
+        this.currentLangForm.bio;
+    },
+  },
   methods: {
     getLangLabel(lang) {
       const labels = {
@@ -101,12 +109,12 @@ export default {
     },
     switchLanguage(lang) {
       // Save current language content before switching
-      if (this.currentLangForm.name || this.currentLangForm.name_seo || this.currentLangForm.bio) {
+      if (!this.isInitializing && this.hasCurrentContent) {
         this.form.content[this.currentLang] = { ...this.currentLangForm }
       }
-      
+
       this.currentLang = lang
-      
+
       // Load new language content
       if (this.form.content[lang]) {
         this.currentLangForm = {
@@ -132,10 +140,8 @@ export default {
     },
     create() {
       // Save current language content before creating
-      if (this.currentLangForm.name || this.currentLangForm.name_seo || this.currentLangForm.bio) {
-        this.form.content[this.currentLang] = { ...this.currentLangForm }
-      }
-      
+      this.form.content[this.currentLang] = { ...this.currentLangForm }
+
       this.pending = true
       dataProvider
         .insertOne({

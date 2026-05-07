@@ -111,7 +111,9 @@ const { data: searchData, pending: isLoading, error: searchError, refresh: refre
     searchFilters.sort = filters.value.sort || 'newest'
 
     // Get pagination controller
+    let initialDocs: SongWithPopulatedRefs[] = []
     const controller = await searchSongsAdvanced(searchFilters, (docs) => {
+      initialDocs = docs
       songs.value = docs
     })
 
@@ -129,7 +131,7 @@ const { data: searchData, pending: isLoading, error: searchError, refresh: refre
     paginationController.value = controller
 
     return {
-      songs: songs.value,
+      songs: initialDocs.length > 0 ? initialDocs : songs.value,
       totalResults: total,
       totalPages: pages,
     }

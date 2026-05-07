@@ -12,7 +12,7 @@
       <seo-labels :value="form[field.key]" @input="form[field.key] = $event" v-if="field.type == 'seo'" />
 
       <!-- IMAGE -->
-      <image-field v-if="field.type == 'image' && edit" :fileDoc="form[field.key]" :tag="collection"
+      <image-field v-if="field.type == 'image'" :fileDoc="form[field.key]" :tag="collection"
         @input="form[field.key] = $event" @changed="edit ? update() : () => { }" />
 
       <!-- CUSTOM FIELD -->
@@ -23,10 +23,10 @@
     <div class="mt-8">
       <vs-button class="mt-16" v-if="!edit" @click="create">{{
         $t('create')
-        }}</vs-button>
+      }}</vs-button>
       <vs-button class="mt-16" v-else @click="update">{{
         $t('update')
-        }}</vs-button>
+      }}</vs-button>
     </div>
   </div>
 </template>
@@ -101,6 +101,13 @@ export default {
               delete doc._id
               this.form = doc
             })
+            .catch((err) => {
+              notifier.toast({
+                label: `Load ${this.collection} error`,
+                description: err.message || 'Failed to load document',
+                type: 'error',
+              })
+            })
         }
       },
     },
@@ -118,11 +125,17 @@ export default {
         .then(() => {
           this.$emit('created')
           this.$emit('close')
+          notifier.toast({
+            label: 'Success',
+            description: `${this.collection} created successfully`,
+            type: 'success',
+          })
         })
         .catch((result) => {
+          const description = result.error ? (typeof result.error === 'string' ? result.error : JSON.stringify(result.error)) : (result.message || 'Unknown error');
           notifier.toast({
             label: `Create ${this.collection} error`,
-            description: JSON.stringify(result.error),
+            description,
             type: 'error',
           })
         })
@@ -142,11 +155,17 @@ export default {
         .then(() => {
           this.$emit('updated')
           this.$emit('close')
+          notifier.toast({
+            label: 'Success',
+            description: `${this.collection} updated successfully`,
+            type: 'success',
+          })
         })
         .catch((result) => {
+          const description = result.error ? (typeof result.error === 'string' ? result.error : JSON.stringify(result.error)) : (result.message || 'Unknown error');
           notifier.toast({
             label: `Update ${this.collection} error`,
-            description: JSON.stringify(result.error),
+            description,
             type: 'error',
           })
         })
