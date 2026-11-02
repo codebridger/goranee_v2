@@ -5,7 +5,8 @@
 		"links": {
 			"discovery": "Discovery",
 			"artists": "Artists",
-			"community": "Community"
+			"community": "Community",
+			"about": "About Us"
 		},
 		"login": "Log In",
 		"explore": "Explore",
@@ -59,6 +60,35 @@
 		"community": {
 			"title": "Community",
 			"subtitle": "Join the conversation."
+		},
+		"about": {
+			"title": "About Us",
+			"subtitle": "The people behind Goranee",
+			"story1": "Goranee is a reference for Kurdish chords. We designed it with heartfelt passion, and it is now here for you, if you love to sing in Kurdish.",
+			"story2": "Over time we keep improving different aspects of Goranee to build a great experience for you.",
+			"teamTitle": "Our Team",
+			"teamIntro": "We are a small team for now, though we may grow in the future:",
+			"members": {
+				"pouya": {
+					"name": "Pouya Jalali",
+					"role": "Musician and mechanical engineer"
+				},
+				"navid": {
+					"name": "Navid Shad",
+					"role": "Music enthusiast and software engineer"
+				}
+			},
+			"requestTitle": "Can't find your song?",
+			"requestText": "Every song is published together with its melody. If you can't find the song you are looking for, let us know and, if approved, we will add it to our content production plan.",
+			"contactButton": "Contact form",
+			"contact": {
+				"title": "Get in Touch",
+				"intro": "Reach out with suggestions, bug reports or to collaborate. Pick the option that suits where you live.",
+				"insideIran": "Inside Iran",
+				"outsideIran": "Outside Iran",
+				"instagram": "Instagram",
+				"telegram": "Telegram"
+			}
 		}
 	},
 	"hero": {
@@ -119,7 +149,8 @@
 				"newArrivals": "New Arrivals",
 				"trendingCharts": "Trending Charts",
 				"featuredArtists": "Featured Artists",
-				"songRequests": "Song Requests"
+				"songRequests": "Song Requests",
+				"about": "About Us"
 			},
 			"community": {
 				"title": "Community",

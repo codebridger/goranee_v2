@@ -14,6 +14,7 @@ const footerDiscoverLinks = computed(() => ({
 	trendingCharts: t('footer.sections.discover.trendingCharts'),
 	featuredArtists: t('footer.sections.discover.featuredArtists'),
 	songRequests: t('footer.sections.discover.songRequests'),
+	aboutUs: t('footer.sections.discover.about'),
 }))
 const footerCommunityTitle = computed(() => t('footer.sections.community.title'))
 const footerCommunityLinks = computed(() => ({
@@ -93,6 +94,11 @@ const footerDesignSystem = computed(() => t('footer.designSystem'))
 							{{ footerDiscoverLinks.songRequests }}
 						</NuxtLink>
 					</li> -->
+					<li>
+						<NuxtLink :to="ROUTES.ABOUT" class="hover:text-white cursor-pointer transition">
+							{{ footerDiscoverLinks.aboutUs }}
+						</NuxtLink>
+					</li>
 				</ul>
 			</div>
 		</div>

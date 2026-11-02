@@ -5,7 +5,8 @@
 		"links": {
 			"discovery": "Dozînewe",
 			"artists": "Hunermendan",
-			"community": "Komelgah"
+			"community": "Komelgah",
+			"about": "Derbarey Ême"
 		},
 		"login": "Chûnezhûr",
 		"explore": "Gerran",
@@ -59,6 +60,35 @@
 		"community": {
 			"title": "Komelgah",
 			"subtitle": "Beşdarî guftugo bike."
+		},
+		"about": {
+			"title": "Derbarey Ême",
+			"subtitle": "Ewaney le pişt malperî Goranî",
+			"story1": "Malperî Goranî serçawey akordi kurdîye, ke be şor û xoşewîstîyekî dillewe damanrijtuwe û êsta bo to amadeye ke hez deket be kurdî bixwênît.",
+			"story2": "Ême hewl dedeyn be dirêjayî kat layene cyawazekanî Goranî baştir bikeyn taku ezmûnêkî baş bo to bixulqênîn.",
+			"teamTitle": "Tîmekeman",
+			"teamIntro": "Êsta tîmêkî biçûkman heye, bellam lewaneye le dahatûda zêtir bibîn:",
+			"members": {
+				"pouya": {
+					"name": "Pouya Jalali",
+					"role": "Muzîkjen û endazyarî mêkanîk"
+				},
+				"navid": {
+					"name": "Navid Shad",
+					"role": "Dilbesteyî muzîk û endazyarî nermewale"
+				}
+			},
+			"requestTitle": "Goranîyekey nedozîyewe?",
+			"requestText": "Her goranîyek legell melodîyekey le malperekeda danrawe. Eger goranîyekey xotit nedozîyewe, agadarman bikerewe taku eger pesend kra bîxeynî planî berhemhênanî nawerokî malpereke.",
+			"contactButton": "Formî peywendî",
+			"contact": {
+				"title": "Rêgakanî Peywendî",
+				"intro": "Bo pêşnyar, raportkirdinî kêşe yan hawkarî legełmań le peywendîda be. Bepêy şwênî jyanit yekêk lem rêganane hełbijêre.",
+				"insideIran": "Nawxoy Êran",
+				"outsideIran": "Derewey Êran",
+				"instagram": "Instagram",
+				"telegram": "Telegram"
+			}
 		}
 	},
 	"hero": {
@@ -119,7 +149,8 @@
 				"newArrivals": "Nwêkan",
 				"trendingCharts": "Çarte Trendekan",
 				"featuredArtists": "Hunermende Hełbijêrdrawekan",
-				"songRequests": "Dawakariye Goranîyekan"
+				"songRequests": "Dawakariye Goranîyekan",
+				"about": "Derbarey Ême"
 			},
 			"community": {
 				"title": "Komelgah",
