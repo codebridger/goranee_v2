@@ -41,6 +41,7 @@ onUnmounted(() => {
 				{ label: t('navbar.links.discovery'), to: ROUTES.DISCOVERY },
 				{ label: t('navbar.links.artists'), to: ROUTES.ARTIST.INDEX },
 				{ label: t('navbar.links.community'), to: ROUTES.COMMUNITY },
+				{ label: t('navbar.links.about'), to: ROUTES.ABOUT },
 			]" :login-text="t('navbar.login')" :explore-text="t('navbar.explore')" :is-transparent="isTransparent" />
 		</div>
 

@@ -9,6 +9,33 @@ const MOCK_IMAGES = ['purple', 'pink', 'blue', 'orange', 'emerald', 'red']
 
 const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)] as T
 
+const CONTENT_LANGS = ['ckb-IR', 'ckb-Latn', 'kmr'] as const
+
+/**
+ * Unify Arabic/Persian letter variants and strip invisible characters, so what a user
+ * types on a Persian or Arabic keyboard can match how the content was written.
+ */
+const normalizeSearchText = (text: string) =>
+  text
+    .trim()
+    .replace(/ي/g, 'ی')
+    .replace(/ك/g, 'ک')
+    .replace(/[‌‍]/g, ' ')
+    .replace(/\s+/g, ' ')
+
+/**
+ * Build a Mongo `$or` that matches `query` in each language's `<field>` and `<field>_seo`.
+ * The `_seo` fields hold alternate spellings (e.g. "نوید" for a stored "نه وید"), which
+ * is what people usually type.
+ */
+const buildContentSearch = (field: 'name' | 'title', query: string, prefix = 'content') => {
+  const escaped = normalizeSearchText(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return CONTENT_LANGS.flatMap((lang) => [
+    { [`${prefix}.${lang}.${field}`]: { $regex: escaped, $options: 'i' } },
+    { [`${prefix}.${lang}.${field}_seo`]: { $regex: escaped, $options: 'i' } },
+  ])
+}
+
 /**
  * Composable for tab/song related services
  */
@@ -304,11 +331,7 @@ export const useTabService = () => {
         database: DATABASE_NAME,
         collection: COLLECTION_NAME.SONG,
         query: {
-          $or: [
-            { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
-            { 'content.ckb-Latn.title': { $regex: query, $options: 'i' } },
-            { 'content.kmr.title': { $regex: query, $options: 'i' } },
-          ]
+          $or: buildContentSearch('title', query),
         },
         options: {
           limit,
@@ -334,9 +357,34 @@ export const useTabService = () => {
   }
 
   /**
+   * Find artists whose name (or alternate spelling) matches the query.
+   * `select` keeps the payload small; `_id` is always returned.
+   */
+  const searchArtists = async (query: string, limit: number = 5): Promise<Artist[]> => {
+    try {
+      if (!query || query.trim().length === 0) return []
+
+      const artists = await dataProvider.find<Artist>({
+        database: DATABASE_NAME,
+        collection: COLLECTION_NAME.ARTIST,
+        query: { $or: buildContentSearch('name', query) },
+        options: {
+          limit,
+          select: { content: 1, chords: 1, image: 1 },
+        },
+      })
+
+      return _processArtists(artists || [])
+    } catch (error) {
+      console.error('Failed to search artists:', error)
+      return []
+    }
+  }
+
+  /**
    * Advanced search with filters using pagination
    */
-  const searchSongsAdvanced = (filters: {
+  const searchSongsAdvanced = async (filters: {
     query?: string
     genre?: string // genre ID
     key?: 'major' | 'minor'
@@ -362,14 +410,14 @@ export const useTabService = () => {
 
     // Text search - search in all language content titles and artist names
     if (query && query.trim().length > 0) {
-      orConditions.push(
-        { 'content.ckb-IR.title': { $regex: query, $options: 'i' } },
-        { 'content.ckb-Latn.title': { $regex: query, $options: 'i' } },
-        { 'content.kmr.title': { $regex: query, $options: 'i' } },
-        { 'artists.content.ckb-IR.name': { $regex: query, $options: 'i' } },
-        { 'artists.content.ckb-Latn.name': { $regex: query, $options: 'i' } },
-        { 'artists.content.kmr.name': { $regex: query, $options: 'i' } }
-      )
+      orConditions.push(...buildContentSearch('title', query))
+
+      // `artists` on a song only holds ids, so a nested "artists.content..." regex can never
+      // match. Resolve matching artists first and filter songs by their ids instead.
+      const matchedArtists = await searchArtists(query, 50)
+      if (matchedArtists.length > 0) {
+        orConditions.push({ artists: { $in: matchedArtists.map((a) => a._id) } })
+      }
     }
 
     // Rhythm filter - rhythm is now an array of ObjectId references, so filter using $in
@@ -474,12 +522,8 @@ export const useTabService = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const queryObj: any = {}
     if (search && search.trim().length > 0) {
-      // Search in all language content names
-      queryObj.$or = [
-        { 'content.ckb-IR.name': { $regex: search, $options: 'i' } },
-        { 'content.ckb-Latn.name': { $regex: search, $options: 'i' } },
-        { 'content.kmr.name': { $regex: search, $options: 'i' } },
-      ]
+      // Search in all language content names (and their alternate spellings)
+      queryObj.$or = buildContentSearch('name', search)
     }
 
     // Build sort object
@@ -670,6 +714,7 @@ export const useTabService = () => {
     fetchFeaturedArtists,
     fetchGenres,
     searchSongs,
+    searchArtists,
     searchSongsAdvanced,
     getImageUrl,
     fetchArtist,

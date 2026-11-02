@@ -5,7 +5,8 @@
 		"links": {
 			"discovery": "Dîtin",
 			"artists": "Hunermend",
-			"community": "Komele"
+			"community": "Komele",
+			"about": "Derbarê Me"
 		},
 		"login": "Têketin",
 		"explore": "Lêgerîn",
@@ -59,6 +60,35 @@
 		"community": {
 			"title": "Komele",
 			"subtitle": "Beşdarî gotûbêjê bibin."
+		},
+		"about": {
+			"title": "Derbarê Me",
+			"subtitle": "Kesên li pişt malpera Goranee",
+			"story1": "Malpera Goranee referansa akordên kurdî ye; me ew bi şor û evîneke ji dil sêwirand û niha ji bo te ku dixwazî bi kurdî bixwînî amade ye.",
+			"story2": "Em hewl didin bi demê re aliyên cuda yên Goraneeyê çêtir bikin da ku ezmûneke baş ji bo te biafirînin.",
+			"teamTitle": "Tîma Me",
+			"teamIntro": "Heya niha tîmeke me ya biçûk heye, lê belkî di pêşerojê de em zêde bibin:",
+			"members": {
+				"pouya": {
+					"name": "Pouya Jalali",
+					"role": "Muzîkjen û endezyarê makîneyê"
+				},
+				"navid": {
+					"name": "Navid Shad",
+					"role": "Dilbijî muzîkê û endezyarê nermalavê"
+				}
+			},
+			"requestTitle": "Stranê te nedît?",
+			"requestText": "Her stran bi melodiya xwe re li malperê heye. Heke te stran nedît, ji me re bêje da ku, heke were pejirandin, em têxin bernameya çêkirina naverokê.",
+			"contactButton": "Formê Têkiliyê",
+			"contact": {
+				"title": "Rêyên Têkiliyê",
+				"intro": "Ji bo pêşniyar, raporkirina pirsgirêkê an hevkariyê bi me re di têkiliyê de be. Li gorî cihê jiyana xwe yek ji van rêyan hilbijêre.",
+				"insideIran": "Hundirê Îranê",
+				"outsideIran": "Derveyî Îranê",
+				"instagram": "Instagram",
+				"telegram": "Telegram"
+			}
 		}
 	},
 	"hero": {
@@ -119,7 +149,8 @@
 				"newArrivals": "Nûyên",
 				"trendingCharts": "Grafên Trendê",
 				"featuredArtists": "Hunermendên Bijarte",
-				"songRequests": "Daxwazên Stranê"
+				"songRequests": "Daxwazên Stranê",
+				"about": "Derbarê Me"
 			},
 			"community": {
 				"title": "Komele",

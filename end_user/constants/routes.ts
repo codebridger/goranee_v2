@@ -9,6 +9,7 @@ export const ROUTES = {
   HOME: '/',
   DISCOVERY: '/discovery',
   COMMUNITY: '/community',
+  ABOUT: '/about',
   LOGIN: '/login',
   UPLOAD: '/upload',
   

@@ -2,13 +2,13 @@
 import { ref, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Search, Menu, X, ArrowRight, Loader2, Music } from 'lucide-vue-next'
+import { Search, Menu, X, ArrowRight, Loader2, Music, User } from 'lucide-vue-next'
 import Button from '../base/Button.vue'
 import Input from '../base/Input.vue'
 import ContentLanguageSwitcher from './ContentLanguageSwitcher.vue'
 import { useTabService } from '~/composables/useTabService'
 import { useContentLanguageStore } from '~/stores/contentLanguage'
-import type { SongWithPopulatedRefs } from '~/types/song.type'
+import type { Artist, SongWithPopulatedRefs } from '~/types/song.type'
 import { ROUTES } from '~/constants/routes'
 
 export interface NavLink {
@@ -47,6 +47,7 @@ const isContentLanguageMenuOpen = ref(false)
 // Search State
 const searchQuery = ref('')
 const searchResults = ref<SongWithPopulatedRefs[]>([])
+const artistResults = ref<Artist[]>([])
 const isSearching = ref(false)
 const showResults = ref(false)
 
@@ -65,6 +66,7 @@ const performSearch = () => {
   clearTimeout(searchTimeout)
   if (searchQuery.value.length < 2) {
     searchResults.value = []
+    artistResults.value = []
     showResults.value = false
     return
   }
@@ -73,7 +75,12 @@ const performSearch = () => {
     isSearching.value = true
     showResults.value = true
     try {
-      searchResults.value = await tabService.searchSongs(searchQuery.value)
+      const [songs, artists] = await Promise.all([
+        tabService.searchSongs(searchQuery.value),
+        tabService.searchArtists(searchQuery.value),
+      ])
+      searchResults.value = songs
+      artistResults.value = artists
     } catch (error) {
       console.error('Search error:', error)
     } finally {
@@ -89,6 +96,15 @@ const handleSearchSubmit = () => {
     isMenuOpen.value = false
   }
 }
+
+const goToArtist = (id: string) => {
+  router.push(ROUTES.ARTIST.DETAIL(id))
+  showResults.value = false
+  isMenuOpen.value = false
+}
+
+const getArtistName = (artist: Artist) =>
+  artist.content?.[contentLanguageStore.currentLanguage]?.name || artist.content?.['ckb-IR']?.name || ''
 
 const goToSong = (id: string) => {
   router.push(ROUTES.TAB.DETAIL(id))
@@ -143,7 +159,16 @@ const isDiscoveryPage = computed(() => route.path === '/discovery')
         <div v-if="isSearching" class="p-4 flex justify-center text-text-secondary">
           <Loader2 class="w-6 h-6 animate-spin" />
         </div>
-        <div v-else-if="searchResults.length > 0">
+        <div v-else-if="searchResults.length > 0 || artistResults.length > 0">
+          <div v-for="artist in artistResults" :key="`artist-${artist._id}`"
+            @click="artist._id && goToArtist(artist._id)"
+            class="p-3 hover:bg-surface-base cursor-pointer border-b border-border-subtle last:border-0 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-surface-base flex items-center justify-center shrink-0 overflow-hidden">
+              <User v-if="!artist.image" class="w-5 h-5 text-text-secondary" />
+              <img v-else :src="tabService.getImageUrl(artist.image)" class="w-full h-full object-cover" />
+            </div>
+            <div class="font-bold text-sm text-text-primary">{{ getArtistName(artist) }}</div>
+          </div>
           <div v-for="song in searchResults" :key="song._id" @click="song._id && goToSong(song._id)"
             class="p-3 hover:bg-surface-base cursor-pointer border-b border-border-subtle last:border-0 flex items-center gap-3">
             <div class="w-10 h-10 rounded bg-surface-base flex items-center justify-center shrink-0">
